@@ -1,0 +1,230 @@
+@import 'tailwindcss';
+
+@source '../js';
+@source '../views';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+
+/* ------------------------------------------------------------------ */
+/* Tokens del "dialecto Dashboard" (Decisión 8): indigo #5468FF,       */
+/* radios generosos, sombras suaves, tipografías auto-hospedadas.      */
+/* ------------------------------------------------------------------ */
+@theme {
+    --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Plus Jakarta Sans Variable', 'Inter Variable', ui-sans-serif, sans-serif;
+    --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+
+    /* Marca + neutros */
+    --color-brand-50: #eef0ff;
+    --color-brand-100: #dfe3ff;
+    --color-brand-200: #c3c9ff;
+    --color-brand-300: #9aa4ff;
+    --color-brand-400: #7580ff;
+    --color-brand-500: #5468ff;
+    --color-brand-600: #3f4df0;
+    --color-brand-700: #333fd1;
+    --color-brand-800: #2b34a4;
+    --color-brand-900: #1c2360;
+    --color-canvas: #f4f5fb;
+    --color-surface: #ffffff;
+    --color-line: #e5e7f0;
+    --color-ink: #101233;
+    --color-muted: #6b7190;
+    --color-soft: #eef0f5;
+
+    /* Estados / datos */
+    --color-ok: #10b981;
+    --color-ok-soft: #d6f5e9;
+    --color-warn: #f59e0b;
+    --color-warn-soft: #fdeccb;
+    --color-danger: #ea580c;
+    --color-danger-soft: #fce4d5;
+    --color-ghost: #64748b;
+    --color-ghost-soft: #e2e8f0;
+    --color-sobrante: #7c3aed;
+    --color-sobrante-soft: #ede9fe;
+
+    --shadow-card: 0 1px 2px rgb(16 18 51 / 0.04), 0 4px 16px rgb(16 18 51 / 0.06);
+    --shadow-pop: 0 8px 30px rgb(16 18 51 / 0.14);
+    --shadow-float: 0 12px 40px rgb(16 18 51 / 0.2);
+
+    --radius-card: 1.125rem;
+    --radius-panel: 1.5rem;
+    --radius-field: 0.625rem;
+}
+
+/* ------------------------------------------------------------------ */
+/* Base                                                                 */
+/* ------------------------------------------------------------------ */
+@layer base {
+    html {
+        -webkit-text-size-adjust: 100%;
+    }
+    body {
+        @apply bg-canvas font-sans text-ink antialiased;
+        text-rendering: optimizeLegibility;
+    }
+    h1, h2, h3, h4 {
+        @apply font-display;
+    }
+    code, .num {
+        @apply font-mono tabular-nums;
+    }
+}
+
+/* ------------------------------------------------------------------ */
+/* Clases de componente reutilizables                                  */
+/* ------------------------------------------------------------------ */
+@layer components {
+    .card {
+        @apply rounded-card border border-line bg-surface shadow-card;
+    }
+    .panel {
+        @apply rounded-panel border border-line bg-surface shadow-card;
+    }
+    .btn {
+        @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50;
+    }
+    .btn-primary {
+        @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50 bg-brand-500 text-white hover:bg-brand-600;
+    }
+    .btn-secondary {
+        @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50 border border-line bg-surface text-ink hover:bg-soft;
+    }
+    .btn-ghost {
+        @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50 text-brand-600 hover:bg-brand-50;
+    }
+    .btn-danger {
+        @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50 bg-danger text-white hover:bg-orange-700;
+    }
+    .btn-success {
+        @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50 bg-ok text-white hover:bg-emerald-600;
+    }
+    .field {
+        @apply block w-full rounded-field border border-line bg-surface px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-muted/70 focus:border-brand-400 focus:ring-2 focus:ring-brand-100;
+    }
+    .label {
+        @apply mb-1 block text-[13px] font-medium text-ink;
+    }
+    .chip {
+        @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold;
+    }
+    .section-title {
+        @apply font-display text-lg font-semibold tracking-tight text-ink;
+    }
+    .hint {
+        @apply text-xs text-muted;
+    }
+}
+
+/* ------------------------------------------------------------------ */
+/* Animaciones del mapa esquemático (rutas y pines)                    */
+/* ------------------------------------------------------------------ */
+@keyframes cpm-dash {
+    to {
+        stroke-dashoffset: -36;
+    }
+}
+.cpm-route-anim {
+    stroke-dasharray: 10 8;
+    animation: cpm-dash 1.1s linear infinite;
+}
+@keyframes cpm-pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.3;
+    }
+}
+.cpm-pulse {
+    animation: cpm-pulse 1.6s ease-in-out infinite;
+}
+@keyframes cpm-ring {
+    to {
+        transform: scale(2.1);
+        opacity: 0;
+    }
+}
+.cpm-ring {
+    transform-origin: center;
+    transform-box: fill-box;
+    animation: cpm-ring 1.6s ease-out infinite;
+}
+
+/* ------------------------------------------------------------------ */
+/* Estilos personalizados para Leaflet                                */
+/* ------------------------------------------------------------------ */
+.leaflet-popup-content-wrapper {
+    background: #ffffff !important;
+    border-radius: 1rem !important;
+    box-shadow: 0 10px 30px -5px rgba(16, 18, 51, 0.18) !important;
+    padding: 0 !important;
+    border: 1px solid #e5e7f0 !important;
+    overflow: hidden;
+}
+.leaflet-popup-content {
+    margin: 0 !important;
+    line-height: 1.5 !important;
+}
+.leaflet-popup-tip {
+    background: #ffffff !important;
+    box-shadow: 0 4px 10px rgba(16, 18, 51, 0.1) !important;
+}
+.leaflet-container {
+    font-family: 'Inter Variable', ui-sans-serif, system-ui, sans-serif !important;
+    z-index: 10;
+}
+.leaflet-control-zoom {
+    border: none !important;
+    box-shadow: 0 4px 14px rgba(16, 18, 51, 0.12) !important;
+    border-radius: 0.75rem !important;
+    overflow: hidden;
+}
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+    background-color: #ffffff !important;
+    color: #101233 !important;
+    border-bottom: 1px solid #e5e7f0 !important;
+    width: 34px !important;
+    height: 34px !important;
+    line-height: 34px !important;
+    font-size: 16px !important;
+    transition: background-color 0.15s ease;
+}
+.leaflet-control-zoom-in:hover,
+.leaflet-control-zoom-out:hover {
+    background-color: #f4f5fb !important;
+    color: #5468ff !important;
+}
+.leaflet-tooltip {
+    background: #101233 !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 0.5rem !important;
+    padding: 4px 8px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    box-shadow: 0 4px 12px rgba(16, 18, 51, 0.25) !important;
+}
+.leaflet-tooltip-top:before {
+    border-top-color: #101233 !important;
+}
+.leaflet-tooltip-bottom:before {
+    border-bottom-color: #101233 !important;
+}
+.leaflet-tooltip-left:before {
+    border-left-color: #101233 !important;
+}
+.leaflet-tooltip-right:before {
+    border-right-color: #101233 !important;
+}
+
+/* Animación de vector de redistribución Leaflet */
+@keyframes leaflet-dash-anim {
+    to {
+        stroke-dashoffset: -28;
+    }
+}
+.leaflet-redistribucion-path {
+    animation: leaflet-dash-anim 1.2s linear infinite;
+}
