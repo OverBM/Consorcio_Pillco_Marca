@@ -408,7 +408,7 @@ export default function StockPage() {
                                                     href={`/transferencias?crear=solicitud&materialId=${materialDetalle.id}&origen=${almacen.id}`}
                                                     className="mt-1 block text-[10px] font-bold text-brand-600 hover:underline"
                                                 >
-                                                    Transferir ➔
+                                                    Transferir -&gt;
                                                 </Link>
                                             )}
                                         </div>

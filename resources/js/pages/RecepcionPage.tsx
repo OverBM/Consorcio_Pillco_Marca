@@ -379,7 +379,7 @@ export default function RecepcionPage() {
                                         : 'border-line text-muted hover:bg-soft'
                                 }`}
                             >
-                                ✓ Recepción Conforme (Ingresar a Inventario)
+                                Recepción Conforme (Ingresar a Inventario)
                             </button>
                             <button
                                 type="button"
@@ -390,7 +390,7 @@ export default function RecepcionPage() {
                                         : 'border-line text-muted hover:bg-soft'
                                 }`}
                             >
-                                ⚠ Disconformidad / Dañado (Notificar a Logística)
+                                Disconformidad / Dañado (Notificar a Logística)
                             </button>
                         </div>
 

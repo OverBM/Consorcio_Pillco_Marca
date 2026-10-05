@@ -187,14 +187,14 @@ export default function TransferenciasPage() {
                             },
                             {
                                 key: 'ruta',
-                                header: 'Origen ➔ Destino',
+                                header: 'Origen -> Destino',
                                 cell: (t) => {
                                     const almO = almacenes.find((a) => a.id === t.origenAlmacenId);
                                     const almD = almacenes.find((a) => a.id === t.destinoAlmacenId);
                                     return (
                                         <div>
                                             <p className="font-semibold text-ink text-xs">{almO?.nombre ?? t.origenAlmacenId}</p>
-                                            <p className="text-[11px] text-muted">➔ {almD?.nombre ?? t.destinoAlmacenId}</p>
+                                            <p className="text-[11px] text-muted">{'->'} {almD?.nombre ?? t.destinoAlmacenId}</p>
                                         </div>
                                     );
                                 },
@@ -230,7 +230,7 @@ export default function TransferenciasPage() {
                                                 : t.estado === 'recibida_con_incidencia'
                                                 ? 'danger'
                                                 : t.estado === 'autorizada_logistica'
-                                                ? 'indigo'
+                                                ? 'violet'
                                                 : 'warn'
                                         }
                                     >

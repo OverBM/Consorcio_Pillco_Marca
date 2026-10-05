@@ -48,7 +48,7 @@ export default function SolicitudesPage() {
     const [formObraId, setFormObraId] = useState(obraActiva.id);
     const [formFrente, setFormFrente] = useState(obraActiva.nombre);
     const [formSolicitante, setFormSolicitante] = useState(
-        rolActivo === 'obrero_residente' ? 'Ing. Marco Paucar' : 'Residente de Turno',
+        rolActivo === 'residente_obra' ? 'Ing. Marco Paucar' : 'Residente de Turno',
     );
     const [formMaterialId, setFormMaterialId] = useState(materiales[0]?.id ?? '');
     const [formCantidad, setFormCantidad] = useState(100);
@@ -429,8 +429,8 @@ export default function SolicitudesPage() {
                                             <p className="font-bold text-ink">
                                                 {res.almacen.nombre}{' '}
                                                 {res.esOptimo && (
-                                                    <span className="ml-1 text-[10px] text-emerald-700 font-extrabold">
-                                                        ★ ALMACÉN ÓPTIMO ASIGNADO
+                                                    <span className="ml-1 px-1.5 py-0.5 rounded bg-emerald-100 text-[10px] text-emerald-800 font-extrabold uppercase">
+                                                        Óptimo Asignado
                                                     </span>
                                                 )}
                                             </p>

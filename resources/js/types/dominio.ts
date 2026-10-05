@@ -67,7 +67,7 @@ export interface Movimiento {
     fecha: string;
     almacenId: string;
     materialId: string;
-    tipo: 'ingreso' | 'salida';
+    tipo: 'ingreso' | 'salida' | 'merma' | 'ajuste';
     cantidad: number;
     referencia: string;
     usuario: string;

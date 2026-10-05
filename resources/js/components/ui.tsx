@@ -1,8 +1,50 @@
-import type { ReactNode } from 'react';
+import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import { cn } from '../utils/cn';
 import { IconX } from './icons';
 
 export { cn };
+
+export function Button({
+    children,
+    variant = 'primary',
+    size = 'md',
+    className,
+    disabled,
+    ...props
+}: ButtonHTMLAttributes<HTMLButtonElement> & {
+    variant?: 'primary' | 'secondary' | 'mint' | 'danger' | 'outline';
+    size?: 'sm' | 'md' | 'lg';
+    children: ReactNode;
+}) {
+    const variantStyles = {
+        primary: 'btn-primary',
+        secondary: 'btn-secondary',
+        mint: 'btn-mint',
+        danger: 'bg-red-600 text-white hover:bg-red-700 border border-red-700',
+        outline: 'btn-secondary',
+    };
+
+    const sizeStyles = {
+        sm: 'px-2.5 py-1 text-xs',
+        md: 'px-4 py-2 text-sm',
+        lg: 'px-5 py-2.5 text-base',
+    };
+
+    return (
+        <button
+            className={cn(
+                'inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition-all duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed',
+                variantStyles[variant],
+                sizeStyles[size],
+                className
+            )}
+            disabled={disabled}
+            {...props}
+        >
+            {children}
+        </button>
+    );
+}
 
 export function Card({
     title,
@@ -76,11 +118,16 @@ export function Modal({
     }
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-ink/50 backdrop-blur-sm" onClick={onClose} />
+            <button
+                type="button"
+                aria-label="Cerrar modal"
+                className="absolute inset-0 w-full h-full bg-ink/50 backdrop-blur-sm border-0 cursor-default p-0"
+                onClick={onClose}
+            />
             <div className={cn('panel relative z-10 max-h-[90vh] w-full overflow-y-auto p-6', wide ? 'max-w-3xl' : 'max-w-lg')}>
                 <header className="mb-4 flex items-start justify-between gap-3">
                     <h3 className="font-display text-lg font-semibold text-ink">{title}</h3>
-                    <button onClick={onClose} className="rounded-md p-1 text-muted transition-colors hover:bg-soft hover:text-ink" aria-label="Cerrar">
+                    <button onClick={onClose} className="rounded-md p-1 text-muted transition-colors hover:bg-soft hover:text-ink cursor-pointer" aria-label="Cerrar">
                         <IconX size={18} />
                     </button>
                 </header>

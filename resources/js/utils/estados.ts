@@ -54,7 +54,7 @@ export function estadoDeStock(cantidad: number, minimo: number, obraEstado: Esta
         if (cantidad >= minimo * 2) {
             return 'sobrante';
         }
-        return cantidad > 0 ? 'inactivo' : 'inactivo';
+        return 'inactivo';
     }
     if (cantidad === 0) {
         return 'critico';

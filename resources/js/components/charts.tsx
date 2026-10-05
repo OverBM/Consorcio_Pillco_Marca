@@ -12,26 +12,43 @@ export function BarChart7d({
     const max = Math.max(1, ...data.flatMap((d) => [d.ingreso, d.salida]));
     return (
         <div className="flex items-end gap-3">
-            {data.map((d) => (
-                <div
-                    key={d.etiqueta}
-                    className="flex flex-1 flex-col items-center gap-1.5"
-                    title={`Ingresos ${formatNum(d.ingreso)} · Salidas ${formatNum(d.salida)}`}
-                    onClick={() => onBarClick?.(d.etiqueta)}
-                >
-                    <div className="flex h-36 w-full max-w-9 items-end justify-center gap-1">
-                        <div
-                            className="w-3 rounded-t-md bg-brand-500 transition-[height] duration-300 hover:bg-brand-600"
-                            style={{ height: `${Math.round((d.ingreso / max) * 100)}%` }}
-                        />
-                        <div
-                            className="w-3 rounded-t-md bg-ok-soft transition-[height] duration-300"
-                            style={{ height: `${Math.round((d.salida / max) * 100)}%` }}
-                        />
+            {data.map((d) => {
+                const content = (
+                    <>
+                        <div className="flex h-36 w-full max-w-9 items-end justify-center gap-1">
+                            <div
+                                className="w-3 rounded-t-md bg-brand-500 transition-[height] duration-300 hover:bg-brand-600"
+                                style={{ height: `${Math.round((d.ingreso / max) * 100)}%` }}
+                            />
+                            <div
+                                className="w-3 rounded-t-md bg-ok-soft transition-[height] duration-300"
+                                style={{ height: `${Math.round((d.salida / max) * 100)}%` }}
+                            />
+                        </div>
+                        <span className="text-[11px] font-medium text-muted">{d.etiqueta}</span>
+                    </>
+                );
+
+                return onBarClick ? (
+                    <button
+                        type="button"
+                        key={d.etiqueta}
+                        className="flex flex-1 flex-col items-center gap-1.5 bg-transparent border-0 p-0 cursor-pointer text-left focus:outline-none"
+                        title={`Ingresos ${formatNum(d.ingreso)} · Salidas ${formatNum(d.salida)}`}
+                        onClick={() => onBarClick(d.etiqueta)}
+                    >
+                        {content}
+                    </button>
+                ) : (
+                    <div
+                        key={d.etiqueta}
+                        className="flex flex-1 flex-col items-center gap-1.5"
+                        title={`Ingresos ${formatNum(d.ingreso)} · Salidas ${formatNum(d.salida)}`}
+                    >
+                        {content}
                     </div>
-                    <span className="text-[11px] font-medium text-muted">{d.etiqueta}</span>
-                </div>
-            ))}
+                );
+            })}
         </div>
     );
 }

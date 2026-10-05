@@ -66,7 +66,12 @@ export function DataTable<T extends { id: string }>({
                                         c.className,
                                     )}
                                 >
-                                    {c.cell ? c.cell(row) : String((row as Record<string, unknown>)[c.key] ?? '-')}
+                                    {c.cell
+                                        ? c.cell(row)
+                                        : (() => {
+                                              const val = (row as Record<string, any>)[c.key];
+                                              return val !== null && val !== undefined ? (val as ReactNode) : '-';
+                                          })()}
                                 </td>
                             ))}
                         </tr>

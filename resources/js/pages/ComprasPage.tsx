@@ -396,7 +396,7 @@ export default function ComprasPage() {
                                         <span className="font-bold text-brand-600">{c.puntajeCalculado} pts</span>
                                         {c.esRecomendado && (
                                             <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[9px] font-extrabold text-emerald-800">
-                                                ★ RECOMENDADO
+                                                RECOMENDADO
                                             </span>
                                         )}
                                     </div>
@@ -513,7 +513,7 @@ export default function ComprasPage() {
                                 header: 'Ruta de Transporte',
                                 cell: (t) => (
                                     <div>
-                                        <p className="font-semibold text-ink text-xs">{t.origenNombre} ➔ {t.destinoNombre}</p>
+                                        <p className="font-semibold text-ink text-xs">{t.origenNombre} -&gt; {t.destinoNombre}</p>
                                         <p className="text-[10px] text-muted">Salida: {t.fechaSalida}</p>
                                     </div>
                                 ),
@@ -645,12 +645,12 @@ export default function ComprasPage() {
                         </div>
                         {excedePresupuesto ? (
                             <p className="mt-1 text-rose-800">
-                                ⚠ <strong>Excede el presupuesto en S/ {formatNum(montoExcedente)}</strong>. Pasará a estado de
+                                <strong>Excede el presupuesto en S/ {formatNum(montoExcedente)}</strong>. Pasará a estado de
                                 solicitud de aprobación adicional.
                             </p>
                         ) : (
                             <p className="mt-1 text-emerald-800">
-                                ✓ Requerimiento dentro del presupuesto asignado.
+                                Requerimiento dentro del presupuesto asignado.
                             </p>
                         )}
                     </div>

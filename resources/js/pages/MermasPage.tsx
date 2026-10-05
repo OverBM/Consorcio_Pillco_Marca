@@ -349,7 +349,7 @@ export default function MermasPage() {
                                 header: 'Despachado vs Recibido',
                                 cell: (i) => (
                                     <span className="font-mono text-xs">
-                                        {i.cantidadOrigen} desp. ➔ {i.cantidadDestinoConforme} rec.
+                                        {i.cantidadOrigen} desp. -&gt; {i.cantidadDestinoConforme} rec.
                                     </span>
                                 ),
                             },
@@ -449,12 +449,12 @@ export default function MermasPage() {
                         </div>
                         {superaUmbral ? (
                             <p className="mt-1 text-[11px]">
-                                ⚠ <strong>Supera el umbral tolerable ({mermaUmbralTolerable}%):</strong> Se emitirá una
+                                <strong>Supera el umbral tolerable ({mermaUmbralTolerable}%):</strong> Se emitirá una
                                 alerta al Jefe de Logística para investigación formal. La baja se aplicará directamente al inventario.
                             </p>
                         ) : (
                             <p className="mt-1 text-[11px]">
-                                ✓ Pérdida dentro del umbral tolerable de operación.
+                                Pérdida dentro del umbral tolerable de operación.
                             </p>
                         )}
                     </div>

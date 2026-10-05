@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Sello geométrico de Consorcio Pillco Marca">
+  <rect width="48" height="48" rx="12" fill="#000000"/>
+  <path d="M11 12h11v8h7v-8h8v24h-8v-9h-7v9H11z" fill="#ffffff"/>
+  <path d="M29 20h8v7h-8z" fill="#d1ffca"/>
+  <circle cx="36.5" cy="11.5" r="2.5" fill="#fff100"/>
+</svg>

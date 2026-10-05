@@ -225,7 +225,7 @@ export default function PanelGeneral() {
                     label="Requerimientos"
                     value={kpiReqSobrecosto}
                     hint="con sobrecosto"
-                    tone={kpiReqSobrecosto > 0 ? 'warn' : 'ok'}
+                    tone={kpiReqSobrecosto > 0 ? 'danger' : 'ok'}
                 />
                 <KpiCard
                     icon={<IconTruck size={18} />}

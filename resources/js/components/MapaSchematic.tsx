@@ -211,7 +211,7 @@ export function MapaSchematic({
 
     return (
         <div className={cn('relative', className)}>
-            <div className="relative" onClick={() => setOpenAlmId(null)}>
+            <div className="relative">
                 {/* Controles Mapa/Satélite */}
                 <div className="absolute left-3 top-3 z-10 flex overflow-hidden rounded-lg border border-line bg-surface/95 text-xs font-semibold shadow-card">
                     {(['mapa', 'satelite'] as const).map((v) => (
@@ -550,9 +550,16 @@ export function MapaSchematic({
                 )}
 
                 {/* Popup ampliado al hacer clic */}
+                {openAlm && (
+                    <button
+                        type="button"
+                        aria-label="Cerrar detalle de almacén"
+                        className="fixed inset-0 z-30 bg-transparent border-0 cursor-default p-0"
+                        onClick={() => setOpenAlmId(null)}
+                    />
+                )}
                 {openAlm && op && (
                     <div
-                        onClick={(e) => e.stopPropagation()}
                         style={{ left: op.left, top: op.top }}
                         className={cn(
                             'absolute z-40 max-h-[calc(100vh-3rem)] w-[26rem] max-w-[92%] overflow-y-auto rounded-2xl border border-line bg-surface text-left shadow-pop',

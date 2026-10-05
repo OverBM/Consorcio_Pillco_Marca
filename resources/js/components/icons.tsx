@@ -300,12 +300,85 @@ export function IconUserCheck(p: IconProps) {
         </svg>
     );
 }
-export function IconRefreshCw(p: IconProps) {
+export function IconClock(p: IconProps) {
     return (
         <svg {...base(p)}>
-            <polyline points="23 4 23 10 17 10" />
-            <polyline points="1 20 1 14 7 14" />
-            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+        </svg>
+    );
+}
+export function IconBuilding(p: IconProps) {
+    return (
+        <svg {...base(p)}>
+            <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z" />
+            <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" />
+            <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2" />
+            <path d="M10 6h4" />
+            <path d="M10 10h4" />
+            <path d="M10 14h4" />
+            <path d="M10 18h4" />
+        </svg>
+    );
+}
+export function IconTrendingUp(p: IconProps) {
+    return (
+        <svg {...base(p)}>
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+            <polyline points="17 6 23 6 23 12" />
+        </svg>
+    );
+}
+export function IconDollar(p: IconProps) {
+    return (
+        <svg {...base(p)}>
+            <line x1="12" y1="1" x2="12" y2="23" />
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+        </svg>
+    );
+}
+export function IconShield(p: IconProps) {
+    return (
+        <svg {...base(p)}>
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        </svg>
+    );
+}
+export function IconFileText(p: IconProps) {
+    return (
+        <svg {...base(p)}>
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+            <polyline points="10 9 9 9 8 9" />
+        </svg>
+    );
+}
+export function IconCheckCircle(p: IconProps) {
+    return (
+        <svg {...base(p)}>
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+            <polyline points="22 4 12 14.01 9 11.01" />
+        </svg>
+    );
+}
+export function IconRefresh(p: IconProps) {
+    return (
+        <svg {...base(p)}>
+            <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+            <path d="M21 3v5h-5" />
+            <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+            <path d="M3 21v-5h5" />
+        </svg>
+    );
+}
+export function IconSave(p: IconProps) {
+    return (
+        <svg {...base(p)}>
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+            <polyline points="17 21 17 13 7 13 7 21" />
+            <polyline points="7 3 7 8 15 8" />
         </svg>
     );
 }

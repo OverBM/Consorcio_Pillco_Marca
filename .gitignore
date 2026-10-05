@@ -56,3 +56,8 @@ Thumbs.db
 *.tmp
 *.temp
 
+# Sonar & Test Reports
+sonar-issues.json
+/.scannerwork
+/phpunit-report.xml
+/coverage.xml

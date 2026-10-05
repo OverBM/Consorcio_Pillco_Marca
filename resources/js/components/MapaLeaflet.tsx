@@ -231,7 +231,7 @@ export function MapaLeaflet({
                 lineJoin: 'round',
             });
 
-            polyline.bindTooltip(`Despacho ${ruta.codigo}: ${almOrigen.nombre} ➔ ${almDestino.nombre}`, {
+            polyline.bindTooltip(`Despacho ${ruta.codigo}: ${almOrigen.nombre} -> ${almDestino.nombre}`, {
                 sticky: true,
                 className: 'cpm-leaflet-tooltip',
             });
@@ -283,7 +283,7 @@ export function MapaLeaflet({
             });
 
             polyline.bindTooltip(
-                `Redistribución sugerida: ${almOrigen.nombre} ➔ ${almDestino.nombre}`,
+                `Redistribución sugerida: ${almOrigen.nombre} -> ${almDestino.nombre}`,
                 { sticky: true },
             );
             routesLayer.addLayer(polyline);
@@ -521,7 +521,7 @@ export function MapaLeaflet({
                                 onClick={() => setMostrarLeyenda(false)}
                                 className="text-muted hover:text-ink text-xs px-1"
                             >
-                                ✕
+                                x
                             </button>
                         </div>
                         <div className="flex items-center gap-2 text-ink">
