@@ -2,8 +2,9 @@
 // y control por áreas de conocimiento PMI (Adquisiciones, Costos, Logística, Calidad, Riesgos y Control).
 // Conecta los macroprocesos Bizagi 16 al 30 con mapa interactivo Leaflet y KPIs operativos.
 
-import { useEffect, useMemo, useState } from 'react';
-import { Link } from '@inertiajs/react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link, router, usePage } from '@inertiajs/react';
+import contexto from '@/routes/contexto';
 import { PageHeader } from '../components/PageHeader';
 import { KpiCard } from '../components/KpiCard';
 import { AlertaBanner } from '../components/AlertaBanner';
@@ -12,11 +13,11 @@ import { GeoDetalle } from '../components/GeoDetalle';
 import { BarChart7d, ChartLegend } from '../components/charts';
 import { Card, Badge } from '../components/ui';
 import { EmptyState } from '../components/EmptyState';
-import { useAppStore } from '../store/AppContext';
 import { estadoDeAlmacen, ESTADO_META } from '../utils/estados';
 import { haversineDistanceKm } from '../utils/geo';
 import { formatKm, formatNum, formatCantidad } from '../utils/format';
-import { barChart7d } from '../data/movimientos';
+import type { Almacen, Material, Obra } from '../types';
+import type { StockState } from '../types/stock';
 import {
     IconAlert,
     IconAlertTriangle,
@@ -48,28 +49,80 @@ interface PrediccionDinamica {
     ahorroSoles: number;
 }
 
+interface ReceptoraDb {
+    almacenId: string;
+    obraId: string;
+    nombreObra: string;
+    distrito: string;
+    km: number;
+}
+
+interface SobranteDb {
+    id: string;
+    tipo: string;
+    materialId: string;
+    almacenId: string;
+    obraId: string;
+    cantidad: number;
+    unidad: string;
+    mensaje: string;
+    receptoras: ReceptoraDb[];
+}
+
+interface PanelIndicadores {
+    solicitudes: number;
+    requerimientosSobrecosto: number;
+    ocFletes: number;
+    stockCritico: number;
+    transferencias: number;
+    incidencias: number;
+    mermas: number;
+}
+
+interface PanelProps {
+    obrasDb: Obra[];
+    almacenesDb: Almacen[];
+    materialesDb: Material[];
+    stock: StockState;
+    indicadores: PanelIndicadores;
+    sobrantes: SobranteDb[];
+    rutas: RutaMapa[];
+    movimientos7d: { fecha: string; etiqueta: string; ingreso: number; salida: number }[];
+    obraActivaId: number | null;
+}
+
 export default function PanelGeneral() {
-    const {
-        obras,
-        almacenes,
-        materiales,
-        stock,
-        alertas,
-        despachos,
-        solicitudes,
-        requerimientos,
-        ordenesCompra,
-        transportes,
-        transferencias,
-        mermas,
-        inconsistencias,
-        obraActiva,
-        selectObra,
-    } = useAppStore();
+    const props = usePage().props as unknown as PanelProps;
+
+    const obras = props.obrasDb ?? [];
+    const almacenes = props.almacenesDb ?? [];
+    const materiales = props.materialesDb ?? [];
+    const stock = props.stock ?? { stock: {}, reservas: {} };
+    const sobrantes = props.sobrantes ?? [];
+    const rutas = props.rutas ?? [];
+    const movimientos7d = props.movimientos7d ?? [];
+    const indicadores: PanelIndicadores = props.indicadores ?? {
+        solicitudes: 0,
+        requerimientosSobrecosto: 0,
+        ocFletes: 0,
+        stockCritico: 0,
+        transferencias: 0,
+        incidencias: 0,
+        mermas: 0,
+    };
+    const obraActiva = obras.find((o) => String(o.id) === String(props.obraActivaId)) ?? obras[0];
+
+    const selectObra = useCallback((obraId: string) => {
+        router.post(
+            contexto.update.url(),
+            { obra_activa_id: Number(obraId) },
+            { preserveScroll: true, preserveState: true },
+        );
+    }, []);
 
     const [seleccionObraId, setSeleccionObraId] = useState<string | null>(null);
     const [alertaHoverId, setAlertaHoverId] = useState<string | null>(null);
-    const [frentesComparados, setFrentesComparados] = useState<string[]>([obraActiva.id]);
+    const [frentesComparados, setFrentesComparados] = useState<string[]>(obraActiva ? [obraActiva.id] : []);
     const [prediccionDinamica, setPrediccionDinamica] = useState<PrediccionDinamica | null>(null);
 
     const almCentral = useMemo(() => almacenes.find((a) => a.id === 'alm-central') ?? almacenes[0], [almacenes]);
@@ -149,29 +202,14 @@ export default function PanelGeneral() {
         };
     }, [obras, almacenes, materiales, stock, selectObra]);
 
-    // 7 Grupos de Indicadores PMI / PMU (Bizagi 16-30)
-    const kpiSolicitudesPendientes = solicitudes.filter((s) => s.estado === 'pendiente' || s.estado === 'asignado').length;
-    const kpiReqSobrecosto = requerimientos.filter((r) => r.excedePresupuesto).length;
-    const kpiOCEnTransito = ordenesCompra.filter((oc) => oc.estado === 'en_transporte').length + transportes.filter((t) => t.estado === 'en_ruta').length;
-    const kpiStockCritico = alertas.filter((a) => a.tipo === 'critico').length;
-    const kpiTransferenciasActivas = transferencias.filter((t) => t.estado === 'solicitada' || t.estado === 'autorizada_logistica' || t.estado === 'en_transito').length;
-    const kpiIncidencias = transferencias.filter((t) => t.estado === 'recibida_con_incidencia').length + inconsistencias.filter((i) => i.estado === 'pendiente_revision').length;
-    const kpiMermasSobreUmbral = mermas.filter((m) => m.superaUmbral).length;
-    const sobrantes = alertas.filter((a) => a.tipo === 'sobrante');
-
-    const rutas: RutaMapa[] = useMemo(
-        () =>
-            despachos
-                .filter((d) => d.estado === 'en-transito' || d.estado === 'pendiente')
-                .map((d) => ({
-                    id: d.id,
-                    codigo: d.codigo,
-                    origenId: d.origenAlmacenId,
-                    destinoId: d.destinoAlmacenId,
-                    estado: d.estado,
-                })),
-        [despachos],
-    );
+    // 7 Grupos de Indicadores PMI / PMU (Bizagi 16-30) — calculados en el backend.
+    const kpiSolicitudesPendientes = indicadores.solicitudes;
+    const kpiReqSobrecosto = indicadores.requerimientosSobrecosto;
+    const kpiOCEnTransito = indicadores.ocFletes;
+    const kpiStockCritico = indicadores.stockCritico;
+    const kpiTransferenciasActivas = indicadores.transferencias;
+    const kpiIncidencias = indicadores.incidencias;
+    const kpiMermasSobreUmbral = indicadores.mermas;
 
     const sugerencias: SugerenciaMapa[] = useMemo(() => {
         const base = sobrantes.flatMap((s) =>
@@ -441,7 +479,7 @@ export default function PanelGeneral() {
                             if (!obra || !alm) return null;
 
                             const isSelectedOnMap = seleccionObraId === obra.id;
-                            const isMainActive = obraActiva.id === obra.id;
+                            const isMainActive = obraActiva?.id === obra.id;
                             const estado = estadoDeAlmacen(alm, obra.estado, stock, materiales);
                             const meta = ESTADO_META[estado];
                             const kmCentral = haversineDistanceKm(alm.coords, almCentral.coords);
@@ -599,7 +637,7 @@ export default function PanelGeneral() {
             {/* Accesos rápidos a los 8 módulos del sistema */}
             <div className="grid gap-6 lg:grid-cols-3">
                 <Card title="Movimientos de almacén — últimos 7 días" subtitle="Ingresos y salidas agregadas en la red">
-                    <BarChart7d data={barChart7d} />
+                    <BarChart7d data={movimientos7d} />
                     <div className="mt-4">
                         <ChartLegend
                             items={[

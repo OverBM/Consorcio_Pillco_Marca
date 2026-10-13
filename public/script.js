@@ -22,32 +22,189 @@ if (menuToggle && primaryNavigation) {
   });
 }
 
-const filterButtons = [...document.querySelectorAll("[data-filter]")];
-const projectCards = [...document.querySelectorAll(".project-card[data-category]")];
+const portfolioGrid = document.querySelector("#portfolio-grid");
+const portfolioStatus = document.querySelector("#portfolio-status");
+const estadoFilterGroup = document.querySelector("#filtro-estado");
+const distritoFilterGroup = document.querySelector("#filtro-distrito");
 
-filterButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    const filter = button.dataset.filter;
-    filterButtons.forEach((item) => {
-      const selected = item === button;
-      item.classList.toggle("is-active", selected);
-      item.setAttribute("aria-pressed", String(selected));
-    });
+if (portfolioGrid && portfolioStatus) {
+  const ETIQUETAS_ESTADO = {
+    planificacion: "Planificación",
+    ejecucion: "Ejecución",
+    cerrada: "Cerrada",
+    paralizada: "Paralizada",
+  };
 
-    projectCards.forEach((card) => {
-      card.hidden = filter !== "all" && card.dataset.category !== filter;
-    });
-  });
-});
+  let proyectos = [];
+  let estadoActivo = "all";
+  let distritoActivo = "all";
 
-const inquirySelect = document.querySelector("#contact-interest");
-const messageField = document.querySelector("#contact-message");
-document.querySelectorAll("[data-inquiry]").forEach((link) => {
-  link.addEventListener("click", () => {
-    if (inquirySelect) inquirySelect.value = link.dataset.inquiry === "edificacion" || link.dataset.inquiry === "infraestructura" || link.dataset.inquiry === "equipamiento" ? "proyectos" : "otro";
-    if (messageField) messageField.value = `Me interesa conversar sobre la tipología de ${link.dataset.inquiry}.`;
-  });
-});
+  const nombreEstado = (estado) => ETIQUETAS_ESTADO[estado] ?? estado;
+
+  const construirFiltros = (grupo, valores, contenedor) => {
+    if (!contenedor) return;
+    contenedor.replaceChildren();
+
+    const crearBoton = (valor, etiqueta) => {
+      const boton = document.createElement("button");
+      boton.type = "button";
+      const activo = valor === "all";
+      boton.className = `filter-button${activo ? " is-active" : ""}`;
+      boton.dataset.value = valor;
+      boton.setAttribute("aria-pressed", String(activo));
+      boton.textContent = etiqueta;
+      boton.addEventListener("click", () => {
+        if (grupo === "estado") estadoActivo = valor;
+        else distritoActivo = valor;
+
+        [...contenedor.children].forEach((item) => {
+          const seleccionado = item.dataset.value === valor;
+          item.classList.toggle("is-active", seleccionado);
+          item.setAttribute("aria-pressed", String(seleccionado));
+        });
+
+        renderProyectos();
+      });
+      return boton;
+    };
+
+    contenedor.append(crearBoton("all", "Todo"));
+    valores
+      .slice()
+      .sort((a, b) => a.localeCompare(b, "es"))
+      .forEach((valor) => {
+        contenedor.append(crearBoton(valor, grupo === "estado" ? nombreEstado(valor) : valor));
+      });
+  };
+
+  const crearTarjeta = (proyecto) => {
+    const articulo = document.createElement("article");
+    articulo.className = "project-card";
+
+    const arte = document.createElement("div");
+    arte.className = "project-art project-art-building";
+    arte.setAttribute("aria-hidden", "true");
+    arte.innerHTML =
+      '<svg viewBox="0 0 480 230"><path d="M54 193h372M95 193V93l70-42 70 42v100M235 193V72l71-34 70 34v121"/><path d="M117 112h24v29h-24zm52 0h24v29h-24zm89-18h25v31h-25zm53 0h25v31h-25zm-53 57h25v31h-25zm53 0h25v31h-25z"/><path class="art-accent" d="m90 86 75-45 74 45M230 65l76-36 76 36"/></svg>';
+    const etiqueta = document.createElement("span");
+    etiqueta.className = "art-label";
+    etiqueta.textContent = proyecto.codigo || "OBRA";
+    arte.append(etiqueta);
+
+    const contenido = document.createElement("div");
+    contenido.className = "project-content";
+
+    const meta = document.createElement("div");
+    meta.className = "card-meta";
+    const metaPrograma = document.createElement("span");
+    metaPrograma.textContent = proyecto.programa || "SIN PROGRAMA";
+    const metaEstado = document.createElement("span");
+    metaEstado.textContent = nombreEstado(proyecto.estado).toUpperCase();
+    meta.append(metaPrograma, metaEstado);
+
+    const titulo = document.createElement("h3");
+    titulo.textContent = proyecto.nombre;
+
+    const distrito = document.createElement("p");
+    distrito.textContent = `Distrito de ${proyecto.distrito || "—"}`;
+
+    const avance = Math.max(0, Math.min(100, Number(proyecto.avance) || 0));
+    const progreso = document.createElement("div");
+    progreso.className = "project-progress";
+    progreso.setAttribute("role", "img");
+    progreso.setAttribute("aria-label", `Avance físico ${avance}%`);
+    const pista = document.createElement("span");
+    pista.className = "project-progress-track";
+    const barra = document.createElement("span");
+    barra.className = "project-progress-bar";
+    barra.style.width = `${avance}%`;
+    pista.append(barra);
+    const progresoTexto = document.createElement("span");
+    progresoTexto.className = "project-progress-value";
+    progresoTexto.textContent = `${avance}%`;
+    progreso.append(pista, progresoTexto);
+
+    const enlace = document.createElement("a");
+    enlace.className = "project-link";
+    enlace.href = "#contacto";
+    enlace.innerHTML = 'Consultar esta obra <span aria-hidden="true">↗</span>';
+
+    contenido.append(meta, titulo, distrito, progreso, enlace);
+    articulo.append(arte, contenido);
+
+    return articulo;
+  };
+
+  const renderProyectos = () => {
+    const visibles = proyectos.filter(
+      (proyecto) =>
+        (estadoActivo === "all" || proyecto.estado === estadoActivo) &&
+        (distritoActivo === "all" || proyecto.distrito === distritoActivo),
+    );
+
+    portfolioGrid.replaceChildren();
+    portfolioGrid.setAttribute("aria-busy", "false");
+
+    if (!visibles.length) {
+      portfolioStatus.hidden = false;
+      portfolioStatus.textContent = proyectos.length
+        ? "No hay proyectos que coincidan con los filtros seleccionados."
+        : "Aún no hay proyectos registrados.";
+      return;
+    }
+
+    portfolioStatus.hidden = true;
+    const fragmento = document.createDocumentFragment();
+    visibles.forEach((proyecto) => fragmento.append(crearTarjeta(proyecto)));
+    portfolioGrid.append(fragmento);
+  };
+
+  const mostrarError = () => {
+    portfolioGrid.replaceChildren();
+    portfolioGrid.setAttribute("aria-busy", "false");
+    portfolioStatus.hidden = false;
+    portfolioStatus.textContent = "No fue posible cargar los proyectos.";
+    const reintentar = document.createElement("button");
+    reintentar.type = "button";
+    reintentar.className = "button button-dark portfolio-retry";
+    reintentar.textContent = "Reintentar";
+    reintentar.addEventListener("click", cargarProyectos);
+    portfolioStatus.append(" ", reintentar);
+  };
+
+  async function cargarProyectos() {
+    portfolioStatus.hidden = false;
+    portfolioStatus.textContent = "Cargando proyectos…";
+    portfolioGrid.setAttribute("aria-busy", "true");
+
+    try {
+      const respuesta = await fetch("/api/v1/proyectos", {
+        headers: { Accept: "application/json" },
+      });
+      if (!respuesta.ok) throw new Error("Respuesta no válida");
+
+      const cuerpo = await respuesta.json();
+      proyectos = Array.isArray(cuerpo.data) ? cuerpo.data : [];
+
+      construirFiltros(
+        "estado",
+        [...new Set(proyectos.map((proyecto) => proyecto.estado).filter(Boolean))],
+        estadoFilterGroup,
+      );
+      construirFiltros(
+        "distrito",
+        [...new Set(proyectos.map((proyecto) => proyecto.distrito).filter(Boolean))],
+        distritoFilterGroup,
+      );
+
+      renderProyectos();
+    } catch {
+      mostrarError();
+    }
+  }
+
+  cargarProyectos();
+}
 
 const contactForm = document.querySelector("#contact-form");
 const preparedMessage = document.querySelector("#prepared-message");

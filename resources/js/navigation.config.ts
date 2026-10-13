@@ -91,13 +91,6 @@ export const NAVIGATION_CONFIG: NavGroup[] = [
         ],
     },
     {
-        title: 'Finanzas y Control',
-        items: [
-            { id: 'fideicomiso-adelantos', label: 'Adelantos y Fideicomiso', href: '/finanzas/adelantos', icon: 'building' },
-            { id: 'control-presupuestal', label: 'Control Presupuestal', href: '/finanzas/presupuesto', icon: 'dashboard' },
-        ],
-    },
-    {
         title: 'Administración',
         items: [
             { id: 'usuarios-roles', label: 'Usuarios y Accesos', href: '/admin/usuarios', icon: 'users' },

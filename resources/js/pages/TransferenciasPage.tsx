@@ -1,474 +1,549 @@
 // Módulo de Transferencias entre Almacenes (Macroprocesos Bizagi 27 y 28).
-// Generación de orden de transferencia por almacenero de origen, autorización formal por Logística,
-// transporte inter-obra, confirmación de recepción en destino y registro de incidencias de transferencia.
-// Integra el flujo de redistribución de sobrantes de Cemento Andino Tipo V de obra cerrada.
+// Órdenes de transferencia por almacenero de origen, autorización por Logística,
+// transporte inter-obra y confirmación de recepción en destino.
+// Datos desde props `transferenciasDb`; escrituras vía `useHttp`.
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type FormEvent } from 'react';
+import { router, useHttp, usePage } from '@inertiajs/react';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge, Modal } from '../components/ui';
-import { Button, Field, Input, Select, Textarea } from '../components/form';
+import { Button, Field, Input, Select, Textarea, FormPanel, FormSection, SubmitButton } from '../components/form';
 import { DataTable } from '../components/DataTable';
 import { EmptyState } from '../components/EmptyState';
-import { AlertaBanner } from '../components/AlertaBanner';
-import { useAppStore } from '../store/AppContext';
-import { formatCantidad, formatNum } from '../utils/format';
-import type { IncidenciaTransferencia, OrdenTransferencia } from '../types';
-import {
-    IconAlert,
-    IconBoxes,
-    IconCheck,
-    IconPlus,
-    IconRepeat,
-    IconSearch,
-    IconSparkles,
-    IconTruck,
-    IconX,
-} from '../components/icons';
+import { useNotifications } from '../components/notifications/NotificationProvider';
+import { formatCantidad, formatFs } from '../utils/format';
+import type { CatalogoAlmacen, CatalogoMaterial } from '../types';
+import { IconBoxes, IconCheck, IconPlus, IconSearch, IconX } from '../components/icons';
 
-export default function TransferenciasPage() {
-    const {
-        transferencias,
-        almacenes,
-        obras,
-        materiales,
-        stock,
-        rolActivo,
-        createTransferencia,
-        authorizeTransferencia,
-        receiveTransferencia,
-    } = useAppStore();
+interface MaterialDb {
+    id: number;
+    nombre: string;
+    unidad_medida?: { codigo: string } | null;
+}
+
+interface TransferenciaDetalleDb {
+    id: number;
+    material_id: number;
+    cantidad_solicitada: number | string;
+    cantidad_despachada: number | string | null;
+    cantidad_recibida: number | string | null;
+    material?: MaterialDb | null;
+}
+
+interface AlmacenDb {
+    id: number;
+    nombre: string;
+}
+
+interface TransferenciaDb {
+    id: number;
+    codigo: string;
+    motivo: string;
+    estado: string;
+    generada_automaticamente: boolean;
+    distancia_m: number | string | null;
+    eta_min: number | string | null;
+    created_at: string;
+    almacen_origen_id: number;
+    almacen_destino_id: number;
+    almacen_origen?: AlmacenDb | null;
+    almacen_destino?: AlmacenDb | null;
+    detalles?: TransferenciaDetalleDb[];
+}
+
+interface TransferenciasPageProps {
+    transferenciasDb?: TransferenciaDb[];
+}
+
+type TransferenciaFila = Omit<TransferenciaDb, 'id'> & { id: string };
+
+const ESTADO_META: Record<string, { tone: 'ok' | 'warn' | 'violet' | 'danger' | 'neutral'; label: string }> = {
+    solicitada: { tone: 'warn', label: 'Solicitada' },
+    aprobada: { tone: 'violet', label: 'Aprobada' },
+    en_transito: { tone: 'violet', label: 'En tránsito' },
+    completada: { tone: 'ok', label: 'Completada' },
+    anulada: { tone: 'neutral', label: 'Anulada' },
+};
+
+interface LineaCrear {
+    material_id: string;
+    cantidad_solicitada: string;
+}
+
+interface LineaRecepcion {
+    id: number;
+    material: string;
+    unidad: string;
+    esperada: number;
+    recibida: string;
+}
+
+function origenNombre(t: { almacen_origen?: AlmacenDb | null; almacen_origen_id: number }): string {
+    return t.almacen_origen?.nombre ?? `Almacén #${t.almacen_origen_id}`;
+}
+
+function destinoNombre(t: { almacen_destino?: AlmacenDb | null; almacen_destino_id: number }): string {
+    return t.almacen_destino?.nombre ?? `Almacén #${t.almacen_destino_id}`;
+}
+
+function materialPrincipal(t: { detalles?: TransferenciaDetalleDb[] }): string {
+    const detalles = t.detalles ?? [];
+    if (detalles.length === 0) return '—';
+    const primero = detalles[0].material?.nombre ?? `Material #${detalles[0].material_id}`;
+    return detalles.length > 1 ? `${primero} (+${detalles.length - 1})` : primero;
+}
+
+function totalSolicitado(t: { detalles?: TransferenciaDetalleDb[] }): number {
+    return (t.detalles ?? []).reduce((acc, d) => acc + Number(d.cantidad_solicitada), 0);
+}
+
+export default function TransferenciasPage({ transferenciasDb = [] }: TransferenciasPageProps) {
+    const notify = useNotifications();
+    const { catalogos } = usePage().props;
+
+    const almacenes: CatalogoAlmacen[] = catalogos.almacenes;
+    const materiales: CatalogoMaterial[] = catalogos.materiales;
+
+    const crear = useHttp<{
+        almacen_origen_id: string;
+        almacen_destino_id: string;
+        motivo: string;
+        detalles: LineaCrear[];
+    }>({
+        almacen_origen_id: '',
+        almacen_destino_id: '',
+        motivo: '',
+        detalles: [{ material_id: '', cantidad_solicitada: '' }] as LineaCrear[],
+    });
+
+    const accion = useHttp<Record<string, string>>({});
+    const confirmar = useHttp<Record<string, string>>({});
 
     const [modalCrear, setModalCrear] = useState(false);
-    const [modalRecibir, setModalRecibir] = useState<OrdenTransferencia | null>(null);
+    const [recibiendo, setRecibiendo] = useState<TransferenciaFila | null>(null);
+    const [receptoras, setReceptoras] = useState<LineaRecepcion[]>([]);
+    const [observaciones, setObservaciones] = useState('');
     const [busqueda, setBusqueda] = useState('');
     const [filtroEstado, setFiltroEstado] = useState('todos');
 
-    // Formulario de nueva transferencia
-    const [formOrigen, setFormOrigen] = useState(almacenes[0]?.id ?? '');
-    const [formDestino, setFormDestino] = useState(almacenes[1]?.id ?? '');
-    const [formMaterialId, setFormMaterialId] = useState('mat-cemento-1');
-    const [formCantidad, setFormCantidad] = useState(300);
-    const [formMotivo, setFormMotivo] = useState('Rebalance de stock por necesidad en frente de trabajo.');
-    const [esSobrante, setEsSobrante] = useState(false);
+    const filas: TransferenciaFila[] = useMemo(
+        () => transferenciasDb.map((t) => ({ ...t, id: String(t.id) })),
+        [transferenciasDb],
+    );
 
-    // Formulario de Recepción en Destino (Bizagi 28)
-    const [cantRecibida, setCantRecibida] = useState(0);
-    const [tieneIncidencia, setTieneIncidencia] = useState(false);
-    const [incTipo, setIncTipo] = useState<'daño_transporte' | 'faltante' | 'error_despacho'>('faltante');
-    const [incDescripcion, setIncDescripcion] = useState('');
-    const [recibidoPor, setRecibidoPor] = useState('Almacenero Destino');
-
-    const stockOrigenDisponible = stock.stock[formOrigen]?.[formMaterialId] ?? 0;
-
-    const handleGuardarTransferencia = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (formOrigen === formDestino || Number(formCantidad) <= 0) return;
-
-        createTransferencia({
-            origenAlmacenId: formOrigen,
-            destinoAlmacenId: formDestino,
-            materialId: formMaterialId,
-            cantidad: Number(formCantidad),
-            esRedistribucionCierreObra: esSobrante,
-            fechaSolicitud: new Date().toISOString().slice(0, 16).replace('T', ' '),
-            solicitadoPor: 'Almacenero de Origen',
-            motivo: formMotivo,
-            estado: 'solicitada',
-        });
-
-        setModalCrear(false);
-    };
-
-    const handleAbrirRecepcion = (trf: OrdenTransferencia) => {
-        setModalRecibir(trf);
-        setCantRecibida(trf.cantidad);
-        setTieneIncidencia(false);
-        setIncDescripcion('');
-    };
-
-    const handleConfirmarRecepcion = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!modalRecibir) return;
-
-        let incObj: IncidenciaTransferencia | undefined = undefined;
-        const diff = modalRecibir.cantidad - Number(cantRecibida);
-
-        if (tieneIncidencia || diff > 0) {
-            incObj = {
-                materialId: modalRecibir.materialId,
-                cantidadEnviada: modalRecibir.cantidad,
-                cantidadRecibida: Number(cantRecibida),
-                diferencia: Math.max(0, diff),
-                descripcion: incDescripcion || 'Diferencia cuantitativa detectada en destino.',
-                tipo: incTipo,
-            };
-        }
-
-        receiveTransferencia(modalRecibir.id, Number(cantRecibida), incObj, recibidoPor);
-        setModalRecibir(null);
-    };
-
-    const transferenciasFiltradas = useMemo(() => {
-        return transferencias.filter((t) => {
+    const filtradas = useMemo(() => {
+        return filas.filter((t) => {
+            if (filtroEstado !== 'todos' && t.estado !== filtroEstado) return false;
             if (busqueda.trim()) {
                 const q = busqueda.toLowerCase();
-                const mat = materiales.find((m) => m.id === t.materialId);
-                const matchCod = t.codigo.toLowerCase().includes(q);
-                const matchMot = t.motivo.toLowerCase().includes(q);
-                const matchMat = mat?.nombre.toLowerCase().includes(q) ?? false;
-                if (!matchCod && !matchMot && !matchMat) return false;
+                const hay =
+                    t.codigo.toLowerCase().includes(q) ||
+                    t.motivo.toLowerCase().includes(q) ||
+                    materialPrincipal(t).toLowerCase().includes(q);
+                if (!hay) return false;
             }
-            if (filtroEstado !== 'todos' && t.estado !== filtroEstado) return false;
             return true;
         });
-    }, [transferencias, busqueda, filtroEstado, materiales]);
+    }, [filas, filtroEstado, busqueda]);
+
+    const setLineaCrear = (indice: number, campo: keyof LineaCrear, valor: string) =>
+        crear.setData(
+            'detalles',
+            crear.data.detalles.map((l, i) => (i === indice ? { ...l, [campo]: valor } : l)),
+        );
+
+    const agregarLineaCrear = () =>
+        crear.setData('detalles', [...crear.data.detalles, { material_id: '', cantidad_solicitada: '' }]);
+
+    const quitarLineaCrear = (indice: number) =>
+        crear.setData('detalles', crear.data.detalles.filter((_, i) => i !== indice));
+
+    const abrirCrear = () => {
+        crear.setData('almacen_origen_id', '');
+        crear.setData('almacen_destino_id', '');
+        crear.setData('motivo', '');
+        crear.setData('detalles', [{ material_id: '', cantidad_solicitada: '' }]);
+        setModalCrear(true);
+    };
+
+    const enviarCrear = (event: FormEvent) => {
+        event.preventDefault();
+
+        if (!crear.data.almacen_origen_id || !crear.data.almacen_destino_id) {
+            notify.error('Selecciona el almacén de origen y el de destino.');
+            return;
+        }
+        if (crear.data.almacen_origen_id === crear.data.almacen_destino_id) {
+            notify.error('El origen y el destino deben ser distintos.');
+            return;
+        }
+        if (!crear.data.motivo.trim()) {
+            notify.error('Indica el motivo del traslado.');
+            return;
+        }
+
+        const detalles = crear.data.detalles
+            .filter((l) => l.material_id && Number(l.cantidad_solicitada) > 0)
+            .map((l) => ({ material_id: Number(l.material_id), cantidad_solicitada: Number(l.cantidad_solicitada) }));
+
+        if (detalles.length === 0) {
+            notify.error('Agrega al menos un material con cantidad mayor a cero.');
+            return;
+        }
+
+        crear.transform(() => ({
+            almacen_origen_id: Number(crear.data.almacen_origen_id),
+            almacen_destino_id: Number(crear.data.almacen_destino_id),
+            motivo: crear.data.motivo,
+            detalles,
+        }));
+
+        crear.post('/api/v1/transferencias', {
+            onSuccess: () => {
+                notify.success('Orden de transferencia registrada.');
+                setModalCrear(false);
+                router.reload({ only: ['transferenciasDb'] });
+            },
+            onError: (errors: Record<string, string>) => {
+                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar la transferencia.');
+            },
+        });
+    };
+
+    const aprobar = (t: TransferenciaFila) => {
+        accion.post(`/api/v1/transferencias/${t.id}/aprobar`, {
+            onSuccess: () => {
+                notify.success('Transferencia aprobada y stock reservado en origen.');
+                router.reload({ only: ['transferenciasDb'] });
+            },
+            onError: (errors: Record<string, string>) => {
+                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo aprobar la transferencia.');
+            },
+        });
+    };
+
+    const abrirRecepcion = (t: TransferenciaFila) => {
+        setRecibiendo(t);
+        setObservaciones('');
+        setReceptoras(
+            (t.detalles ?? []).map((det) => {
+                const esperada = Number(det.cantidad_despachada ?? det.cantidad_solicitada);
+                return {
+                    id: det.id,
+                    material: det.material?.nombre ?? `Material #${det.material_id}`,
+                    unidad: det.material?.unidad_medida?.codigo ?? 'und',
+                    esperada,
+                    recibida: String(esperada),
+                };
+            }),
+        );
+    };
+
+    const setRecibida = (id: number, valor: string) =>
+        setReceptoras((actual) => actual.map((l) => (l.id === id ? { ...l, recibida: valor } : l)));
+
+    const enviarRecepcion = (event: FormEvent) => {
+        event.preventDefault();
+        if (!recibiendo) return;
+
+        const detalles = receptoras.map((l) => ({ id: l.id, cantidad_recibida: Number(l.recibida) }));
+        const hayDiferencias = receptoras.some((l) => Number(l.recibida) !== l.esperada);
+
+        confirmar.transform(() => ({
+            hay_diferencias: hayDiferencias,
+            observaciones,
+            detalles,
+        }));
+
+        confirmar.post(`/api/v1/transferencias/${recibiendo.id}/confirmar-recepcion`, {
+            onSuccess: () => {
+                notify.success('Recepción confirmada e inventario actualizado en destino.');
+                setRecibiendo(null);
+                router.reload({ only: ['transferenciasDb'] });
+            },
+            onError: (errors: Record<string, string>) => {
+                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo confirmar la recepción.');
+            },
+        });
+    };
 
     return (
         <div className="space-y-6">
             <PageHeader
                 title="Transferencias entre Almacenes"
-                subtitle="Generación de órdenes, autorización de Logística, transporte y confirmación de recepción con incidencias"
-                actions={
-                    <button className="btn-primary" onClick={() => setModalCrear(true)}>
-                        <IconPlus size={16} />
-                        Nueva Orden de Transferencia
-                    </button>
-                }
+                subtitle="Órdenes, autorización de Logística, transporte y confirmación de recepción"
             />
 
-            {/* Filtros */}
-            <Card className="p-4">
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    <div className="flex items-center gap-2 rounded-field border border-line bg-canvas px-3 py-2 text-sm text-muted">
-                        <IconSearch size={16} />
-                        <input
-                            value={busqueda}
-                            onChange={(e) => setBusqueda(e.target.value)}
-                            placeholder="Buscar código, motivo o material…"
-                            className="w-full bg-transparent text-ink outline-none placeholder:text-muted/70 text-xs"
-                        />
-                    </div>
-                    <Select value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)} aria-label="Filtrar estado">
-                        <option value="todos">Todos los estados</option>
-                        <option value="solicitada">Solicitada (Pendiente Autorización)</option>
-                        <option value="autorizada_logistica">Autorizada por Logística</option>
-                        <option value="en_transito">En tránsito</option>
-                        <option value="recibida_conforme">Recibida Conforme</option>
-                        <option value="recibida_con_incidencia">Recibida con Incidencia</option>
-                    </Select>
+            <div className="grid gap-6 lg:grid-cols-3">
+                <div className="space-y-4 lg:col-span-2">
+                    <Card className="p-4">
+                        <div className="grid gap-3 sm:grid-cols-2">
+                            <div className="flex items-center gap-2 rounded-field border border-line bg-canvas px-3 py-2 text-muted">
+                                <IconSearch size={16} />
+                                <input
+                                    value={busqueda}
+                                    onChange={(e) => setBusqueda(e.target.value)}
+                                    placeholder="Buscar código, motivo o material…"
+                                    className="w-full bg-transparent text-xs text-ink outline-none placeholder:text-muted/70"
+                                />
+                            </div>
+                            <Select value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)} aria-label="Filtrar estado">
+                                <option value="todos">Todos los estados</option>
+                                <option value="solicitada">Solicitada</option>
+                                <option value="aprobada">Aprobada</option>
+                                <option value="en_transito">En tránsito</option>
+                                <option value="completada">Completada</option>
+                            </Select>
+                        </div>
+                    </Card>
+
+                    <Card title={`Órdenes de Transferencia (${filtradas.length})`}>
+                        {filtradas.length === 0 ? (
+                            <EmptyState
+                                title="Sin órdenes de transferencia"
+                                hint="Registra una nueva transferencia para mover materiales entre almacenes."
+                            />
+                        ) : (
+                            <DataTable
+                                emptyLabel="Sin transferencias."
+                                columns={[
+                                    {
+                                        key: 'codigo',
+                                        header: 'N° Orden',
+                                        mono: true,
+                                        cell: (t) => (
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="font-bold text-ink">{t.codigo}</span>
+                                                {t.generada_automaticamente && (
+                                                    <span className="rounded bg-violet-100 px-1.5 py-0.5 text-[9px] font-bold text-violet-800">
+                                                        Automática
+                                                    </span>
+                                                )}
+                                            </div>
+                                        ),
+                                    },
+                                    {
+                                        key: 'ruta',
+                                        header: 'Origen → Destino',
+                                        cell: (t) => (
+                                            <div className="max-w-56">
+                                                <p className="truncate text-xs font-semibold text-ink">{origenNombre(t)}</p>
+                                                <p className="truncate text-[11px] text-muted">→ {destinoNombre(t)}</p>
+                                            </div>
+                                        ),
+                                    },
+                                    {
+                                        key: 'material',
+                                        header: 'Material y Cantidad',
+                                        cell: (t) => (
+                                            <div>
+                                                <p className="text-xs font-bold text-ink">{materialPrincipal(t)}</p>
+                                                <p className="font-mono text-[11px] font-semibold text-brand-700">
+                                                    {formatCantidad(totalSolicitado(t))}
+                                                </p>
+                                            </div>
+                                        ),
+                                    },
+                                    { key: 'motivo', header: 'Motivo', cell: (t) => <span className="block max-w-56 truncate text-xs text-muted">{t.motivo}</span> },
+                                    {
+                                        key: 'estado',
+                                        header: 'Estado',
+                                        cell: (t) => {
+                                            const meta = ESTADO_META[t.estado] ?? { tone: 'neutral' as const, label: t.estado };
+                                            return <Badge tone={meta.tone}>{meta.label}</Badge>;
+                                        },
+                                    },
+                                    {
+                                        key: 'acciones',
+                                        header: 'Acciones',
+                                        align: 'right',
+                                        cell: (t) => (
+                                            <div className="flex items-center justify-end gap-1.5">
+                                                {t.estado === 'solicitada' && (
+                                                    <button
+                                                        onClick={() => aprobar(t)}
+                                                        disabled={accion.processing}
+                                                        className="btn-primary !px-2.5 !py-1 text-xs"
+                                                        title="Autorizar orden (Logística)"
+                                                    >
+                                                        <IconCheck size={13} />
+                                                        Autorizar
+                                                    </button>
+                                                )}
+                                                {t.estado === 'en_transito' && (
+                                                    <button
+                                                        onClick={() => abrirRecepcion(t)}
+                                                        className="btn-primary !bg-emerald-600 !px-2.5 !py-1 text-xs hover:!bg-emerald-700"
+                                                        title="Confirmar recepción física en destino"
+                                                    >
+                                                        <IconBoxes size={13} />
+                                                        Recibir
+                                                    </button>
+                                                )}
+                                                {t.estado === 'aprobada' && (
+                                                    <span className="text-[11px] text-muted">Pendiente de despacho</span>
+                                                )}
+                                                {(t.estado === 'completada' || t.estado === 'anulada') && (
+                                                    <span className="text-[11px] text-muted">{formatFs(t.created_at)}</span>
+                                                )}
+                                            </div>
+                                        ),
+                                    },
+                                ]}
+                                rows={filtradas}
+                            />
+                        )}
+                    </Card>
                 </div>
-            </Card>
 
-            {/* Tabla de Transferencias */}
-            <Card title={`Órdenes de Transferencia (${transferenciasFiltradas.length})`}>
-                {transferenciasFiltradas.length === 0 ? (
-                    <EmptyState
-                        title="Sin órdenes de transferencia"
-                        hint="Registra una nueva transferencia para mover materiales entre frentes de obra."
-                    />
-                ) : (
-                    <DataTable<OrdenTransferencia>
-                        emptyLabel="Sin transferencias."
-                        columns={[
-                            {
-                                key: 'codigo',
-                                header: 'N° Orden',
-                                mono: true,
-                                cell: (t) => (
-                                    <div className="flex items-center gap-1.5">
-                                        <span className="font-bold text-ink">{t.codigo}</span>
-                                        {t.esRedistribucionCierreObra && (
-                                            <span className="rounded bg-violet-100 px-1.5 py-0.5 text-[9px] font-bold text-violet-800">
-                                                Cierre de Obra
-                                            </span>
-                                        )}
-                                    </div>
-                                ),
-                            },
-                            {
-                                key: 'ruta',
-                                header: 'Origen -> Destino',
-                                cell: (t) => {
-                                    const almO = almacenes.find((a) => a.id === t.origenAlmacenId);
-                                    const almD = almacenes.find((a) => a.id === t.destinoAlmacenId);
-                                    return (
-                                        <div>
-                                            <p className="font-semibold text-ink text-xs">{almO?.nombre ?? t.origenAlmacenId}</p>
-                                            <p className="text-[11px] text-muted">{'->'} {almD?.nombre ?? t.destinoAlmacenId}</p>
-                                        </div>
-                                    );
-                                },
-                            },
-                            {
-                                key: 'material',
-                                header: 'Material y Cantidad',
-                                cell: (t) => {
-                                    const mat = materiales.find((m) => m.id === t.materialId);
-                                    return (
-                                        <div>
-                                            <p className="font-bold text-ink text-xs">{mat?.nombre ?? t.materialId}</p>
-                                            <p className="font-mono text-[11px] font-semibold text-brand-700">
-                                                {formatCantidad(t.cantidad)} {mat?.unidad ?? 'und'}
-                                            </p>
-                                        </div>
-                                    );
-                                },
-                            },
-                            {
-                                key: 'motivo',
-                                header: 'Motivo / Justificación',
-                                cell: (t) => <span className="text-xs text-muted block max-w-56 truncate">{t.motivo}</span>,
-                            },
-                            {
-                                key: 'estado',
-                                header: 'Estado',
-                                cell: (t) => (
-                                    <Badge
-                                        tone={
-                                            t.estado === 'recibida_conforme'
-                                                ? 'ok'
-                                                : t.estado === 'recibida_con_incidencia'
-                                                ? 'danger'
-                                                : t.estado === 'autorizada_logistica'
-                                                ? 'violet'
-                                                : 'warn'
-                                        }
-                                    >
-                                        {t.estado === 'autorizada_logistica'
-                                            ? 'Autorizada por Logística'
-                                            : t.estado === 'recibida_con_incidencia'
-                                            ? 'Recibida con Incidencia'
-                                            : t.estado.replace('_', ' ')}
-                                    </Badge>
-                                ),
-                            },
-                            {
-                                key: 'acciones',
-                                header: 'Acciones',
-                                align: 'right',
-                                cell: (t) => (
-                                    <div className="flex items-center justify-end gap-1.5">
-                                        {t.estado === 'solicitada' && (
-                                            <button
-                                                onClick={() => authorizeTransferencia(t.id)}
-                                                className="btn-primary !px-2.5 !py-1 text-xs"
-                                                title="Autorizar orden de transferencia (Logística)"
-                                            >
-                                                <IconCheck size={13} />
-                                                Autorizar
-                                            </button>
-                                        )}
-                                        {(t.estado === 'autorizada_logistica' || t.estado === 'en_transito') && (
-                                            <button
-                                                onClick={() => handleAbrirRecepcion(t)}
-                                                className="btn-primary !px-2.5 !py-1 text-xs !bg-emerald-600 hover:!bg-emerald-700"
-                                                title="Confirmar recepción física en destino"
-                                            >
-                                                <IconBoxes size={13} />
-                                                Recibir en Destino
-                                            </button>
-                                        )}
-                                    </div>
-                                ),
-                            },
-                        ]}
-                        rows={transferenciasFiltradas}
-                    />
-                )}
-            </Card>
-
-            {/* Modal de Nueva Transferencia */}
-            <Modal open={modalCrear} onClose={() => setModalCrear(false)} title="Generar Orden de Transferencia" wide>
-                <form onSubmit={handleGuardarTransferencia} className="space-y-4 text-xs">
-                    <div className="grid gap-3 sm:grid-cols-2">
-                        <Field label="Almacén de Origen (Emisor)">
-                            <Select value={formOrigen} onChange={(e) => setFormOrigen(e.target.value)}>
+                <FormPanel title="Nueva Orden de Transferencia" subtitle="Traslado entre almacenes" onSubmit={enviarCrear} className="text-xs">
+                    <FormSection title="Ruta" columns={1}>
+                        <Field label="Almacén de origen" required>
+                            <Select value={crear.data.almacen_origen_id} onChange={(e) => crear.setData('almacen_origen_id', e.target.value)}>
+                                <option value="">Selecciona origen…</option>
                                 {almacenes.map((a) => (
-                                    <option key={a.id} value={a.id}>
+                                    <option key={a.id} value={String(a.id)}>
                                         {a.nombre}
                                     </option>
                                 ))}
                             </Select>
                         </Field>
-                        <Field label="Almacén de Destino (Receptor)">
-                            <Select value={formDestino} onChange={(e) => setFormDestino(e.target.value)}>
+                        <Field label="Almacén de destino" required>
+                            <Select value={crear.data.almacen_destino_id} onChange={(e) => crear.setData('almacen_destino_id', e.target.value)}>
+                                <option value="">Selecciona destino…</option>
                                 {almacenes
-                                    .filter((a) => a.id !== formOrigen)
+                                    .filter((a) => String(a.id) !== crear.data.almacen_origen_id)
                                     .map((a) => (
-                                        <option key={a.id} value={a.id}>
+                                        <option key={a.id} value={String(a.id)}>
                                             {a.nombre}
                                         </option>
                                     ))}
                             </Select>
                         </Field>
-                    </div>
+                    </FormSection>
 
-                    <div className="grid gap-3 sm:grid-cols-2">
-                        <Field label="Material a Trasladar">
-                            <Select value={formMaterialId} onChange={(e) => setFormMaterialId(e.target.value)}>
-                                {materiales.map((m) => (
-                                    <option key={m.id} value={m.id}>
-                                        {m.nombre} ({m.unidad})
-                                    </option>
-                                ))}
-                            </Select>
-                        </Field>
-                        <Field label="Cantidad a Trasladar">
+                    <FormSection title="Materiales" columns={1}>
+                        <div className="space-y-2">
+                            {crear.data.detalles.map((linea, i) => (
+                                <div key={i} className="flex items-end gap-2">
+                                    <div className="flex-1">
+                                        <Select
+                                            value={linea.material_id}
+                                            onChange={(e) => setLineaCrear(i, 'material_id', e.target.value)}
+                                            className="!py-1.5"
+                                            aria-label="Material"
+                                        >
+                                            <option value="">Material…</option>
+                                            {materiales.map((m) => (
+                                                <option key={m.id} value={String(m.id)}>
+                                                    {m.nombre}
+                                                </option>
+                                            ))}
+                                        </Select>
+                                    </div>
+                                    <input
+                                        type="number"
+                                        min={0}
+                                        step="0.001"
+                                        value={linea.cantidad_solicitada}
+                                        onChange={(e) => setLineaCrear(i, 'cantidad_solicitada', e.target.value)}
+                                        placeholder="Cant."
+                                        className="field !w-24 !py-1.5"
+                                        aria-label="Cantidad solicitada"
+                                    />
+                                    {crear.data.detalles.length > 1 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => quitarLineaCrear(i)}
+                                            aria-label="Quitar material"
+                                            className="rounded p-2 text-muted hover:bg-danger-soft hover:text-danger"
+                                        >
+                                            <IconX size={14} />
+                                        </button>
+                                    )}
+                                </div>
+                            ))}
+                            <button type="button" onClick={agregarLineaCrear} className="text-[11px] font-bold text-brand-600 hover:underline">
+                                + Añadir material
+                            </button>
+                        </div>
+                    </FormSection>
+
+                    <FormSection title="Justificación" columns={1}>
+                        <Field label="Motivo" hint="Máximo 25 caracteres." required>
                             <Input
-                                type="number"
-                                min={1}
-                                max={stockOrigenDisponible}
-                                value={formCantidad}
-                                onChange={(e) => setFormCantidad(Number(e.target.value))}
-                                required
+                                value={crear.data.motivo}
+                                onChange={(e) => crear.setData('motivo', e.target.value.slice(0, 25))}
+                                maxLength={25}
+                                placeholder="Rebalance de stock"
                             />
                         </Field>
-                    </div>
+                    </FormSection>
 
-                    <div className="rounded-lg bg-soft/60 p-2.5 flex justify-between items-center text-xs">
-                        <span className="text-muted">Stock disponible en almacén origen:</span>
-                        <span className="font-mono font-bold text-ink">
-                            {formatCantidad(stockOrigenDisponible)} {materiales.find((m) => m.id === formMaterialId)?.unidad}
-                        </span>
-                    </div>
+                    <SubmitButton status={crear.processing ? 'submitting' : 'idle'} className="w-full">
+                        <IconPlus size={15} />
+                        Generar Orden
+                    </SubmitButton>
+                </FormPanel>
+            </div>
 
-                    <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-line p-3">
-                        <input
-                            type="checkbox"
-                            checked={esSobrante}
-                            onChange={(e) => setEsSobrante(e.target.checked)}
-                            className="h-4 w-4 rounded border-line text-brand-500"
-                        />
-                        <span className="text-xs text-ink font-semibold">
-                            Redistribución formal de sobrantes por cierre de obra
-                        </span>
-                    </label>
-
-                    <Field label="Motivo del Traslado">
-                        <Textarea
-                            value={formMotivo}
-                            onChange={(e) => setFormMotivo(e.target.value)}
-                            placeholder="Describir necesidad operativa o requerimiento en destino…"
-                            rows={2}
-                            required
-                        />
-                    </Field>
-
-                    <div className="flex justify-end gap-2 pt-2 border-t border-line">
-                        <Button type="button" variant="secondary" onClick={() => setModalCrear(false)}>
-                            Cancelar
-                        </Button>
-                        <Button type="submit" variant="primary">
-                            <IconCheck size={15} />
-                            Generar Orden de Transferencia
-                        </Button>
-                    </div>
-                </form>
-            </Modal>
-
-            {/* Modal de Recepción en Destino con Registro de Incidencias (Bizagi 28) */}
             <Modal
-                open={!!modalRecibir}
-                onClose={() => setModalRecibir(null)}
-                title={`Confirmación de Recepción en Destino — ${modalRecibir?.codigo ?? ''}`}
+                open={!!recibiendo}
+                onClose={() => setRecibiendo(null)}
+                title={`Confirmar Recepción — ${recibiendo?.codigo ?? ''}`}
                 wide
             >
-                {modalRecibir && (
-                    <form onSubmit={handleConfirmarRecepcion} className="space-y-4 text-xs">
+                {recibiendo && (
+                    <form onSubmit={enviarRecepcion} className="space-y-4 text-xs">
                         <div className="rounded-xl bg-soft/60 p-3">
-                            <div className="grid grid-cols-2 gap-2">
-                                <div>
-                                    <span className="text-muted block">MATERIAL ENVIADO</span>
-                                    <span className="font-bold text-ink text-sm">
-                                        {materiales.find((m) => m.id === modalRecibir.materialId)?.nombre}
-                                    </span>
-                                </div>
-                                <div>
-                                    <span className="text-muted block">CANTIDAD EN GUÍA DE TRASLADO</span>
-                                    <span className="font-bold text-brand-700 text-sm font-mono">
-                                        {formatCantidad(modalRecibir.cantidad)}{' '}
-                                        {materiales.find((m) => m.id === modalRecibir.materialId)?.unidad}
-                                    </span>
-                                </div>
-                            </div>
+                            <p className="text-muted">
+                                {origenNombre(recibiendo)} → <strong className="text-ink">{destinoNombre(recibiendo)}</strong>
+                            </p>
                         </div>
 
-                        <div className="grid gap-3 sm:grid-cols-2">
-                            <Field label="Cantidad Física Recibida Conforme" required>
-                                <Input
-                                    type="number"
-                                    min={0}
-                                    max={modalRecibir.cantidad}
-                                    value={cantRecibida}
-                                    onChange={(e) => {
-                                        const v = Number(e.target.value);
-                                        setCantRecibida(v);
-                                        if (v < modalRecibir.cantidad) setTieneIncidencia(true);
-                                    }}
-                                    required
-                                />
-                            </Field>
-                            <Field label="Almacenero que Recepciona">
-                                <Input
-                                    value={recibidoPor}
-                                    onChange={(e) => setRecibidoPor(e.target.value)}
-                                    required
-                                />
-                            </Field>
-                        </div>
-
-                        {/* Incidencia de Transferencia (Bizagi 28: registrar incidencia no bloquea el ingreso) */}
-                        <div className="rounded-xl border border-line p-3 space-y-3">
-                            <label className="flex cursor-pointer items-center gap-2">
-                                <input
-                                    type="checkbox"
-                                    checked={tieneIncidencia}
-                                    onChange={(e) => setTieneIncidencia(e.target.checked)}
-                                    className="h-4 w-4 rounded border-line text-rose-500"
-                                />
-                                <span className="font-bold text-ink">
-                                    Registrar Incidencia de Transferencia (Dañado, Faltante o Mermado)
-                                </span>
-                            </label>
-
-                            {tieneIncidencia && (
-                                <div className="space-y-2 border-t border-line pt-2">
-                                    <Field label="Tipo de Incidencia">
-                                        <Select
-                                            value={incTipo}
-                                            onChange={(e) => setIncTipo(e.target.value as typeof incTipo)}
-                                        >
-                                            <option value="faltante">Faltante cuantitativo</option>
-                                            <option value="daño_transporte">Daño o rotura durante transporte</option>
-                                            <option value="error_despacho">Error de despacho desde origen</option>
-                                        </Select>
-                                    </Field>
-                                    <Field label="Descripción de la Incidencia">
-                                        <Textarea
-                                            value={incDescripcion}
-                                            onChange={(e) => setIncDescripcion(e.target.value)}
-                                            placeholder="Detalle de bultos dañados o derrames…"
-                                            rows={2}
-                                            required={tieneIncidencia}
-                                        />
-                                    </Field>
-                                    <p className="text-[11px] text-muted">
-                                        * Conforme a la regla del Proceso 28, registrar la incidencia no bloquea el
-                                        ingreso al almacén destino: se confirma la cantidad conforme y se genera la
-                                        alerta de inconsistencia.
-                                    </p>
+                        <div className="space-y-2">
+                            {receptoras.map((l) => (
+                                <div key={l.id} className="flex items-center gap-2 rounded-lg border border-line p-2.5">
+                                    <div className="flex-1">
+                                        <p className="text-xs font-semibold text-ink">{l.material}</p>
+                                        <p className="text-[11px] text-muted">Esperado: {formatCantidad(l.esperada, l.unidad)}</p>
+                                    </div>
+                                    <input
+                                        type="number"
+                                        min={0}
+                                        step="0.001"
+                                        value={l.recibida}
+                                        onChange={(e) => setRecibida(l.id, e.target.value)}
+                                        className="field !w-24 !py-1.5"
+                                        aria-label={`Cantidad recibida de ${l.material}`}
+                                    />
                                 </div>
-                            )}
+                            ))}
                         </div>
 
-                        <div className="flex justify-end gap-2 pt-2 border-t border-line">
-                            <Button type="button" variant="secondary" onClick={() => setModalRecibir(null)}>
+                        {receptoras.some((l) => Number(l.recibida) !== l.esperada) && (
+                            <p className="rounded-lg bg-warn-soft/70 px-3 py-2 text-[11px] font-semibold text-ink">
+                                Hay diferencias respecto a lo despachado; se registrará como recepción con incidencia.
+                            </p>
+                        )}
+
+                        <Field label="Observaciones">
+                            <Textarea
+                                value={observaciones}
+                                onChange={(e) => setObservaciones(e.target.value)}
+                                rows={2}
+                                placeholder="Incidencias, bultos dañados, faltantes…"
+                            />
+                        </Field>
+
+                        <div className="flex justify-end gap-2 border-t border-line pt-2">
+                            <Button type="button" variant="secondary" onClick={() => setRecibiendo(null)}>
                                 Cancelar
                             </Button>
-                            <Button type="submit" variant="primary">
+                            <SubmitButton status={confirmar.processing ? 'submitting' : 'idle'}>
                                 <IconCheck size={15} />
-                                Confirmar Recepción e Ingresar a Inventario
-                            </Button>
+                                Confirmar Recepción
+                            </SubmitButton>
                         </div>
                     </form>
                 )}

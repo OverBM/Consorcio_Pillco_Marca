@@ -18,6 +18,35 @@ class DespachoController extends Controller
     ) {}
 
     /**
+     * Listar despachos físicos con su transferencia, almacenes y detalle.
+     */
+    public function index(Request $request): JsonResponse
+    {
+        $query = Despacho::with([
+            'transferencia.almacenOrigen.obra',
+            'transferencia.almacenDestino.obra',
+            'transferencia.detalles.material',
+            'despachador',
+        ])->orderBy('id', 'desc');
+
+        if ($request->filled('transferencia_id')) {
+            $query->where('transferencia_id', $request->input('transferencia_id'));
+        }
+
+        $despachos = $query->paginate($request->integer('per_page', 20));
+
+        return response()->json([
+            'success' => true,
+            'data' => $despachos->items(),
+            'meta' => [
+                'current_page' => $despachos->currentPage(),
+                'last_page' => $despachos->lastPage(),
+                'total' => $despachos->total(),
+            ],
+        ]);
+    }
+
+    /**
      * Registrar despacho físico de una transferencia aprobada y egresar existencias de origen.
      */
     public function store(Request $request): JsonResponse

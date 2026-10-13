@@ -1,372 +1,292 @@
-import { useState, useMemo } from 'react';
+// Directorio y Homologación de Proveedores (Macroproceso MP-19).
+// Registro de proveedores homologados y evaluación de desempeño.
+// Datos desde props `proveedoresDb`; escrituras vía `useHttp`.
+
+import { useMemo, useState, type FormEvent } from 'react';
+import { router, useHttp } from '@inertiajs/react';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge, Button, Modal } from '../components/ui';
-import { Field, Input, Select, Textarea } from '../components/form';
+import { Field, Input, SubmitButton } from '../components/form';
 import { DataTable } from '../components/DataTable';
-import {
-    IconBuilding,
-    IconCheckCircle,
-    IconFileText,
-    IconPlus,
-    IconSearch,
-    IconShield,
-    IconTrendingUp,
-} from '../components/icons';
+import { EmptyState } from '../components/EmptyState';
+import { useNotifications } from '../components/notifications/NotificationProvider';
+import { IconPlus, IconSearch } from '../components/icons';
 
-interface ProveedorItem {
-    id: string;
+interface ProveedorDb {
+    id: number;
     ruc: string;
-    razonSocial: string;
-    rubro: string;
-    contacto: string;
-    telefono: string;
-    email: string;
-    calificacion: number; // 1-5
-    plazoCreditoDias: number;
-    estado: 'homologado' | 'en_evaluacion' | 'observado';
-    totalContratado: number;
+    razon_social: string;
+    contacto: string | null;
+    telefono: string | null;
+    email: string | null;
+    direccion: string | null;
+    calificacion: number | string | null;
+    activo: boolean;
 }
 
-export default function ProveedoresPage() {
-    const [proveedores, setProveedores] = useState<ProveedorItem[]>([
-        {
-            id: 'prov-01',
-            ruc: '20584938291',
-            razonSocial: 'Ferretería Industrial del Centro SAC',
-            rubro: 'Ferretería y Acero Estructural',
-            contacto: 'Ing. Carlos Mendoza',
-            telefono: '964-123456',
-            email: 'ventas@industrialcentro.com.pe',
-            calificacion: 4.8,
-            plazoCreditoDias: 30,
-            estado: 'homologado',
-            totalContratado: 145800.00,
-        },
-        {
-            id: 'prov-02',
-            ruc: '20100128492',
-            razonSocial: 'Unión de Concreteras Huancayo SA (UNICON)',
-            rubro: 'Concreto Premezclado y Cemento',
-            contacto: 'Lic. Patricia Ramos',
-            telefono: '952-887711',
-            email: 'comercial@unicon-centro.pe',
-            calificacion: 4.9,
-            plazoCreditoDias: 45,
-            estado: 'homologado',
-            totalContratado: 382400.00,
-        },
-        {
-            id: 'prov-03',
-            ruc: '20601928471',
-            razonSocial: 'Cantera y Agregados Río Mantaro EIRL',
-            rubro: 'Agregados y Arena Gruesa',
-            contacto: 'Sr. Víctor Hilario',
-            telefono: '998-334455',
-            email: 'cantera.mantaro@gmail.com',
-            calificacion: 4.5,
-            plazoCreditoDias: 15,
-            estado: 'homologado',
-            totalContratado: 64200.00,
-        },
-        {
-            id: 'prov-04',
-            ruc: '20498273910',
-            razonSocial: 'Seguridad Industrial & EPPs Andina SAC',
-            rubro: 'Equipos de Protección Personal y SST',
-            contacto: 'Dra. Elena Vargas',
-            telefono: '944-112233',
-            email: 'contacto@eppandina.com',
-            calificacion: 4.7,
-            plazoCreditoDias: 30,
-            estado: 'homologado',
-            totalContratado: 28900.00,
-        },
-        {
-            id: 'prov-05',
-            ruc: '20609384721',
-            razonSocial: 'Transportes y Maquinarias del Valle SRL',
-            rubro: 'Maquinaria Pesada y Fletes',
-            contacto: 'Alonso Quinto',
-            telefono: '978-554433',
-            email: 'aquinto@transvalle.com.pe',
-            calificacion: 4.2,
-            plazoCreditoDias: 20,
-            estado: 'en_evaluacion',
-            totalContratado: 19500.00,
-        },
-    ]);
+interface ProveedoresPageProps {
+    proveedoresDb?: ProveedorDb[];
+}
 
-    const [filtroRubro, setFiltroRubro] = useState<string>('todos');
-    const [filtroEstado, setFiltroEstado] = useState<string>('todos');
-    const [busqueda, setBusqueda] = useState<string>('');
-    const [modalNuevoProv, setModalNuevoProv] = useState(false);
+type ProveedorFila = Omit<ProveedorDb, 'id'> & { id: string };
 
-    // Formulario de Proveedor
-    const [formRuc, setFormRuc] = useState('');
-    const [formRazon, setFormRazon] = useState('');
-    const [formRubro, setFormRubro] = useState('Ferretería y Acero Estructural');
-    const [formContacto, setFormContacto] = useState('');
-    const [formTelefono, setFormTelefono] = useState('');
-    const [formEmail, setFormEmail] = useState('');
-    const [formCredito, setFormCredito] = useState(30);
+export default function ProveedoresPage({ proveedoresDb = [] }: ProveedoresPageProps) {
+    const notify = useNotifications();
 
-    const handleGuardarProveedor = (e: React.FormEvent) => {
-        e.preventDefault();
-        const nuevo: ProveedorItem = {
-            id: `prov-${Date.now().toString().slice(-4)}`,
-            ruc: formRuc,
-            razonSocial: formRazon,
-            rubro: formRubro,
-            contacto: formContacto,
-            telefono: formTelefono,
-            email: formEmail,
-            calificacion: 4.5,
-            plazoCreditoDias: Number(formCredito),
-            estado: 'homologado',
-            totalContratado: 0,
-        };
-        setProveedores((prev) => [nuevo, ...prev]);
-        setModalNuevoProv(false);
-        setFormRuc('');
-        setFormRazon('');
-        setFormContacto('');
-        setFormTelefono('');
-        setFormEmail('');
+    const http = useHttp<{
+        ruc: string;
+        razon_social: string;
+        contacto: string;
+        telefono: string;
+        email: string;
+        direccion: string;
+        calificacion: string;
+    }>({
+        ruc: '',
+        razon_social: '',
+        contacto: '',
+        telefono: '',
+        email: '',
+        direccion: '',
+        calificacion: '',
+    });
+
+    const [busqueda, setBusqueda] = useState('');
+    const [modalNuevo, setModalNuevo] = useState(false);
+
+    const filas: ProveedorFila[] = useMemo(
+        () => proveedoresDb.map((p) => ({ ...p, id: String(p.id) })),
+        [proveedoresDb],
+    );
+
+    const filtrados = useMemo(
+        () =>
+            filas.filter((p) => {
+                if (!busqueda.trim()) return true;
+                const q = busqueda.toLowerCase();
+                return (
+                    p.ruc.toLowerCase().includes(q) ||
+                    p.razon_social.toLowerCase().includes(q) ||
+                    (p.contacto ?? '').toLowerCase().includes(q)
+                );
+            }),
+        [filas, busqueda],
+    );
+
+    const calificacionPromedio = useMemo(() => {
+        const conScore = filas.filter((p) => p.calificacion !== null && p.calificacion !== undefined);
+        if (conScore.length === 0) return 0;
+        return conScore.reduce((acc, p) => acc + Number(p.calificacion), 0) / conScore.length;
+    }, [filas]);
+
+    const abrirNuevo = () => {
+        http.setData('ruc', '');
+        http.setData('razon_social', '');
+        http.setData('contacto', '');
+        http.setData('telefono', '');
+        http.setData('email', '');
+        http.setData('direccion', '');
+        http.setData('calificacion', '');
+        setModalNuevo(true);
     };
 
-    const proveedoresFiltrados = useMemo(() => {
-        return proveedores.filter((p) => {
-            if (filtroRubro !== 'todos' && p.rubro !== filtroRubro) return false;
-            if (filtroEstado !== 'todos' && p.estado !== filtroEstado) return false;
-            if (busqueda.trim()) {
-                const q = busqueda.toLowerCase();
-                const matchRuc = p.ruc.includes(q);
-                const matchRazon = p.razonSocial.toLowerCase().includes(q);
-                const matchContacto = p.contacto.toLowerCase().includes(q);
-                if (!matchRuc && !matchRazon && !matchContacto) return false;
-            }
-            return true;
-        });
-    }, [proveedores, filtroRubro, filtroEstado, busqueda]);
+    const enviar = (event: FormEvent) => {
+        event.preventDefault();
 
-    // Métricas
-    const totalProveedores = proveedores.length;
-    const homologadosCount = proveedores.filter((p) => p.estado === 'homologado').length;
-    const totalVolumen = proveedores.reduce((acc, p) => acc + p.totalContratado, 0);
+        if (!/^\d{11}$/.test(http.data.ruc)) {
+            notify.error('El RUC debe tener 11 dígitos.');
+            return;
+        }
+        if (!http.data.razon_social.trim()) {
+            notify.error('Ingresa la razón social del proveedor.');
+            return;
+        }
+
+        http.transform(() => ({
+            ruc: http.data.ruc,
+            razon_social: http.data.razon_social,
+            contacto: http.data.contacto || null,
+            telefono: http.data.telefono || null,
+            email: http.data.email || null,
+            direccion: http.data.direccion || null,
+            calificacion: http.data.calificacion ? Number(http.data.calificacion) : null,
+        }));
+
+        http.post('/api/v1/proveedores', {
+            onSuccess: () => {
+                notify.success('Proveedor registrado.');
+                setModalNuevo(false);
+                router.reload({ only: ['proveedoresDb'] });
+            },
+            onError: (errors: Record<string, string>) => {
+                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar el proveedor.');
+            },
+        });
+    };
 
     return (
         <div className="space-y-6">
             <PageHeader
-                title="Directorio y Homologación de Proveedores (Macroproceso MP-19)"
-                subtitle="Registro de postores calificados, cumplimiento técnico-normativo y evaluación periódica de desempeño"
-                action={
-                    <Button variant="mint" onClick={() => setModalNuevoProv(true)}>
+                title="Directorio y Homologación de Proveedores"
+                subtitle="Registro de proveedores, cumplimiento técnico-normativo y evaluación de desempeño"
+                actions={
+                    <Button variant="mint" onClick={abrirNuevo}>
                         <IconPlus size={16} />
                         Homologar Proveedor
                     </Button>
                 }
             />
 
-            {/* KPIs */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <Card className="p-4 bg-surface border-line">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <Card className="p-4">
                     <span className="text-xs font-mono uppercase text-muted">Proveedores Registrados</span>
-                    <p className="mt-1 text-2xl font-bold font-mono text-ink">{totalProveedores}</p>
+                    <p className="mt-1 text-2xl font-bold font-mono text-ink">{filas.length}</p>
                     <span className="text-xs text-muted">Empresas en base de datos</span>
                 </Card>
-                <Card className="p-4 bg-surface border-line">
-                    <span className="text-xs font-mono uppercase text-muted">Homologados Vigentes</span>
-                    <p className="mt-1 text-2xl font-bold font-mono text-emerald-600">{homologadosCount}</p>
+                <Card className="p-4">
+                    <span className="text-xs font-mono uppercase text-muted">Activos / Homologados</span>
+                    <p className="mt-1 text-2xl font-bold font-mono text-emerald-600">{filas.filter((p) => p.activo).length}</p>
                     <span className="text-xs text-muted">Aptos para cotización directa</span>
                 </Card>
-                <Card className="p-4 bg-surface border-line">
+                <Card className="p-4">
                     <span className="text-xs font-mono uppercase text-muted">Calificación Promedio</span>
-                    <p className="mt-1 text-2xl font-bold font-mono text-primary-600">4.62 / 5.0</p>
+                    <p className="mt-1 text-2xl font-bold font-mono text-brand-600">{calificacionPromedio.toFixed(2)} / 5.0</p>
                     <span className="text-xs text-muted">Cumplimiento de calidad y plazos</span>
-                </Card>
-                <Card className="p-4 bg-surface border-line">
-                    <span className="text-xs font-mono uppercase text-muted">Volumen Histórico Acumulado</span>
-                    <p className="mt-1 text-2xl font-bold font-mono text-ink">
-                        S/. {(totalVolumen / 1000).toFixed(1)}k
-                    </p>
-                    <span className="text-xs text-muted">Facturado en el consorcio</span>
                 </Card>
             </div>
 
-            {/* Filtros */}
-            <Card className="p-4 bg-surface border-line">
+            <Card className="p-4">
                 <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div className="flex flex-wrap items-center gap-3">
-                        <div className="relative min-w-[240px]">
-                            <IconSearch size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-                            <input
-                                type="text"
-                                placeholder="Buscar por RUC, razón social o contacto..."
-                                value={busqueda}
-                                onChange={(e) => setBusqueda(e.target.value)}
-                                className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-line bg-canvas text-ink focus:outline-none focus:ring-2 focus:ring-primary-500"
-                            />
-                        </div>
-                        <select
-                            value={filtroEstado}
-                            onChange={(e) => setFiltroEstado(e.target.value)}
-                            className="px-3 py-1.5 text-xs rounded-lg border border-line bg-canvas text-ink font-mono"
-                        >
-                            <option value="todos">Todos los Estados</option>
-                            <option value="homologado">Homologado</option>
-                            <option value="en_evaluacion">En Evaluación</option>
-                            <option value="observado">Observado</option>
-                        </select>
+                    <div className="relative min-w-[240px] flex-1">
+                        <IconSearch size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+                        <input
+                            type="text"
+                            placeholder="Buscar por RUC, razón social o contacto…"
+                            value={busqueda}
+                            onChange={(e) => setBusqueda(e.target.value)}
+                            className="w-full rounded-lg border border-line bg-canvas py-1.5 pl-9 pr-3 text-xs text-ink focus:outline-none focus:ring-2 focus:ring-brand-500"
+                        />
                     </div>
-                    <span className="text-xs text-muted font-mono">
-                        Mostrando {proveedoresFiltrados.length} de {proveedores.length} proveedores
+                    <span className="text-xs font-mono text-muted">
+                        Mostrando {filtrados.length} de {filas.length} proveedores
                     </span>
                 </div>
             </Card>
 
-            {/* Tabla de Proveedores */}
             <Card className="p-5">
-                <DataTable<{ id: string }>
-                    emptyLabel="No hay proveedores que coincidan con la búsqueda."
-                    columns={[
-                        { key: 'ruc', header: 'RUC', mono: true },
-                        { key: 'razonSocial', header: 'Razón Social / Rubro' },
-                        { key: 'contacto', header: 'Contacto Comercial' },
-                        { key: 'credito', header: 'Línea de Crédito', align: 'center', mono: true },
-                        { key: 'calificacion', header: 'Score Calidad', align: 'center' },
-                        { key: 'estado', header: 'Estado', align: 'center' },
-                    ]}
-                    rows={proveedoresFiltrados.map((prov) => {
-                        return {
-                            id: prov.id,
-                            ruc: prov.ruc,
-                            razonSocial: (
-                                <div>
-                                    <p className="font-semibold text-ink">{prov.razonSocial}</p>
-                                    <p className="text-xs text-muted">{prov.rubro}</p>
-                                </div>
-                            ),
-                            contacto: (
-                                <div>
-                                    <p className="text-xs font-medium text-ink">{prov.contacto}</p>
-                                    <p className="text-xs text-muted font-mono">{prov.telefono} • {prov.email}</p>
-                                </div>
-                            ),
-                            credito: `${prov.plazoCreditoDias} días`,
-                            calificacion: (
-                                <span className="inline-flex items-center gap-1 font-bold font-mono text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 text-xs">
-                                    ★ {prov.calificacion.toFixed(1)}
-                                </span>
-                            ),
-                            estado: (
-                                <Badge
-                                    tone={
-                                        prov.estado === 'homologado'
-                                            ? 'ok'
-                                            : prov.estado === 'en_evaluacion'
-                                            ? 'warn'
-                                            : 'danger'
-                                    }
-                                >
-                                    {prov.estado === 'homologado'
-                                        ? 'Homologado'
-                                        : prov.estado === 'en_evaluacion'
-                                        ? 'En Evaluación'
-                                        : 'Observado'}
-                                </Badge>
-                            ),
-                        };
-                    })}
-                />
+                {filas.length === 0 ? (
+                    <EmptyState title="Sin proveedores registrados" hint="Registra el primer proveedor del consorcio." />
+                ) : (
+                    <DataTable
+                        emptyLabel="No hay proveedores que coincidan con la búsqueda."
+                        columns={[
+                            { key: 'ruc', header: 'RUC', mono: true },
+                            {
+                                key: 'razon',
+                                header: 'Razón Social',
+                                cell: (p) => (
+                                    <span className="block max-w-64">
+                                        <span className="block font-semibold text-ink">{p.razon_social}</span>
+                                        <span className="block truncate text-xs text-muted">{p.direccion ?? '—'}</span>
+                                    </span>
+                                ),
+                            },
+                            {
+                                key: 'contacto',
+                                header: 'Contacto',
+                                cell: (p) => (
+                                    <span className="block">
+                                        <span className="block text-xs font-medium text-ink">{p.contacto ?? '—'}</span>
+                                        <span className="block text-xs font-mono text-muted">
+                                            {p.telefono ?? ''} {p.email ? `• ${p.email}` : ''}
+                                        </span>
+                                    </span>
+                                ),
+                            },
+                            {
+                                key: 'calificacion',
+                                header: 'Score Calidad',
+                                align: 'center',
+                                cell: (p) =>
+                                    p.calificacion !== null && p.calificacion !== undefined ? (
+                                        <span className="inline-flex items-center gap-1 rounded border border-amber-200 bg-amber-50 px-2 py-0.5 font-mono text-xs font-bold text-amber-600">
+                                            ★ {Number(p.calificacion).toFixed(1)}
+                                        </span>
+                                    ) : (
+                                        <span className="text-xs text-muted">—</span>
+                                    ),
+                            },
+                            {
+                                key: 'estado',
+                                header: 'Estado',
+                                align: 'center',
+                                cell: (p) => <Badge tone={p.activo ? 'ok' : 'neutral'}>{p.activo ? 'Homologado' : 'Inactivo'}</Badge>,
+                            },
+                        ]}
+                        rows={filtrados}
+                    />
+                )}
             </Card>
 
-            {/* Modal Nuevo Proveedor */}
-            <Modal
-                open={modalNuevoProv}
-                onClose={() => setModalNuevoProv(false)}
-                title="Homologar Nuevo Proveedor de Suministros"
-                wide
-            >
-                <form onSubmit={handleGuardarProveedor} className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <Field label="RUC (11 Dígitos)">
+            <Modal open={modalNuevo} onClose={() => setModalNuevo(false)} title="Homologar Nuevo Proveedor" wide>
+                <form onSubmit={enviar} className="space-y-4 text-xs">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <Field label="RUC (11 dígitos)" required>
                             <Input
-                                value={formRuc}
-                                onChange={(e) => setFormRuc(e.target.value)}
+                                value={http.data.ruc}
+                                onChange={(e) => http.setData('ruc', e.target.value.replace(/\D/g, '').slice(0, 11))}
                                 placeholder="20XXXXXXXXX"
                                 maxLength={11}
-                                required
+                                invalid={!!http.errors.ruc}
                             />
                         </Field>
-                        <Field label="Razón Social Oficial">
+                        <Field label="Razón Social" required>
                             <Input
-                                value={formRazon}
-                                onChange={(e) => setFormRazon(e.target.value)}
-                                placeholder="Nombre de la empresa según SUNAT"
-                                required
+                                value={http.data.razon_social}
+                                onChange={(e) => http.setData('razon_social', e.target.value)}
+                                placeholder="Nombre según SUNAT"
+                                invalid={!!http.errors.razon_social}
                             />
                         </Field>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <Field label="Rubro Principal de Suministro">
-                            <Select
-                                value={formRubro}
-                                onChange={(e) => setFormRubro(e.target.value)}
-                            >
-                                <option value="Ferretería y Acero Estructural">Ferretería y Acero Estructural</option>
-                                <option value="Concreto Premezclado y Cemento">Concreto Premezclado y Cemento</option>
-                                <option value="Agregados y Arena Gruesa">Agregados y Canteras</option>
-                                <option value="Equipos de Protección Personal y SST">Equipos de Protección y SST</option>
-                                <option value="Maquinaria Pesada y Fletes">Maquinaria Pesada y Fletes</option>
-                            </Select>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <Field label="Contacto comercial">
+                            <Input value={http.data.contacto} onChange={(e) => http.setData('contacto', e.target.value)} placeholder="Ing. Contacto" />
                         </Field>
-                        <Field label="Plazo de Crédito Comercial (Días)">
+                        <Field label="Teléfono">
+                            <Input value={http.data.telefono} onChange={(e) => http.setData('telefono', e.target.value)} placeholder="9XXXXXXXX" />
+                        </Field>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <Field label="Correo electrónico">
+                            <Input type="email" value={http.data.email} onChange={(e) => http.setData('email', e.target.value)} placeholder="ventas@proveedor.pe" />
+                        </Field>
+                        <Field label="Calificación (0-5)">
                             <Input
                                 type="number"
-                                value={formCredito}
-                                onChange={(e) => setFormCredito(Number(e.target.value))}
-                                min="0"
-                                required
+                                min={0}
+                                max={5}
+                                step="0.1"
+                                value={http.data.calificacion}
+                                onChange={(e) => http.setData('calificacion', e.target.value)}
                             />
                         </Field>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <Field label="Nombre del Contacto">
-                            <Input
-                                value={formContacto}
-                                onChange={(e) => setFormContacto(e.target.value)}
-                                placeholder="Ing. Contacto Comercial"
-                                required
-                            />
-                        </Field>
-                        <Field label="Teléfono Celular">
-                            <Input
-                                value={formTelefono}
-                                onChange={(e) => setFormTelefono(e.target.value)}
-                                placeholder="9XXXXXXXX"
-                                required
-                            />
-                        </Field>
-                        <Field label="Correo Electrónico">
-                            <Input
-                                type="email"
-                                value={formEmail}
-                                onChange={(e) => setFormEmail(e.target.value)}
-                                placeholder="ventas@proveedor.pe"
-                                required
-                            />
-                        </Field>
-                    </div>
+                    <Field label="Dirección">
+                        <Input value={http.data.direccion} onChange={(e) => http.setData('direccion', e.target.value)} placeholder="Av. / Jr. / distrito" />
+                    </Field>
 
-                    <div className="flex justify-end gap-3 pt-2">
-                        <Button variant="secondary" type="button" onClick={() => setModalNuevoProv(false)}>
+                    <div className="flex justify-end gap-3 border-t border-line pt-2">
+                        <Button variant="secondary" type="button" onClick={() => setModalNuevo(false)}>
                             Cancelar
                         </Button>
-                        <Button variant="mint" type="submit">
-                            Registrar y Homologar
-                        </Button>
+                        <SubmitButton status={http.processing ? 'submitting' : 'idle'}>
+                            <IconPlus size={15} />
+                            Registrar
+                        </SubmitButton>
                     </div>
                 </form>
             </Modal>

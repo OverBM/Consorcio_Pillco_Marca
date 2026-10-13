@@ -6,8 +6,10 @@ use App\Domain\Optimization\AhpOptimizationService;
 use App\Domain\Project\EvmProjectService;
 use App\Http\Controllers\Controller;
 use App\Models\ExcedenteDetectado;
+use App\Models\Hito;
 use App\Models\Material;
 use App\Models\Obra;
+use App\Models\ObraFase;
 use App\Models\ParametroSistema;
 use App\Models\Partida;
 use App\Models\Riesgo;
@@ -48,7 +50,7 @@ class PmiViewController extends Controller
 
     public function redistribucion(): Response
     {
-        $excedentes = ExcedenteDetectado::with(['obraOrigen', 'almacen', 'material.unidadMedida'])->get();
+        $excedentes = ExcedenteDetectado::with(['obra', 'almacen', 'material.unidadMedida'])->get();
         $parametros = ParametroSistema::all();
 
         // Calcular ranking AHP para las obras en ejecución
@@ -74,9 +76,11 @@ class PmiViewController extends Controller
     public function cicloVida(): Response
     {
         $obras = Obra::all();
+        $fases = ObraFase::with('obra')->get();
 
         return Inertia::render('CicloVidaPage', [
             'obrasDb' => $obras,
+            'fasesDb' => $fases,
         ]);
     }
 
@@ -94,10 +98,12 @@ class PmiViewController extends Controller
         $obras = Obra::all();
         $obraActiva = Obra::first();
         $evmData = $obraActiva ? $this->evmService->calcularEvmObra($obraActiva->id) : [];
+        $hitos = Hito::with('obra')->get();
 
         return Inertia::render('CronogramaEvmPage', [
             'obrasDb' => $obras,
             'evmData' => $evmData,
+            'hitosDb' => $hitos,
         ]);
     }
 
@@ -164,6 +170,17 @@ class PmiViewController extends Controller
                     ['valor' => (string) $valor]
                 );
             }
+        }
+
+        if ($request->filled('clave')) {
+            $generico = $request->validate([
+                'clave' => 'required|string|exists:parametros_sistema,clave',
+                'valor' => 'nullable|string',
+            ]);
+
+            ParametroSistema::where('clave', $generico['clave'])->update([
+                'valor' => (string) ($generico['valor'] ?? ''),
+            ]);
         }
 
         return back()->with('success', 'Parámetros del sistema y AHP actualizados exitosamente.');

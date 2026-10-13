@@ -1,18 +1,54 @@
-import { useState } from 'react';
+// Bitácora y Trazabilidad de Auditoría (solo lectura).
+// Lista `auditoriaDb` inyectado por el controlador web.
+
+import { useMemo } from 'react';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge } from '../components/ui';
 import { DataTable } from '../components/DataTable';
-import { IconShield } from '../components/icons';
+import { EmptyState } from '../components/EmptyState';
+import { formatFecha } from '../utils/format';
 
-export default function AuditoriaPage() {
-    const mockIp = (segment: number) => ['192', '168', '1', segment].join('.');
+interface AuditoriaDb {
+    id: number;
+    accion: string;
+    entidad: string;
+    entidad_id: number | null;
+    ip: string | null;
+    antes: Record<string, unknown> | null;
+    despues: Record<string, unknown> | null;
+    created_at: string;
+    usuario?: { name: string; email: string } | null;
+}
 
-    const logsMock = [
-        { id: '1', fecha: '2026-10-04 22:15:30', usuario: 'residente@pillcomarca.pe', accion: 'CREATE', tabla: 'solicitudes_material', ip: mockIp(45), detalle: 'Creación de solicitud SOL-20261004-9912' },
-        { id: '2', fecha: '2026-10-04 21:50:10', usuario: 'almacen@pillcomarca.pe', accion: 'INSERT', tabla: 'kardex', ip: mockIp(102), detalle: 'Ingreso e-POD Guía 001-4412 (500 bls cemento)' },
-        { id: '3', fecha: '2026-10-04 20:30:45', usuario: 'logistica@pillcomarca.pe', accion: 'UPDATE', tabla: 'transferencias', ip: mockIp(18), detalle: 'Aprobación de transferencia TRF-20261004-9A21' },
-        { id: '4', fecha: '2026-10-04 18:10:00', usuario: 'sst@pillcomarca.pe', accion: 'CREATE', tabla: 'epp_asignaciones', ip: mockIp(55), detalle: 'Asignación casco serializado 3M-CSC-2026-0098' },
-    ];
+interface AuditoriaPageProps {
+    auditoriaDb?: AuditoriaDb[];
+}
+
+type AuditoriaFila = Omit<AuditoriaDb, 'id'> & { id: string };
+
+const TONOS_CREACION = ['CREATE', 'INSERT', 'STORE', 'CREAR'];
+
+function resumirCambio(registro: Pick<AuditoriaDb, 'antes' | 'despues'>): string {
+    const fuente = registro.despues ?? registro.antes;
+
+    if (!fuente || Object.keys(fuente).length === 0) {
+        return '—';
+    }
+
+    const detalle = JSON.stringify(fuente);
+    return detalle.length > 140 ? `${detalle.slice(0, 137)}…` : detalle;
+}
+
+export default function AuditoriaPage({ auditoriaDb = [] }: AuditoriaPageProps) {
+    const filas: AuditoriaFila[] = useMemo(
+        () =>
+            auditoriaDb.map((registro) => ({
+                ...registro,
+                id: String(registro.id),
+                entidad: registro.entidad_id ? `${registro.entidad} #${registro.entidad_id}` : registro.entidad,
+            })),
+        [auditoriaDb],
+    );
 
     return (
         <div className="space-y-6">
@@ -22,38 +58,29 @@ export default function AuditoriaPage() {
             />
 
             <Card className="p-5">
-                <DataTable<{ id: string }>
-                    emptyLabel="Sin registros de auditoría."
-                    columns={[
-                        { key: 'fecha', header: 'Fecha y Hora', mono: true },
-                        { key: 'usuario', header: 'Usuario' },
-                        {
-                            key: 'accion',
-                            header: 'Acción',
-                            mono: true,
-                            cell: (r) => {
-                                const accion = (r as { accion?: string }).accion;
-                                return (
-                                    <Badge tone={accion === 'CREATE' || accion === 'INSERT' ? 'ok' : 'violet'}>
-                                        {accion}
-                                    </Badge>
-                                );
+                {filas.length === 0 ? (
+                    <EmptyState title="Sin registros de auditoría" hint="Las acciones registradas por los usuarios aparecerán aquí." />
+                ) : (
+                    <DataTable
+                        emptyLabel="Sin registros de auditoría."
+                        columns={[
+                            { key: 'created_at', header: 'Fecha', mono: true, cell: (r) => formatFecha(r.created_at) },
+                            { key: 'usuario', header: 'Usuario', cell: (r) => r.usuario?.email ?? r.usuario?.name ?? 'Sistema' },
+                            {
+                                key: 'accion',
+                                header: 'Acción',
+                                mono: true,
+                                cell: (r) => (
+                                    <Badge tone={TONOS_CREACION.includes(r.accion) ? 'ok' : 'violet'}>{r.accion}</Badge>
+                                ),
                             },
-                        },
-                        { key: 'tabla', header: 'Tabla Afectada', mono: true },
-                        { key: 'detalle', header: 'Detalle de la Operación' },
-                        { key: 'ip', header: 'Dirección IP', mono: true },
-                    ]}
-                    rows={logsMock.map((l) => ({
-                        id: l.id,
-                        fecha: l.fecha,
-                        usuario: l.usuario,
-                        accion: l.accion,
-                        tabla: l.tabla,
-                        detalle: l.detalle,
-                        ip: l.ip,
-                    }))}
-                />
+                            { key: 'entidad', header: 'Entidad Afectada', mono: true },
+                            { key: 'detalle', header: 'Detalle de la Operación', cell: (r) => resumirCambio(r) },
+                            { key: 'ip', header: 'Dirección IP', mono: true, cell: (r) => r.ip ?? '—' },
+                        ]}
+                        rows={filas}
+                    />
+                )}
             </Card>
         </div>
     );

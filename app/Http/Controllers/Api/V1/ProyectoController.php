@@ -19,21 +19,36 @@ class ProyectoController extends Controller
     ) {}
 
     /**
-     * Listar obras con su estado de avance y fases PMI.
+     * Listado público de proyectos para la portada.
+     *
+     * Expone únicamente los campos de presentación pública
+     * (identificador, nombre, programa, distrito, estado y avance)
+     * y permite filtrar por estado y/o distrito.
      */
     public function index(Request $request): JsonResponse
     {
-        $obras = Obra::with(['fases', 'hitos', 'lineasBaseCosto'])
+        $proyectos = Obra::query()
+            ->with('programa:id,nombre')
             ->when($request->filled('estado'), fn ($q) => $q->where('estado', $request->input('estado')))
-            ->paginate($request->integer('per_page', 15));
+            ->when($request->filled('distrito'), fn ($q) => $q->where('distrito', $request->input('distrito')))
+            ->orderBy('nombre')
+            ->get()
+            ->map(fn (Obra $obra): array => [
+                'id' => $obra->id,
+                'codigo' => $obra->codigo,
+                'nombre' => $obra->nombre,
+                'programa' => $obra->programa?->nombre,
+                'distrito' => $obra->distrito,
+                'estado' => $obra->estado,
+                'avance' => (float) $obra->avance_fisico_pct,
+            ])
+            ->all();
 
         return response()->json([
             'success' => true,
-            'data' => $obras->items(),
+            'data' => $proyectos,
             'meta' => [
-                'current_page' => $obras->currentPage(),
-                'last_page' => $obras->lastPage(),
-                'total' => $obras->total(),
+                'total' => count($proyectos),
             ],
         ]);
     }

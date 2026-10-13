@@ -2,7 +2,7 @@
 // KPIs, tablas, badges y el color de los pines del mapa.
 
 import type { Almacen, EstadoObra, Material } from '../types';
-import type { StockState } from '../data/stock';
+import type { StockState } from '../types/stock';
 
 export type StockEstado = 'optimo' | 'bajo' | 'critico' | 'sobrante' | 'inactivo';
 

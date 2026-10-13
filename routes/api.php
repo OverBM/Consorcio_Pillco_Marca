@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\V1\DevolucionController;
 use App\Http\Controllers\Api\V1\InventarioFisicoController;
 use App\Http\Controllers\Api\V1\MermaController;
 use App\Http\Controllers\Api\V1\OrdenCompraController;
+use App\Http\Controllers\Api\V1\PartidaController;
 use App\Http\Controllers\Api\V1\PersonalController;
 use App\Http\Controllers\Api\V1\ProveedorController;
 use App\Http\Controllers\Api\V1\ProyectoController;
@@ -23,6 +24,7 @@ use App\Http\Controllers\Api\V1\SolicitudMaterialController;
 use App\Http\Controllers\Api\V1\SstController;
 use App\Http\Controllers\Api\V1\StockController;
 use App\Http\Controllers\Api\V1\TransferenciaController;
+use App\Http\Controllers\Api\V1\UsuarioController;
 use App\Http\Controllers\Api\V1\ValorizacionController;
 use Illuminate\Support\Facades\Route;
 
@@ -95,6 +97,7 @@ Route::prefix('transferencias')->group(function () {
 });
 
 Route::prefix('despachos')->group(function () {
+    Route::get('/', [DespachoController::class, 'index']);
     Route::post('/', [DespachoController::class, 'store']);
 });
 
@@ -125,6 +128,11 @@ Route::prefix('proyectos')->group(function () {
 Route::prefix('avances-fisicos')->group(function () {
     Route::get('/', [AvanceFisicoController::class, 'index']);
     Route::post('/', [AvanceFisicoController::class, 'store']);
+});
+
+Route::prefix('partidas')->group(function () {
+    Route::get('/', [PartidaController::class, 'index']);
+    Route::post('/', [PartidaController::class, 'store']);
 });
 
 Route::prefix('valorizaciones')->group(function () {
@@ -185,4 +193,16 @@ Route::prefix('ambiente')->group(function () {
     Route::post('/mediciones', [AmbienteController::class, 'storeMedicion']);
     Route::get('/residuos', [AmbienteController::class, 'indexResiduos']);
     Route::post('/residuos', [AmbienteController::class, 'storeResiduo']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Módulo de Administración (Usuarios y Accesos)
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('usuarios')->group(function () {
+    Route::get('/', [UsuarioController::class, 'index']);
+    Route::post('/', [UsuarioController::class, 'store']);
+    Route::put('/{usuario}', [UsuarioController::class, 'update']);
 });

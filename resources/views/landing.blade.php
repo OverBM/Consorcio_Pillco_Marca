@@ -132,26 +132,20 @@
 
       <section class="section section-portfolio" id="proyectos" aria-labelledby="portfolio-title">
         <div class="page-shell">
-          <div class="section-index"><span>03 / PROYECTOS</span><span>PROYECTOS Y TIPOLOGÍAS</span></div>
+          <div class="section-index"><span>03 / PROYECTOS</span><span>OBRAS REGISTRADAS</span></div>
           <div class="portfolio-heading">
-            <div><p class="eyebrow"><span class="mint-tag">OBRAS Y TIPOLOGÍAS</span></p><h2 class="display-heading" id="portfolio-title">PROYECTOS<br />EN PERSPECTIVA.</h2></div>
-            <div class="portfolio-side"><p>Edificación, infraestructura y equipamiento.</p><div class="filter-group" role="group" aria-label="Filtrar tipologías de proyecto"><button type="button" class="filter-button is-active" data-filter="all" aria-pressed="true">Todo</button><button type="button" class="filter-button" data-filter="edificacion" aria-pressed="false">Edificación</button><button type="button" class="filter-button" data-filter="infraestructura" aria-pressed="false">Infraestructura</button><button type="button" class="filter-button" data-filter="equipamiento" aria-pressed="false">Equipamiento</button></div></div>
+            <div><p class="eyebrow"><span class="mint-tag">OBRAS Y AVANCE</span></p><h2 class="display-heading" id="portfolio-title">PROYECTOS<br />EN PERSPECTIVA.</h2></div>
+            <div class="portfolio-side">
+              <p>Obras registradas, su distrito y su estado de avance.</p>
+              <div class="project-filters">
+                <div class="filter-group" id="filtro-estado" role="group" aria-label="Filtrar por estado"></div>
+                <div class="filter-group" id="filtro-distrito" role="group" aria-label="Filtrar por distrito"></div>
+              </div>
+            </div>
           </div>
 
-          <div class="portfolio-grid" id="portfolio-grid" aria-live="polite">
-            <article class="project-card" data-category="edificacion">
-              <div class="project-art project-art-building" aria-hidden="true"><svg viewBox="0 0 480 230"><path d="M54 193h372M95 193V93l70-42 70 42v100M235 193V72l71-34 70 34v121"/><path d="M117 112h24v29h-24zm52 0h24v29h-24zm89-18h25v31h-25zm53 0h25v31h-25zm-53 57h25v31h-25zm53 0h25v31h-25z"/><path class="art-accent" d="m90 86 75-45 74 45M230 65l76-36 76 36"/></svg><span class="art-label">TIPO 01 / EDIFICACIÓN</span></div>
-              <div class="project-content"><div class="card-meta"><span>TIPOLOGÍA</span><span>01 — 03</span></div><h3>Edificación</h3><p>Vivienda, oficinas y espacios de uso mixto.</p><a class="project-link" href="#contacto" data-inquiry="edificacion">Consultar esta tipología <span aria-hidden="true">↗</span></a></div>
-            </article>
-            <article class="project-card" data-category="infraestructura">
-              <div class="project-art project-art-infra" aria-hidden="true"><svg viewBox="0 0 480 230"><path d="M49 182h382M72 182c26-75 75-111 168-111s142 36 168 111M104 182V96m67 86V76m67 106V71m67 111V76m67 106V96M81 153h318"/><path class="art-accent" d="M62 182h356M122 122h236"/></svg><span class="art-label">TIPO 02 / INFRAESTRUCTURA</span></div>
-              <div class="project-content"><div class="card-meta"><span>TIPOLOGÍA</span><span>02 — 03</span></div><h3>Infraestructura</h3><p>Conectividad, servicios urbanos y obras de soporte.</p><a class="project-link" href="#contacto" data-inquiry="infraestructura">Consultar esta tipología <span aria-hidden="true">↗</span></a></div>
-            </article>
-            <article class="project-card" data-category="equipamiento">
-              <div class="project-art project-art-space" aria-hidden="true"><svg viewBox="0 0 480 230"><path d="M55 190h370M84 190V83h139v107M223 190V53h172v137M105 103h33v35h-33zm61 0h33v35h-33zm83-23h40v33h-40zm64 0h40v33h-40zm-64 59h40v32h-40zm64 0h40v32h-40zm64-59h20v33h-20zm0 59h20v32h-20z"/><path class="art-accent" d="M77 78h153M214 48h187"/></svg><span class="art-label">TIPO 03 / EQUIPAMIENTO</span></div>
-              <div class="project-content"><div class="card-meta"><span>TIPOLOGÍA</span><span>03 — 03</span></div><h3>Espacios y equipamiento</h3><p>Instalaciones para educación, salud y uso colectivo.</p><a class="project-link" href="#contacto" data-inquiry="equipamiento">Consultar esta tipología <span aria-hidden="true">↗</span></a></div>
-            </article>
-          </div>
+          <div class="portfolio-grid" id="portfolio-grid" aria-live="polite" aria-busy="true"></div>
+          <p class="portfolio-status" id="portfolio-status" role="status">Cargando proyectos…</p>
         </div>
       </section>
 

@@ -9,7 +9,7 @@ import L from 'leaflet';
 import { cn } from '../utils/cn';
 import { estadoDeAlmacen, ESTADO_META } from '../utils/estados';
 import { formatCantidad } from '../utils/format';
-import type { StockState } from '../data/stock';
+import type { StockState } from '../types/stock';
 import type { Almacen, Material, Obra } from '../types';
 import { IconMapPin, IconSearch } from './icons';
 

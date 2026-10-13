@@ -122,7 +122,7 @@ class AmbienteController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Residuo o material reutilizable registrado.',
-            'data' => $residuo->load(['obra', 'almacen', 'material']),
+            'data' => $residuo->load(['obra', 'almacen', 'material', 'eors']),
         ], 201);
     }
 }

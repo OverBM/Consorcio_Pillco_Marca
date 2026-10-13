@@ -3,16 +3,20 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Web\Concerns\FiltraContextoOperativo;
 use App\Models\Cotizacion;
 use App\Models\DevolucionProveedor;
 use App\Models\OrdenCompra;
 use App\Models\Proveedor;
+use App\Models\Recepcion;
 use App\Models\Requerimiento;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class ComprasViewController extends Controller
 {
+    use FiltraContextoOperativo;
+
     public function index(): Response
     {
         return Inertia::render('ComprasPage');
@@ -20,7 +24,9 @@ class ComprasViewController extends Controller
 
     public function requerimientos(): Response
     {
-        $requerimientos = Requerimiento::with(['obra', 'detalles.material'])->get();
+        $requerimientos = $this->filtrarContexto(Requerimiento::query())
+            ->with(['obra', 'detalles.material'])
+            ->get();
 
         return Inertia::render('RequerimientosPage', [
             'requerimientosDb' => $requerimientos,
@@ -29,19 +35,36 @@ class ComprasViewController extends Controller
 
     public function cotizaciones(): Response
     {
-        $cotizaciones = Cotizacion::with(['requerimiento', 'proveedor', 'detalles'])->get();
+        $cotizaciones = $this->filtrarContextoVinculado(Cotizacion::query(), 'requerimiento')
+            ->with(['requerimiento', 'proveedor', 'detalles.material'])
+            ->get();
+
+        $requerimientos = $this->filtrarContexto(Requerimiento::query())
+            ->with(['obra', 'detalles.material'])
+            ->get();
+
+        $proveedores = Proveedor::orderBy('razon_social')->get();
 
         return Inertia::render('CotizacionesPage', [
             'cotizacionesDb' => $cotizaciones,
+            'requerimientosDb' => $requerimientos,
+            'proveedoresDb' => $proveedores,
         ]);
     }
 
     public function ordenesCompra(): Response
     {
-        $ordenes = OrdenCompra::with(['requerimiento', 'proveedor', 'almacenDestino', 'detalles.material'])->get();
+        $ordenes = $this->filtrarContexto(OrdenCompra::query(), 'obra_id', 'almacen_destino_id')
+            ->with(['proveedor', 'almacenDestino', 'detalles.material'])
+            ->get();
+
+        $cotizaciones = Cotizacion::where('estado', 'seleccionada')
+            ->with(['proveedor', 'requerimiento.obra', 'detalles.material'])
+            ->get();
 
         return Inertia::render('OrdenesCompraPage', [
             'ordenesDb' => $ordenes,
+            'cotizacionesDb' => $cotizaciones,
         ]);
     }
 
@@ -56,10 +79,12 @@ class ComprasViewController extends Controller
 
     public function devoluciones(): Response
     {
-        $devoluciones = DevolucionProveedor::with(['ordenCompra.proveedor', 'detalles.material'])->get();
+        $devoluciones = DevolucionProveedor::with(['proveedor', 'recepcion.almacen', 'detalles.material'])->get();
+        $recepciones = Recepcion::with(['almacen', 'ordenCompra.proveedor', 'detalles.material'])->get();
 
         return Inertia::render('DevolucionesPage', [
             'devolucionesDb' => $devoluciones,
+            'recepcionesDb' => $recepciones,
         ]);
     }
 }

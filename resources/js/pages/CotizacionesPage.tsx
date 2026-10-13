@@ -1,424 +1,429 @@
-import { useState, useMemo } from 'react';
+// Cuadro Comparativo y Cotizaciones (Macroproceso MP-17).
+// Registro de ofertas de proveedores y selección de la ganadora por requerimiento.
+// Datos desde props; alta y adjudicación vía `useHttp`.
+
+import { useMemo, useState, type FormEvent } from 'react';
+import { router, useHttp, usePage } from '@inertiajs/react';
 import { PageHeader } from '../components/PageHeader';
-import { Card, Badge, Button, Modal } from '../components/ui';
-import { Field, Input, Select, Textarea } from '../components/form';
+import { Card, Badge, Modal } from '../components/ui';
+import { Field, Input, Select, Textarea, FormPanel, FormSection, SubmitButton } from '../components/form';
 import { DataTable } from '../components/DataTable';
-import { useAppStore } from '../store/AppContext';
+import { EmptyState } from '../components/EmptyState';
+import { useNotifications } from '../components/notifications/NotificationProvider';
 import { formatMoneda } from '../utils/format';
-import type { CotizacionProveedor } from '../types';
-import {
-    IconAlert,
-    IconCheckCircle,
-    IconDollar,
-    IconPlus,
-    IconSearch,
-    IconShield,
-    IconTrendingUp,
-} from '../components/icons';
+import type { Catalogos } from '../types';
+import { IconCheck, IconPlus, IconSearch, IconX } from '../components/icons';
 
-export default function CotizacionesPage() {
-    const {
-        requerimientos,
-        cotizaciones,
-        createCotizacion,
-        selectCotizacion,
-    } = useAppStore();
+interface RequerimientoRef {
+    id: number;
+    codigo: string;
+    detalles?: { id: number; material_id: number; cantidad: number | string }[];
+}
 
-    const [filtroReq, setFiltroReq] = useState<string>('todos');
-    const [busqueda, setBusqueda] = useState<string>('');
-    const [modalNuevaCot, setModalNuevaCot] = useState(false);
-    const [modalComparativo, setModalComparativo] = useState<string | null>(null);
+interface ProveedorRef {
+    id: number;
+    ruc: string;
+    razon_social: string;
+}
 
-    // Formulario de Cotización
-    const [cotReqId, setCotReqId] = useState(requerimientos[0]?.id ?? '');
-    const [cotRuc, setCotRuc] = useState('20584938291');
-    const [cotNombre, setCotNombre] = useState('Ferretería Industrial del Centro SAC');
-    const [cotPrecio, setCotPrecio] = useState(14800);
-    const [cotDias, setCotDias] = useState(3);
-    const [cotGarantia, setCotGarantia] = useState(12);
-    const [cotCumple, setCotCumple] = useState(true);
-    const [cotObs, setCotObs] = useState('');
+interface CotizacionDetalleDb {
+    id: number;
+    material_id: number;
+    cantidad: number | string;
+    precio_unitario: number | string;
+    material?: { id: number; nombre: string } | null;
+}
 
-    const handleGuardarCotizacion = (e: React.FormEvent) => {
-        e.preventDefault();
-        const score = Math.min(100, Math.max(10, Math.round(95 - (Number(cotPrecio) / 20000) * 15 - Number(cotDias) * 2 + Number(cotGarantia))));
-        createCotizacion({
-            requerimientoId: cotReqId,
-            proveedorRuc: cotRuc,
-            proveedorNombre: cotNombre,
-            precioTotalSoles: Number(cotPrecio),
-            plazoEntregaDias: Number(cotDias),
-            garantiaMeses: Number(cotGarantia),
-            puntajeCalculado: score,
-            cumpleTecnico: cotCumple,
-            esRecomendado: cotCumple && score > 80,
-            observaciones: cotObs || 'Oferta cumple con ficha técnica requerida.',
-            seleccionada: false,
-        });
-        setModalNuevaCot(false);
-        setCotNombre('');
-        setCotObs('');
+interface CotizacionDb {
+    id: number;
+    requerimiento_id: number;
+    proveedor_id: number;
+    total: number | string;
+    plazo_entrega_dias: number | null;
+    condiciones: string | null;
+    estado: string;
+    motivo_seleccion?: string | null;
+    requerimiento?: RequerimientoRef | null;
+    proveedor?: ProveedorRef | null;
+    detalles?: CotizacionDetalleDb[];
+}
+
+interface CotizacionesPageProps {
+    cotizacionesDb?: CotizacionDb[];
+    requerimientosDb?: RequerimientoRef[];
+    proveedoresDb?: ProveedorRef[];
+}
+
+type CotizacionFila = Omit<CotizacionDb, 'id'> & { id: string };
+
+interface LineaCot {
+    material_id: string;
+    cantidad: string;
+    precio_unitario: string;
+}
+
+const ESTADO_META: Record<string, { tone: 'ok' | 'warn' | 'danger' | 'neutral'; label: string }> = {
+    recibida: { tone: 'warn', label: 'En evaluación' },
+    seleccionada: { tone: 'ok', label: 'Adjudicada' },
+    rechazada: { tone: 'neutral', label: 'No seleccionada' },
+};
+
+export default function CotizacionesPage({
+    cotizacionesDb = [],
+    requerimientosDb = [],
+    proveedoresDb = [],
+}: CotizacionesPageProps) {
+    const notify = useNotifications();
+    const { catalogos } = usePage().props as unknown as { catalogos?: Catalogos };
+    const materiales = catalogos?.materiales ?? [];
+
+    const crear = useHttp<{
+        requerimiento_id: string;
+        proveedor_id: string;
+        plazo_entrega_dias: string;
+        condiciones: string;
+        detalles: LineaCot[];
+    }>({
+        requerimiento_id: '',
+        proveedor_id: '',
+        plazo_entrega_dias: '7',
+        condiciones: '',
+        detalles: [{ material_id: '', cantidad: '', precio_unitario: '' }] as LineaCot[],
+    });
+
+    const adjudicar = useHttp<{ motivo_seleccion: string }>({ motivo_seleccion: '' });
+
+    const [busqueda, setBusqueda] = useState('');
+    const [filtroReq, setFiltroReq] = useState('todos');
+    const [seleccionando, setSeleccionando] = useState<CotizacionFila | null>(null);
+
+    const nombreMaterial = (id: number) => materiales.find((m) => m.id === id)?.nombre ?? `Material #${id}`;
+
+    const filas: CotizacionFila[] = useMemo(
+        () => cotizacionesDb.map((c) => ({ ...c, id: String(c.id) })),
+        [cotizacionesDb],
+    );
+
+    const filtradas = useMemo(
+        () =>
+            filas.filter((c) => {
+                if (filtroReq !== 'todos' && String(c.requerimiento_id) !== filtroReq) return false;
+                if (!busqueda.trim()) return true;
+                const q = busqueda.toLowerCase();
+                return (
+                    (c.proveedor?.razon_social ?? '').toLowerCase().includes(q) ||
+                    (c.proveedor?.ruc ?? '').includes(q) ||
+                    (c.requerimiento?.codigo ?? '').toLowerCase().includes(q)
+                );
+            }),
+        [filas, filtroReq, busqueda],
+    );
+
+    const total = filas.length;
+    const adjudicadas = filas.filter((c) => c.estado === 'seleccionada').length;
+    const reqsEnProceso = new Set(filas.map((c) => c.requerimiento_id)).size;
+    const montoOfertado = filas.reduce((acc, c) => acc + Number(c.total), 0);
+
+    const reqSel = requerimientosDb.find((r) => String(r.id) === crear.data.requerimiento_id) ?? null;
+
+    const setLinea = (indice: number, campo: keyof LineaCot, valor: string) =>
+        crear.setData('detalles', crear.data.detalles.map((l, i) => (i === indice ? { ...l, [campo]: valor } : l)));
+
+    const seleccionarRequerimiento = (valor: string) => {
+        crear.setData('requerimiento_id', valor);
+        const req = requerimientosDb.find((r) => String(r.id) === valor);
+        if (req?.detalles?.length) {
+            crear.setData(
+                'detalles',
+                req.detalles.map((d) => ({ material_id: String(d.material_id), cantidad: String(d.cantidad), precio_unitario: '' })),
+            );
+        }
     };
 
-    const cotizacionesFiltradas = useMemo(() => {
-        return cotizaciones.filter((c) => {
-            if (filtroReq !== 'todos' && c.requerimientoId !== filtroReq) return false;
-            if (busqueda.trim()) {
-                const q = busqueda.toLowerCase();
-                const matchProv = c.proveedorNombre.toLowerCase().includes(q);
-                const matchRuc = c.proveedorRuc.toLowerCase().includes(q);
-                const matchReq = c.requerimientoId.toLowerCase().includes(q);
-                if (!matchProv && !matchRuc && !matchReq) return false;
-            }
-            return true;
+    const enviar = (event: FormEvent) => {
+        event.preventDefault();
+
+        if (!crear.data.requerimiento_id || !crear.data.proveedor_id) {
+            notify.error('Selecciona el requerimiento y el proveedor.');
+            return;
+        }
+
+        const detalles = crear.data.detalles
+            .filter((l) => l.material_id && Number(l.cantidad) > 0 && Number(l.precio_unitario) >= 0)
+            .map((l) => ({
+                material_id: Number(l.material_id),
+                cantidad: Number(l.cantidad),
+                precio_unitario: Number(l.precio_unitario),
+            }));
+
+        if (detalles.length === 0) {
+            notify.error('Agrega al menos un material con cantidad y precio.');
+            return;
+        }
+
+        crear.transform(() => ({
+            requerimiento_id: Number(crear.data.requerimiento_id),
+            proveedor_id: Number(crear.data.proveedor_id),
+            plazo_entrega_dias: Number(crear.data.plazo_entrega_dias) || null,
+            condiciones: crear.data.condiciones || null,
+            detalles,
+        }));
+
+        crear.post('/api/v1/cotizaciones', {
+            onSuccess: () => {
+                notify.success('Cotización registrada.');
+                crear.setData({
+                    requerimiento_id: '',
+                    proveedor_id: '',
+                    plazo_entrega_dias: '7',
+                    condiciones: '',
+                    detalles: [{ material_id: '', cantidad: '', precio_unitario: '' }],
+                });
+                router.reload({ only: ['cotizacionesDb'] });
+            },
+            onError: (errors: Record<string, string>) => {
+                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar la cotización.');
+            },
         });
-    }, [cotizaciones, filtroReq, busqueda]);
+    };
 
-    // Métricas
-    const totalCotizaciones = cotizaciones.length;
-    const cotizacionesAdjudicadas = cotizaciones.filter((c) => c.seleccionada).length;
-    const reqsEnProceso = new Set(cotizaciones.map((c) => c.requerimientoId)).size;
-    const mejorAhorro = 12.5;
+    const confirmarAdjudicacion = (event: FormEvent) => {
+        event.preventDefault();
+        if (!seleccionando) return;
+        if (!adjudicar.data.motivo_seleccion.trim()) {
+            notify.error('Indica el motivo de la selección.');
+            return;
+        }
 
-    // Cuadro Comparativo para un requerimiento específico
-    const cotizacionesComparativa = useMemo(() => {
-        if (!modalComparativo) return [];
-        return cotizaciones.filter((c) => c.requerimientoId === modalComparativo);
-    }, [cotizaciones, modalComparativo]);
+        adjudicar.transform(() => ({ motivo_seleccion: adjudicar.data.motivo_seleccion }));
+        adjudicar.post(`/api/v1/cotizaciones/${seleccionando.id}/seleccionar`, {
+            onSuccess: () => {
+                notify.success('Cotización adjudicada como ganadora.');
+                setSeleccionando(null);
+                adjudicar.setData('motivo_seleccion', '');
+                router.reload({ only: ['cotizacionesDb'] });
+            },
+            onError: (errors: Record<string, string>) => {
+                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo adjudicar.');
+            },
+        });
+    };
 
     return (
         <div className="space-y-6">
             <PageHeader
-                title="Cuadro Comparativo y Cotizaciones (Macroproceso MP-17)"
-                subtitle="Evaluación multicriterio AHP de ofertas de proveedores: Precio, Plazo de Entrega, Garantía y Calidad"
-                actions={
-                    <Button variant="mint" onClick={() => setModalNuevaCot(true)}>
-                        <IconPlus size={16} />
-                        Registrar Oferta Proveedor
-                    </Button>
-                }
+                title="Cuadro Comparativo y Cotizaciones"
+                subtitle="Registro de ofertas de proveedores y selección de la ganadora por requerimiento"
             />
 
-            {/* KPIs */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <Card className="p-4 bg-surface border-line">
-                    <span className="text-xs font-mono uppercase text-muted">Ofertas Recibidas</span>
-                    <p className="mt-1 text-2xl font-bold font-mono text-ink">{totalCotizaciones}</p>
-                    <span className="text-xs text-muted">Registradas en el sistema</span>
+                <Card className="p-4">
+                    <span className="text-xs font-mono uppercase text-muted">Ofertas recibidas</span>
+                    <p className="mt-1 text-2xl font-bold font-mono text-ink">{total}</p>
                 </Card>
-                <Card className="p-4 bg-surface border-line">
-                    <span className="text-xs font-mono uppercase text-muted">Requerimientos en Licitación</span>
-                    <p className="mt-1 text-2xl font-bold font-mono text-primary-600">{reqsEnProceso}</p>
-                    <span className="text-xs text-muted">Con ofertas de postores activas</span>
+                <Card className="p-4">
+                    <span className="text-xs font-mono uppercase text-muted">Requerimientos</span>
+                    <p className="mt-1 text-2xl font-bold font-mono text-ink">{reqsEnProceso}</p>
                 </Card>
-                <Card className="p-4 bg-surface border-line">
-                    <span className="text-xs font-mono uppercase text-muted">Cotizaciones Ganadoras</span>
-                    <p className="mt-1 text-2xl font-bold font-mono text-emerald-600">{cotizacionesAdjudicadas}</p>
-                    <span className="text-xs text-muted">Listas para Orden de Compra</span>
+                <Card className="p-4">
+                    <span className="text-xs font-mono uppercase text-muted">Adjudicadas</span>
+                    <p className="mt-1 text-2xl font-bold font-mono text-ok">{adjudicadas}</p>
                 </Card>
-                <Card className="p-4 bg-surface border-line">
-                    <span className="text-xs font-mono uppercase text-muted">Ahorro Promedio Obtenido</span>
-                    <p className="mt-1 text-2xl font-bold font-mono text-ink">{mejorAhorro}%</p>
-                    <span className="text-xs text-emerald-600 font-semibold">vs. Presupuesto Base de Obra</span>
+                <Card className="p-4">
+                    <span className="text-xs font-mono uppercase text-muted">Monto ofertado</span>
+                    <p className="mt-1 text-2xl font-bold font-mono text-ink">{formatMoneda(montoOfertado)}</p>
                 </Card>
             </div>
 
-            {/* Filtros */}
-            <Card className="p-4 bg-surface border-line">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div className="flex flex-wrap items-center gap-3">
-                        <div className="relative min-w-[240px]">
-                            <IconSearch size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-                            <input
-                                type="text"
-                                placeholder="Buscar por proveedor o RUC..."
-                                value={busqueda}
-                                onChange={(e) => setBusqueda(e.target.value)}
-                                className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-line bg-canvas text-ink focus:outline-none focus:ring-2 focus:ring-primary-500"
-                            />
+            <div className="grid gap-6 lg:grid-cols-3">
+                <div className="space-y-4 lg:col-span-2">
+                    <Card className="p-4">
+                        <div className="flex flex-wrap items-center gap-3">
+                            <div className="relative min-w-[220px] flex-1">
+                                <IconSearch size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+                                <input
+                                    type="text"
+                                    placeholder="Buscar por proveedor, RUC o requerimiento…"
+                                    value={busqueda}
+                                    onChange={(e) => setBusqueda(e.target.value)}
+                                    className="w-full rounded-lg border border-line bg-canvas py-1.5 pl-9 pr-3 text-xs text-ink focus:outline-none focus:ring-2 focus:ring-brand-500"
+                                />
+                            </div>
+                            <Select value={filtroReq} onChange={(e) => setFiltroReq(e.target.value)} aria-label="Filtrar requerimiento">
+                                <option value="todos">Todos los requerimientos</option>
+                                {requerimientosDb.map((r) => (
+                                    <option key={r.id} value={String(r.id)}>{r.codigo}</option>
+                                ))}
+                            </Select>
                         </div>
-                        <select
-                            value={filtroReq}
-                            onChange={(e) => setFiltroReq(e.target.value)}
-                            className="px-3 py-1.5 text-xs rounded-lg border border-line bg-canvas text-ink font-mono"
-                        >
-                            <option value="todos">Todos los Requerimientos</option>
-                            {requerimientos.map((r) => (
-                                <option key={r.id} value={r.id}>
-                                    {r.id} — {r.partidaPresupuestal}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <span className="text-xs text-muted font-mono">
-                        Mostrando {cotizacionesFiltradas.length} de {cotizaciones.length} cotizaciones
-                    </span>
-                </div>
-            </Card>
+                    </Card>
 
-            {/* Tabla de Cotizaciones */}
-            <Card className="p-5">
-                <DataTable<{ id: string }>
-                    emptyLabel="No hay cotizaciones registradas para los filtros seleccionados."
-                    columns={[
-                        { key: 'reqId', header: 'Req. Asociado', mono: true },
-                        { key: 'proveedor', header: 'Proveedor / RUC' },
-                        { key: 'precio', header: 'Precio Ofertado', align: 'right', mono: true },
-                        { key: 'plazo', header: 'Plazo Entrega', align: 'center', mono: true },
-                        { key: 'garantia', header: 'Garantía', align: 'center' },
-                        { key: 'cumplimiento', header: 'Espec. Técnicas', align: 'center' },
-                        { key: 'estado', header: 'Estado', align: 'center' },
-                        { key: 'acciones', header: 'Acción', align: 'right' },
-                    ]}
-                    rows={cotizacionesFiltradas.map((cot) => {
-                        const precio = cot.precioTotalSoles ?? (cot as any).precioTotalOfertado ?? 0;
-                        const cumple = cot.cumpleTecnico ?? (cot as any).cumpleEspecificaciones ?? true;
-                        return {
-                            id: cot.id,
-                            reqId: cot.requerimientoId,
-                            proveedor: (
-                                <div>
-                                    <p className="font-semibold text-ink">{cot.proveedorNombre}</p>
-                                    <p className="text-xs font-mono text-muted">RUC: {cot.proveedorRuc}</p>
-                                </div>
-                            ),
-                            precio: (
-                                <span className="font-bold text-ink text-sm">
-                                    {formatMoneda(precio)}
-                                </span>
-                            ),
-                            plazo: `${cot.plazoEntregaDias} días`,
-                            garantia: `${cot.garantiaMeses} meses`,
-                            cumplimiento: (
-                                <Badge tone={cumple ? 'ok' : 'danger'}>
-                                    {cumple ? 'Cumple Conforme' : 'No Cumple'}
-                                </Badge>
-                            ),
-                            estado: cot.seleccionada ? (
-                                <Badge tone="ok">Adjudicada (Ganadora)</Badge>
-                            ) : (
-                                <Badge tone="neutral">En Evaluación</Badge>
-                            ),
-                            acciones: (
-                                <div className="flex items-center justify-end gap-2">
-                                    <Button
-                                        variant="secondary"
-                                        size="sm"
-                                        onClick={() => setModalComparativo(cot.requerimientoId)}
-                                    >
-                                        Comparar AHP
-                                    </Button>
-                                    {!cot.seleccionada && (
-                                        <Button
-                                            variant="mint"
-                                            size="sm"
-                                            onClick={() => selectCotizacion(cot.id)}
-                                        >
-                                            <IconCheckCircle size={13} />
-                                            Adjudicar
-                                        </Button>
+                    <Card title={`Cotizaciones (${filtradas.length})`}>
+                        {filas.length === 0 ? (
+                            <EmptyState title="Sin cotizaciones registradas" hint="Registra la primera oferta desde el panel lateral." />
+                        ) : (
+                            <DataTable
+                                emptyLabel="No hay cotizaciones que coincidan con los filtros."
+                                columns={[
+                                    { key: 'req', header: 'Requerimiento', mono: true, cell: (c) => c.requerimiento?.codigo ?? `#${c.requerimiento_id}` },
+                                    {
+                                        key: 'proveedor',
+                                        header: 'Proveedor / RUC',
+                                        cell: (c) => (
+                                            <div>
+                                                <p className="text-xs font-semibold text-ink">{c.proveedor?.razon_social ?? `Proveedor #${c.proveedor_id}`}</p>
+                                                <p className="font-mono text-[11px] text-muted">RUC: {c.proveedor?.ruc ?? '—'}</p>
+                                            </div>
+                                        ),
+                                    },
+                                    { key: 'total', header: 'Precio ofertado', align: 'right', cell: (c) => <span className="font-mono font-bold text-ink">{formatMoneda(Number(c.total))}</span> },
+                                    { key: 'plazo', header: 'Plazo', align: 'center', cell: (c) => `${c.plazo_entrega_dias ?? '—'} días` },
+                                    {
+                                        key: 'estado',
+                                        header: 'Estado',
+                                        align: 'center',
+                                        cell: (c) => {
+                                            const meta = ESTADO_META[c.estado] ?? { tone: 'neutral' as const, label: c.estado };
+                                            return <Badge tone={meta.tone}>{meta.label}</Badge>;
+                                        },
+                                    },
+                                    {
+                                        key: 'acciones',
+                                        header: 'Acciones',
+                                        align: 'right',
+                                        cell: (c) =>
+                                            c.estado === 'recibida' ? (
+                                                <button onClick={() => setSeleccionando(c)} className="btn-secondary !px-2 !py-1 text-xs" title="Adjudicar cotización">
+                                                    <IconCheck size={13} /> Adjudicar
+                                                </button>
+                                            ) : (
+                                                <span className="text-[11px] text-muted">—</span>
+                                            ),
+                                    },
+                                ]}
+                                rows={filtradas}
+                            />
+                        )}
+                    </Card>
+                </div>
+
+                <FormPanel title="Registrar Oferta" subtitle="Cotización de un proveedor" onSubmit={enviar} className="text-xs">
+                    <FormSection title="Requerimiento y proveedor" columns={1}>
+                        <Field label="Requerimiento" required>
+                            <Select value={crear.data.requerimiento_id} onChange={(e) => seleccionarRequerimiento(e.target.value)}>
+                                <option value="">Selecciona requerimiento…</option>
+                                {requerimientosDb.map((r) => (
+                                    <option key={r.id} value={String(r.id)}>{r.codigo}</option>
+                                ))}
+                            </Select>
+                        </Field>
+                        <Field label="Proveedor" required>
+                            <Select value={crear.data.proveedor_id} onChange={(e) => crear.setData('proveedor_id', e.target.value)}>
+                                <option value="">Selecciona proveedor…</option>
+                                {proveedoresDb.map((p) => (
+                                    <option key={p.id} value={String(p.id)}>{p.razon_social}</option>
+                                ))}
+                            </Select>
+                        </Field>
+                        <div className="grid grid-cols-2 gap-3">
+                            <Field label="Plazo (días)">
+                                <Input type="number" min={1} value={crear.data.plazo_entrega_dias} onChange={(e) => crear.setData('plazo_entrega_dias', e.target.value)} />
+                            </Field>
+                            <Field label="Condiciones">
+                                <Input value={crear.data.condiciones} onChange={(e) => crear.setData('condiciones', e.target.value)} placeholder="Crédito 30 días…" />
+                            </Field>
+                        </div>
+                    </FormSection>
+
+                    <FormSection title="Detalle de la oferta" columns={1}>
+                        <div className="space-y-2">
+                            {crear.data.detalles.map((linea, i) => (
+                                <div key={i} className="rounded-lg border border-line p-2">
+                                    <div className="flex items-center gap-2">
+                                        <Select value={linea.material_id} onChange={(e) => setLinea(i, 'material_id', e.target.value)} className="!py-1.5 flex-1" aria-label="Material">
+                                            <option value="">Material…</option>
+                                            {materiales.map((m) => (
+                                                <option key={m.id} value={String(m.id)}>{m.nombre}</option>
+                                            ))}
+                                        </Select>
+                                        {crear.data.detalles.length > 1 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => crear.setData('detalles', crear.data.detalles.filter((_, idx) => idx !== i))}
+                                                aria-label="Quitar material"
+                                                className="rounded p-1.5 text-muted hover:bg-danger-soft hover:text-danger"
+                                            >
+                                                <IconX size={14} />
+                                            </button>
+                                        )}
+                                    </div>
+                                    {reqSel && linea.material_id && (
+                                        <p className="mt-1 text-[10px] text-muted">Solicitado: {nombreMaterial(Number(linea.material_id))}</p>
                                     )}
+                                    <div className="mt-2 grid grid-cols-2 gap-2">
+                                        <input
+                                            type="number"
+                                            min={0}
+                                            step="0.001"
+                                            value={linea.cantidad}
+                                            onChange={(e) => setLinea(i, 'cantidad', e.target.value)}
+                                            placeholder="Cantidad"
+                                            className="field !py-1.5"
+                                            aria-label="Cantidad"
+                                        />
+                                        <input
+                                            type="number"
+                                            min={0}
+                                            step="0.01"
+                                            value={linea.precio_unitario}
+                                            onChange={(e) => setLinea(i, 'precio_unitario', e.target.value)}
+                                            placeholder="P. unitario"
+                                            className="field !py-1.5"
+                                            aria-label="Precio unitario"
+                                        />
+                                    </div>
                                 </div>
-                            ),
-                        };
-                    })}
-                />
-            </Card>
-
-            {/* Modal Matriz Comparativa Multicriterio AHP */}
-            <Modal
-                open={Boolean(modalComparativo)}
-                onClose={() => setModalComparativo(null)}
-                title={`Matriz de Decisión Multicriterio AHP — Requerimiento ${modalComparativo ?? ''}`}
-                wide
-            >
-                <div className="space-y-4">
-                    <p className="text-xs text-muted">
-                        Ponderaciones AHP: Precio (40%), Plazo de Entrega (30%), Garantía de Calidad (20%), Cumplimiento Técnico (10%).
-                    </p>
-
-                    <div className="border border-line rounded-lg overflow-hidden">
-                        <table className="w-full text-xs text-left">
-                            <thead className="bg-soft border-b border-line text-muted">
-                                <tr>
-                                    <th className="p-2.5">Postor / RUC</th>
-                                    <th className="p-2.5 text-right">Precio Ofertado</th>
-                                    <th className="p-2.5 text-center">Plazo (días)</th>
-                                    <th className="p-2.5 text-center">Garantía</th>
-                                    <th className="p-2.5 text-center">Cumple Spec</th>
-                                    <th className="p-2.5 text-center">Puntaje AHP</th>
-                                    <th className="p-2.5 text-right">Decisión</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-line">
-                                {cotizacionesComparativa.map((c) => {
-                                    const precio = c.precioTotalSoles ?? (c as any).precioTotalOfertado ?? 0;
-                                    const cumple = c.cumpleTecnico ?? (c as any).cumpleEspecificaciones ?? true;
-                                    const score = c.puntajeCalculado ?? Math.round(
-                                        (100 - (precio / 25000) * 20 - c.plazoEntregaDias * 2 + c.garantiaMeses * 1.5)
-                                    );
-                                    return (
-                                        <tr key={c.id} className={c.seleccionada ? 'bg-emerald-50/50' : ''}>
-                                            <td className="p-2.5">
-                                                <span className="font-bold text-ink block">{c.proveedorNombre}</span>
-                                                <span className="font-mono text-muted text-[11px]">{c.proveedorRuc}</span>
-                                            </td>
-                                            <td className="p-2.5 text-right font-mono font-bold text-ink">
-                                                {formatMoneda(precio)}
-                                            </td>
-                                            <td className="p-2.5 text-center font-mono">{c.plazoEntregaDias}d</td>
-                                            <td className="p-2.5 text-center font-mono">{c.garantiaMeses}m</td>
-                                            <td className="p-2.5 text-center">
-                                                <Badge tone={cumple ? 'ok' : 'danger'}>
-                                                    {cumple ? 'Sí' : 'No'}
-                                                </Badge>
-                                            </td>
-                                            <td className="p-2.5 text-center font-mono font-bold text-primary-700">
-                                                {score}/100
-                                            </td>
-                                            <td className="p-2.5 text-right">
-                                                {c.seleccionada ? (
-                                                    <span className="font-bold text-emerald-700 text-xs">Adjudicado</span>
-                                                ) : (
-                                                    <Button
-                                                        variant="mint"
-                                                        size="sm"
-                                                        onClick={() => {
-                                                            selectCotizacion(c.id);
-                                                            setModalComparativo(null);
-                                                        }}
-                                                    >
-                                                        Adjudicar
-                                                    </Button>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div className="flex justify-end pt-2">
-                        <Button variant="secondary" onClick={() => setModalComparativo(null)}>
-                            Cerrar Comparativo
-                        </Button>
-                    </div>
-                </div>
-            </Modal>
-
-            {/* Modal Registrar Cotización */}
-            <Modal
-                open={modalNuevaCot}
-                onClose={() => setModalNuevaCot(false)}
-                title="Registrar Oferta de Proveedor"
-                wide
-            >
-                <form onSubmit={handleGuardarCotizacion} className="space-y-4">
-                    <Field label="Requerimiento Asociado">
-                        <Select
-                            value={cotReqId}
-                            onChange={(e) => setCotReqId(e.target.value)}
-                        >
-                            {requerimientos.map((r) => (
-                                <option key={r.id} value={r.id}>
-                                    {r.id} — {r.partidaPresupuestal} ({formatMoneda(r.costoTotalEstimado)})
-                                </option>
                             ))}
-                        </Select>
-                    </Field>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <Field label="RUC del Proveedor">
-                            <Input
-                                value={cotRuc}
-                                onChange={(e) => setCotRuc(e.target.value)}
-                                placeholder="20123456789"
-                                maxLength={11}
-                                required
-                            />
-                        </Field>
-                        <Field label="Razón Social / Proveedor">
-                            <Input
-                                value={cotNombre}
-                                onChange={(e) => setCotNombre(e.target.value)}
-                                placeholder="Distribuidora Ferretera SA"
-                                required
-                            />
-                        </Field>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <Field label="Precio Ofertado (S/.)">
-                            <Input
-                                type="number"
-                                step="0.01"
-                                value={cotPrecio}
-                                onChange={(e) => setCotPrecio(Number(e.target.value))}
-                                required
-                            />
-                        </Field>
-                        <Field label="Plazo de Entrega (Días)">
-                            <Input
-                                type="number"
-                                value={cotDias}
-                                onChange={(e) => setCotDias(Number(e.target.value))}
-                                min="1"
-                                required
-                            />
-                        </Field>
-                        <Field label="Garantía Técnica (Meses)">
-                            <Input
-                                type="number"
-                                value={cotGarantia}
-                                onChange={(e) => setCotGarantia(Number(e.target.value))}
-                                min="0"
-                                required
-                            />
-                        </Field>
-                    </div>
-
-                    <Field label="Cumplimiento de Especificaciones Técnicas">
-                        <div className="flex items-center gap-4 text-xs mt-1">
-                            <label className="flex items-center gap-2 cursor-pointer font-medium text-ink">
-                                <input
-                                    type="radio"
-                                    name="cumple"
-                                    checked={cotCumple}
-                                    onChange={() => setCotCumple(true)}
-                                    className="accent-primary-600"
-                                />
-                                Cumple al 100% las especificaciones
-                            </label>
-                            <label className="flex items-center gap-2 cursor-pointer font-medium text-ink">
-                                <input
-                                    type="radio"
-                                    name="cumple"
-                                    checked={!cotCumple}
-                                    onChange={() => setCotCumple(false)}
-                                    className="accent-primary-600"
-                                />
-                                Presenta observaciones técnicas
-                            </label>
+                            <button
+                                type="button"
+                                onClick={() => crear.setData('detalles', [...crear.data.detalles, { material_id: '', cantidad: '', precio_unitario: '' }])}
+                                className="text-[11px] font-bold text-brand-600 hover:underline"
+                            >
+                                + Añadir material
+                            </button>
                         </div>
-                    </Field>
+                    </FormSection>
 
-                    <Field label="Observaciones Técnicas y Condiciones de Pago">
+                    <SubmitButton status={crear.processing ? 'submitting' : 'idle'} className="w-full">
+                        <IconPlus size={15} />
+                        Registrar Oferta
+                    </SubmitButton>
+                </FormPanel>
+            </div>
+
+            <Modal open={Boolean(seleccionando)} onClose={() => setSeleccionando(null)} title="Adjudicar cotización">
+                <form onSubmit={confirmarAdjudicacion} className="space-y-4 text-xs">
+                    {seleccionando && (
+                        <div className="rounded-lg border border-line bg-canvas p-3">
+                            <p className="font-semibold text-ink">{seleccionando.proveedor?.razon_social ?? `Proveedor #${seleccionando.proveedor_id}`}</p>
+                            <p className="text-muted">Oferta: {formatMoneda(Number(seleccionando.total))}</p>
+                        </div>
+                    )}
+                    <Field label="Motivo de la selección" required>
                         <Textarea
+                            value={adjudicar.data.motivo_seleccion}
+                            onChange={(e) => adjudicar.setData('motivo_seleccion', e.target.value)}
                             rows={3}
-                            value={cotObs}
-                            onChange={(e) => setCotObs(e.target.value)}
-                            placeholder="Incluye flete a obra, vigencia de oferta 15 días calendario, etc."
+                            placeholder="Mejor relación costo-plazo y cumplimiento técnico…"
                         />
                     </Field>
-
-                    <div className="flex justify-end gap-3 pt-2">
-                        <Button variant="secondary" type="button" onClick={() => setModalNuevaCot(false)}>
+                    <div className="flex justify-end gap-2 border-t border-line pt-2">
+                        <button type="button" onClick={() => setSeleccionando(null)} className="rounded-lg border border-line px-3 py-1.5 text-xs font-bold text-ink hover:bg-soft">
                             Cancelar
-                        </Button>
-                        <Button variant="mint" type="submit">
-                            Registrar Oferta
-                        </Button>
+                        </button>
+                        <button type="submit" className="rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-bold text-white hover:opacity-90">
+                            Adjudicar
+                        </button>
                     </div>
                 </form>
             </Modal>

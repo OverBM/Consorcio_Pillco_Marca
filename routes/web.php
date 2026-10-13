@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Web\AuthWebController;
 use App\Http\Controllers\Web\ComprasViewController;
+use App\Http\Controllers\Web\ContextoController;
 use App\Http\Controllers\Web\DashboardViewController;
 use App\Http\Controllers\Web\LogisticaViewController;
 use App\Http\Controllers\Web\PersonalSstViewController;
@@ -21,10 +22,12 @@ Route::view('/', 'landing')->name('home');
 Route::get('/login', [AuthWebController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthWebController::class, 'login']);
 Route::post('/logout', [AuthWebController::class, 'logout'])->name('logout');
-Route::get('/logout', [AuthWebController::class, 'logout']);
 
 // Rutas protegidas que requieren autenticación obligatoria
 Route::middleware(['auth'])->group(function () {
+    // Contexto operativo (obra / almacén activo)
+    Route::post('/contexto', [ContextoController::class, 'update'])->name('contexto.update');
+
     // Panel Principal
     Route::get('/panel', [DashboardViewController::class, 'panel'])->name('panel');
 

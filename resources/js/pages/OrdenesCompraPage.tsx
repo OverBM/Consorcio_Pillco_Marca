@@ -1,417 +1,343 @@
-import { useState, useMemo } from 'react';
+// Órdenes de Compra (Macroproceso MP-18).
+// Emisión formal de compromisos de adquisición a partir de una cotización adjudicada.
+// Datos desde props; alta vía `useHttp` contra `/api/v1/ordenes-compra`.
+
+import { useMemo, useState, type FormEvent } from 'react';
+import { router, useHttp, usePage } from '@inertiajs/react';
 import { PageHeader } from '../components/PageHeader';
-import { Card, Badge, Button, Modal } from '../components/ui';
-import { Field, Input, Select } from '../components/form';
+import { Card, Badge, Modal } from '../components/ui';
+import { Field, Input, Select, FormPanel, FormSection, SubmitButton } from '../components/form';
 import { DataTable } from '../components/DataTable';
-import { useAppStore } from '../store/AppContext';
+import { EmptyState } from '../components/EmptyState';
+import { useNotifications } from '../components/notifications/NotificationProvider';
 import { formatMoneda } from '../utils/format';
-import type { OrdenCompra } from '../types';
-import {
-    IconAlert,
-    IconBoxes,
-    IconCheckCircle,
-    IconDollar,
-    IconDownload,
-    IconFileText,
-    IconPlus,
-    IconSearch,
-    IconTruck,
-} from '../components/icons';
+import type { Catalogos } from '../types';
+import { IconPlus, IconSearch } from '../components/icons';
 
-export default function OrdenesCompraPage() {
-    const {
-        ordenesCompra,
-        requerimientos,
-        cotizaciones,
-        almacenes,
-        materiales,
-        createOrdenCompra,
-    } = useAppStore();
+interface CotizacionLineaDb {
+    material_id: number;
+    cantidad: number | string;
+    precio_unitario: number | string;
+    material?: { id: number; nombre: string } | null;
+}
 
-    const [filtroAlmacen, setFiltroAlmacen] = useState<string>('todos');
-    const [filtroEstado, setFiltroEstado] = useState<string>('todos');
-    const [busqueda, setBusqueda] = useState<string>('');
-    const [modalGenerarOC, setModalGenerarOC] = useState(false);
-    const [ocSeleccionada, setOcSeleccionada] = useState<OrdenCompra | null>(null);
+interface CotizacionSelDb {
+    id: number;
+    proveedor_id: number;
+    requerimiento_id: number;
+    total: number | string;
+    proveedor?: { id: number; ruc: string; razon_social: string } | null;
+    requerimiento?: { id: number; codigo: string; obra_id: number; obra?: { id: number; nombre: string } | null } | null;
+    detalles?: CotizacionLineaDb[];
+}
 
-    // Formulario de Generación de OC
-    const [ocReqId, setOcReqId] = useState(requerimientos[0]?.id ?? '');
-    const [ocCotId, setOcCotId] = useState(cotizaciones[0]?.id ?? '');
-    const [ocCondiciones, setOcCondiciones] = useState('Crédito 30 días contra factura y guía conforme');
-    const [ocAlmacenDestino, setOcAlmacenDestino] = useState(almacenes[0]?.id ?? '');
-    const [ocLugarEntrega, setOcLugarEntrega] = useState('Plataforma Principal Almacén Central');
+interface OrdenCompraDb {
+    id: number;
+    codigo: string;
+    proveedor_id: number;
+    requerimiento_id: number | null;
+    obra_id: number;
+    almacen_destino_id: number;
+    urgente: boolean;
+    estado: string;
+    total: number | string;
+    fecha_entrega_prometida: string | null;
+    created_at: string;
+    proveedor?: { id: number; ruc: string; razon_social: string } | null;
+    almacen_destino?: { id: number; nombre: string } | null;
+    detalles?: CotizacionLineaDb[];
+}
 
-    const cotizacionesDisponibles = useMemo(() => {
-        return cotizaciones.filter((c) => !ocReqId || c.requerimientoId === ocReqId);
-    }, [cotizaciones, ocReqId]);
+interface OrdenesCompraPageProps {
+    ordenesDb?: OrdenCompraDb[];
+    cotizacionesDb?: CotizacionSelDb[];
+}
 
-    const handleCrearOC = (e: React.FormEvent) => {
-        e.preventDefault();
-        const cot = cotizaciones.find((c) => c.id === ocCotId) || cotizaciones[0];
-        const req = requerimientos.find((r) => r.id === ocReqId);
-        if (!cot) return;
+type OrdenFila = Omit<OrdenCompraDb, 'id'> & { id: string };
 
-        const reqItems = req?.items ?? [
-            { materialId: materiales[0]?.id ?? 'mat-cemento-1', cantidad: 100, costoEstimadoUnitario: 30, subtotal: 3000 },
-        ];
+const ESTADO_META: Record<string, { tone: 'ok' | 'warn' | 'danger' | 'neutral'; label: string }> = {
+    emitida: { tone: 'warn', label: 'Emitida' },
+    confirmada_proveedor: { tone: 'neutral', label: 'Confirmada proveedor' },
+    en_transporte: { tone: 'warn', label: 'En tránsito' },
+    recepcionada_total: { tone: 'ok', label: 'Recepcionada' },
+    recepcionada_parcial: { tone: 'warn', label: 'Recepción parcial' },
+    anulada: { tone: 'danger', label: 'Anulada' },
+};
 
-        const precio = cot.precioTotalSoles ?? (cot as any).precioTotalOfertado ?? 15000;
+export default function OrdenesCompraPage({ ordenesDb = [], cotizacionesDb = [] }: OrdenesCompraPageProps) {
+    const notify = useNotifications();
+    const { catalogos } = usePage().props as unknown as { catalogos?: Catalogos };
+    const almacenes = catalogos?.almacenes ?? [];
 
-        createOrdenCompra({
-            requerimientoId: ocReqId,
-            proveedorRuc: cot.proveedorRuc,
-            proveedorNombre: cot.proveedorNombre,
-            montoTotal: precio,
-            almacenDestinoId: ocAlmacenDestino,
-            condicionesPago: ocCondiciones,
-            lugarEntrega: ocLugarEntrega,
-            estado: 'emitida',
-            fechaEmision: new Date().toISOString().slice(0, 10),
-            fechaCompromisoEntrega: new Date(Date.now() + (cot.plazoEntregaDias || 3) * 86400000)
-                .toISOString()
-                .slice(0, 10),
-            items: reqItems.map((it) => ({
-                materialId: it.materialId,
-                cantidad: it.cantidad,
-                precioUnitario: it.costoEstimadoUnitario,
-                total: it.subtotal,
-            })),
-        });
+    const crear = useHttp<{
+        cotizacion_id: string;
+        almacen_destino_id: string;
+        fecha_entrega_prometida: string;
+        urgente: boolean;
+    }>({ cotizacion_id: '', almacen_destino_id: '', fecha_entrega_prometida: '', urgente: false });
 
-        setModalGenerarOC(false);
-    };
+    const [busqueda, setBusqueda] = useState('');
+    const [filtroEstado, setFiltroEstado] = useState('todos');
+    const [detalle, setDetalle] = useState<OrdenFila | null>(null);
 
-    const ordenesFiltradas = useMemo(() => {
-        return ordenesCompra.filter((oc) => {
-            if (filtroAlmacen !== 'todos' && oc.almacenDestinoId !== filtroAlmacen) return false;
-            if (filtroEstado !== 'todos' && oc.estado !== filtroEstado) return false;
-            if (busqueda.trim()) {
+    const filas: OrdenFila[] = useMemo(() => ordenesDb.map((o) => ({ ...o, id: String(o.id) })), [ordenesDb]);
+
+    const filtradas = useMemo(
+        () =>
+            filas.filter((o) => {
+                if (filtroEstado !== 'todos' && o.estado !== filtroEstado) return false;
+                if (!busqueda.trim()) return true;
                 const q = busqueda.toLowerCase();
-                const matchId = (oc.codigo || oc.id).toLowerCase().includes(q);
-                const matchProv = oc.proveedorNombre.toLowerCase().includes(q);
-                const matchRuc = oc.proveedorRuc.toLowerCase().includes(q);
-                if (!matchId && !matchProv && !matchRuc) return false;
-            }
-            return true;
-        });
-    }, [ordenesCompra, filtroAlmacen, filtroEstado, busqueda]);
+                return (
+                    o.codigo.toLowerCase().includes(q) ||
+                    (o.proveedor?.razon_social ?? '').toLowerCase().includes(q) ||
+                    (o.proveedor?.ruc ?? '').includes(q)
+                );
+            }),
+        [filas, filtroEstado, busqueda],
+    );
 
-    // Métricas
-    const totalOCs = ordenesCompra.length;
-    const montoTotalComprometido = ordenesCompra.reduce((acc, oc) => acc + oc.montoTotal, 0);
-    const ocsEmitidas = ordenesCompra.filter((oc) => oc.estado === 'emitida').length;
-    const ocsEnTransito = ordenesCompra.filter((oc) => oc.estado === 'en_transporte').length;
+    const total = filas.length;
+    const montoComprometido = filas.reduce((acc, o) => acc + Number(o.total), 0);
+    const emitidas = filas.filter((o) => o.estado === 'emitida').length;
+    const enTransito = filas.filter((o) => o.estado === 'en_transporte').length;
+
+    const cotSel = cotizacionesDb.find((c) => String(c.id) === crear.data.cotizacion_id) ?? null;
+
+    const enviar = (event: FormEvent) => {
+        event.preventDefault();
+
+        if (!cotSel) {
+            notify.error('Selecciona la cotización adjudicada.');
+            return;
+        }
+        if (!crear.data.almacen_destino_id) {
+            notify.error('Selecciona el almacén de destino.');
+            return;
+        }
+
+        const detalles = (cotSel.detalles ?? []).map((d) => ({
+            material_id: d.material_id,
+            cantidad: Number(d.cantidad),
+            precio_unitario: Number(d.precio_unitario),
+        }));
+
+        if (detalles.length === 0) {
+            notify.error('La cotización seleccionada no tiene detalle de materiales.');
+            return;
+        }
+
+        crear.transform(() => ({
+            cotizacion_id: cotSel.id,
+            requerimiento_id: cotSel.requerimiento_id,
+            proveedor_id: cotSel.proveedor_id,
+            obra_id: cotSel.requerimiento?.obra_id ?? null,
+            almacen_destino_id: Number(crear.data.almacen_destino_id),
+            urgente: crear.data.urgente,
+            fecha_entrega_prometida: crear.data.fecha_entrega_prometida || null,
+            detalles,
+        }));
+
+        crear.post('/api/v1/ordenes-compra', {
+            onSuccess: () => {
+                notify.success('Orden de compra emitida.');
+                crear.setData({ cotizacion_id: '', almacen_destino_id: '', fecha_entrega_prometida: '', urgente: false });
+                router.reload({ only: ['ordenesDb', 'cotizacionesDb'] });
+            },
+            onError: (errors: Record<string, string>) => {
+                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo emitir la orden de compra.');
+            },
+        });
+    };
 
     return (
         <div className="space-y-6">
             <PageHeader
-                title="Órdenes de Compra y Emisión (Macroproceso MP-18)"
-                subtitle="Generación formal de compromisos de adquisición, asignación de almacén de destino y control logístico"
-                actions={
-                    <Button variant="mint" onClick={() => setModalGenerarOC(true)}>
-                        <IconPlus size={16} />
-                        Generar Orden de Compra
-                    </Button>
-                }
+                title="Órdenes de Compra"
+                subtitle="Emisión formal de compromisos de adquisición y asignación de almacén de destino"
             />
 
-            {/* KPIs */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <Card className="p-4 bg-surface border-line">
-                    <span className="text-xs font-mono uppercase text-muted">Órdenes Generadas</span>
-                    <p className="mt-1 text-2xl font-bold font-mono text-ink">{totalOCs}</p>
-                    <span className="text-xs text-muted">Correlativos emitidos</span>
+                <Card className="p-4">
+                    <span className="text-xs font-mono uppercase text-muted">Órdenes generadas</span>
+                    <p className="mt-1 text-2xl font-bold font-mono text-ink">{total}</p>
                 </Card>
-                <Card className="p-4 bg-surface border-line">
-                    <span className="text-xs font-mono uppercase text-muted">Monto Total Comprometido</span>
-                    <p className="mt-1 text-2xl font-bold font-mono text-ink">{formatMoneda(montoTotalComprometido)}</p>
-                    <span className="text-xs text-muted">Contratos y compromisos vigentes</span>
+                <Card className="p-4">
+                    <span className="text-xs font-mono uppercase text-muted">Monto comprometido</span>
+                    <p className="mt-1 text-2xl font-bold font-mono text-ink">{formatMoneda(montoComprometido)}</p>
                 </Card>
-                <Card className="p-4 bg-surface border-line">
-                    <span className="text-xs font-mono uppercase text-muted">En Emisión / Coordinación</span>
-                    <p className="mt-1 text-2xl font-bold font-mono text-amber-600">{ocsEmitidas}</p>
-                    <span className="text-xs text-muted">Pendientes de despacho por proveedor</span>
+                <Card className="p-4">
+                    <span className="text-xs font-mono uppercase text-muted">Emitidas</span>
+                    <p className="mt-1 text-2xl font-bold font-mono text-warn">{emitidas}</p>
                 </Card>
-                <Card className="p-4 bg-surface border-line">
-                    <span className="text-xs font-mono uppercase text-muted">En Ruta Logística</span>
-                    <p className="mt-1 text-2xl font-bold font-mono text-primary-600">{ocsEnTransito}</p>
-                    <span className="text-xs text-muted">Con guías de remisión en camino</span>
+                <Card className="p-4">
+                    <span className="text-xs font-mono uppercase text-muted">En tránsito</span>
+                    <p className="mt-1 text-2xl font-bold font-mono text-brand-600">{enTransito}</p>
                 </Card>
             </div>
 
-            {/* Filtros */}
-            <Card className="p-4 bg-surface border-line">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div className="flex flex-wrap items-center gap-3">
-                        <div className="relative min-w-[240px]">
-                            <IconSearch size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-                            <input
-                                type="text"
-                                placeholder="Buscar por OC, RUC o proveedor..."
-                                value={busqueda}
-                                onChange={(e) => setBusqueda(e.target.value)}
-                                className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-line bg-canvas text-ink focus:outline-none focus:ring-2 focus:ring-primary-500"
+            <div className="grid gap-6 lg:grid-cols-3">
+                <div className="space-y-4 lg:col-span-2">
+                    <Card className="p-4">
+                        <div className="flex flex-wrap items-center gap-3">
+                            <div className="relative min-w-[220px] flex-1">
+                                <IconSearch size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+                                <input
+                                    type="text"
+                                    placeholder="Buscar por OC, RUC o proveedor…"
+                                    value={busqueda}
+                                    onChange={(e) => setBusqueda(e.target.value)}
+                                    className="w-full rounded-lg border border-line bg-canvas py-1.5 pl-9 pr-3 text-xs text-ink focus:outline-none focus:ring-2 focus:ring-brand-500"
+                                />
+                            </div>
+                            <Select value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)} aria-label="Filtrar estado">
+                                <option value="todos">Todos los estados</option>
+                                <option value="emitida">Emitida</option>
+                                <option value="confirmada_proveedor">Confirmada proveedor</option>
+                                <option value="en_transporte">En tránsito</option>
+                                <option value="recepcionada_total">Recepcionada</option>
+                            </Select>
+                        </div>
+                    </Card>
+
+                    <Card title={`Órdenes de compra (${filtradas.length})`}>
+                        {filas.length === 0 ? (
+                            <EmptyState title="Sin órdenes de compra" hint="Emite una OC desde una cotización adjudicada." />
+                        ) : (
+                            <DataTable
+                                emptyLabel="No hay órdenes que coincidan con los filtros."
+                                columns={[
+                                    { key: 'codigo', header: 'N° Orden', mono: true, cell: (o) => <span className="font-semibold text-ink">{o.codigo}</span> },
+                                    {
+                                        key: 'proveedor',
+                                        header: 'Proveedor / RUC',
+                                        cell: (o) => (
+                                            <div>
+                                                <p className="text-xs font-semibold text-ink">{o.proveedor?.razon_social ?? `Proveedor #${o.proveedor_id}`}</p>
+                                                <p className="font-mono text-[11px] text-muted">RUC: {o.proveedor?.ruc ?? '—'}</p>
+                                            </div>
+                                        ),
+                                    },
+                                    { key: 'almacen', header: 'Almacén destino', cell: (o) => o.almacen_destino?.nombre ?? `Almacén #${o.almacen_destino_id}` },
+                                    { key: 'monto', header: 'Monto total', align: 'right', cell: (o) => <span className="font-mono font-bold text-ink">{formatMoneda(Number(o.total))}</span> },
+                                    { key: 'entrega', header: 'Entrega prometida', mono: true, cell: (o) => o.fecha_entrega_prometida ?? '—' },
+                                    {
+                                        key: 'estado',
+                                        header: 'Estado',
+                                        align: 'center',
+                                        cell: (o) => {
+                                            const meta = ESTADO_META[o.estado] ?? { tone: 'neutral' as const, label: o.estado };
+                                            return <Badge tone={meta.tone}>{meta.label}</Badge>;
+                                        },
+                                    },
+                                    {
+                                        key: 'acciones',
+                                        header: 'Acciones',
+                                        align: 'right',
+                                        cell: (o) => (
+                                            <button onClick={() => setDetalle(o)} className="btn-secondary !px-2 !py-1 text-xs">
+                                                Ver detalle
+                                            </button>
+                                        ),
+                                    },
+                                ]}
+                                rows={filtradas}
                             />
-                        </div>
-                        <select
-                            value={filtroAlmacen}
-                            onChange={(e) => setFiltroAlmacen(e.target.value)}
-                            className="px-3 py-1.5 text-xs rounded-lg border border-line bg-canvas text-ink font-mono"
-                        >
-                            <option value="todos">Todos los Almacenes Destino</option>
-                            {almacenes.map((a) => (
-                                <option key={a.id} value={a.id}>
-                                    {a.nombre}
-                                </option>
-                            ))}
-                        </select>
-                        <select
-                            value={filtroEstado}
-                            onChange={(e) => setFiltroEstado(e.target.value)}
-                            className="px-3 py-1.5 text-xs rounded-lg border border-line bg-canvas text-ink font-mono"
-                        >
-                            <option value="todos">Todos los Estados</option>
-                            <option value="emitida">Emitida</option>
-                            <option value="confirmada_proveedor">Confirmada Proveedor</option>
-                            <option value="en_transporte">En Transporte</option>
-                            <option value="recepcionada_total">Recepcionada Total</option>
-                        </select>
-                    </div>
-                    <span className="text-xs text-muted font-mono">
-                        Mostrando {ordenesFiltradas.length} de {ordenesCompra.length} órdenes de compra
-                    </span>
+                        )}
+                    </Card>
                 </div>
-            </Card>
 
-            {/* Tabla de Órdenes de Compra */}
-            <Card className="p-5">
-                <DataTable<{ id: string }>
-                    emptyLabel="No hay órdenes de compra emitidas que coincidan con la búsqueda."
-                    columns={[
-                        { key: 'codigo', header: 'N° Orden', mono: true },
-                        { key: 'proveedor', header: 'Proveedor / RUC' },
-                        { key: 'almacen', header: 'Almacén Destino' },
-                        { key: 'monto', header: 'Monto Total', align: 'right', mono: true },
-                        { key: 'fechaEntrega', header: 'Compromiso Entrega', mono: true },
-                        { key: 'estado', header: 'Estado', align: 'center' },
-                        { key: 'acciones', header: 'Acciones', align: 'right' },
-                    ]}
-                    rows={ordenesFiltradas.map((oc) => {
-                        const alm = almacenes.find((a) => a.id === oc.almacenDestinoId);
-                        return {
-                            id: oc.id,
-                            codigo: oc.codigo ?? oc.id,
-                            proveedor: (
-                                <div>
-                                    <p className="font-semibold text-ink">{oc.proveedorNombre}</p>
-                                    <p className="text-xs font-mono text-muted">RUC: {oc.proveedorRuc}</p>
-                                </div>
-                            ),
-                            almacen: alm?.nombre ?? oc.almacenDestinoId,
-                            monto: (
-                                <span className="font-bold font-mono text-ink text-sm">
-                                    {formatMoneda(oc.montoTotal)}
-                                </span>
-                            ),
-                            fechaEntrega: oc.fechaCompromisoEntrega,
-                            estado: (
-                                <Badge
-                                    tone={
-                                        oc.estado === 'recepcionada_total'
-                                            ? 'ok'
-                                            : oc.estado === 'en_transporte'
-                                            ? 'warn'
-                                            : 'neutral'
-                                    }
-                                >
-                                    {oc.estado === 'emitida'
-                                        ? 'Emitida'
-                                        : oc.estado === 'en_transporte'
-                                        ? 'En Tránsito'
-                                        : oc.estado === 'recepcionada_total'
-                                        ? 'Entregada Conforme'
-                                        : 'Confirmada'}
-                                </Badge>
-                            ),
-                            acciones: (
-                                <div className="flex items-center justify-end gap-2">
-                                    <Button
-                                        variant="secondary"
-                                        size="sm"
-                                        onClick={() => setOcSeleccionada(oc)}
-                                    >
-                                        <IconFileText size={13} />
-                                        Ver Documento
-                                    </Button>
-                                </div>
-                            ),
-                        };
-                    })}
-                />
-            </Card>
-
-            {/* Modal Documento Oficial de Orden de Compra */}
-            <Modal
-                open={Boolean(ocSeleccionada)}
-                onClose={() => setOcSeleccionada(null)}
-                title={`Orden de Compra: ${ocSeleccionada?.codigo ?? ocSeleccionada?.id ?? ''}`}
-                wide
-            >
-                {ocSeleccionada && (
-                    <div className="space-y-4">
-                        <div className="p-4 bg-white border border-line rounded-lg shadow-sm font-sans text-xs space-y-4 text-slate-800">
-                            <div className="flex items-center justify-between border-b pb-3">
-                                <div>
-                                    <h2 className="text-sm font-bold text-slate-900">CONSORCIO PILLCO MARCA</h2>
-                                    <p className="text-[11px] text-slate-500">RUC: 20608920194 • Obra: Sector Huancayo - Valle del Mantaro</p>
-                                </div>
-                                <div className="text-right">
-                                    <span className="text-xs font-mono font-bold px-2 py-1 bg-slate-100 rounded border">
-                                        {ocSeleccionada.codigo ?? ocSeleccionada.id}
-                                    </span>
-                                    <p className="text-[11px] text-slate-500 mt-1">Fecha: {ocSeleccionada.fechaEmision}</p>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4 bg-slate-50 p-3 rounded border">
-                                <div>
-                                    <span className="text-slate-500 block font-semibold">SEÑOR(ES) / PROVEEDOR:</span>
-                                    <p className="font-bold text-slate-900">{ocSeleccionada.proveedorNombre}</p>
-                                    <p className="font-mono text-slate-600">RUC: {ocSeleccionada.proveedorRuc}</p>
-                                </div>
-                                <div>
-                                    <span className="text-slate-500 block font-semibold">LUGAR DE ENTREGA / ALMACÉN:</span>
-                                    <p className="font-bold text-slate-900">
-                                        {almacenes.find((a) => a.id === ocSeleccionada.almacenDestinoId)?.nombre ??
-                                            ocSeleccionada.almacenDestinoId}
-                                    </p>
-                                    <p className="text-slate-600">Fecha Límite: {ocSeleccionada.fechaCompromisoEntrega}</p>
-                                </div>
-                            </div>
-
-                            <div>
-                                <span className="font-semibold text-slate-700 block mb-1">CONDICIONES CONTRACTUALES:</span>
-                                <p className="p-2 bg-slate-50 rounded border text-slate-800">
-                                    {ocSeleccionada.condicionesPago}
-                                </p>
-                            </div>
-
-                            <div className="pt-2 flex justify-between items-center text-sm font-bold border-t">
-                                <span>TOTAL ORDEN DE COMPRA (INC. IGV):</span>
-                                <span className="text-base text-emerald-700 font-mono">
-                                    {formatMoneda(ocSeleccionada.montoTotal)}
-                                </span>
-                            </div>
-
-                            <div className="grid grid-cols-3 gap-4 pt-8 text-center text-[10px] text-slate-500">
-                                <div className="border-t pt-1">
-                                    <p className="font-bold text-slate-800">Jefe de Logística</p>
-                                    <p>Consorcio Pillco Marca</p>
-                                </div>
-                                <div className="border-t pt-1">
-                                    <p className="font-bold text-slate-800">Residente de Obra</p>
-                                    <p>V°B° Frente de Obra</p>
-                                </div>
-                                <div className="border-t pt-1">
-                                    <p className="font-bold text-slate-800">Aceptación Proveedor</p>
-                                    <p>Firma y Sello</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="flex justify-end gap-2 pt-2">
-                            <Button variant="secondary" onClick={() => setOcSeleccionada(null)}>
-                                Cerrar
-                            </Button>
-                            <Button variant="mint" onClick={() => window.print()}>
-                                <IconDownload size={14} />
-                                Imprimir / Exportar PDF
-                            </Button>
-                        </div>
-                    </div>
-                )}
-            </Modal>
-
-            {/* Modal Generar Orden de Compra */}
-            <Modal
-                open={modalGenerarOC}
-                onClose={() => setModalGenerarOC(false)}
-                title="Generar Nueva Orden de Compra Formal"
-                wide
-            >
-                <form onSubmit={handleCrearOC} className="space-y-4">
-                    <Field label="Requerimiento Base">
-                        <Select
-                            value={ocReqId}
-                            onChange={(e) => {
-                                setOcReqId(e.target.value);
-                            }}
-                        >
-                            {requerimientos.map((r) => (
-                                <option key={r.id} value={r.id}>
-                                    {r.codigo ?? r.id} — {r.partidaPresupuestal} ({formatMoneda(r.costoTotalEstimado)})
-                                </option>
-                            ))}
-                        </Select>
-                    </Field>
-
-                    <Field label="Oferta / Cotización Adjudicada">
-                        <Select
-                            value={ocCotId}
-                            onChange={(e) => setOcCotId(e.target.value)}
-                        >
-                            {cotizacionesDisponibles.map((c) => {
-                                const precio = c.precioTotalSoles ?? (c as any).precioTotalOfertado ?? 0;
-                                return (
-                                    <option key={c.id} value={c.id}>
-                                        {c.proveedorNombre} — {formatMoneda(precio)} (Plazo: {c.plazoEntregaDias}d)
-                                    </option>
-                                );
-                            })}
-                        </Select>
-                    </Field>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <Field label="Almacén de Destino para Descarga">
-                            <Select
-                                value={ocAlmacenDestino}
-                                onChange={(e) => setOcAlmacenDestino(e.target.value)}
-                            >
-                                {almacenes.map((a) => (
-                                    <option key={a.id} value={a.id}>
-                                        {a.nombre} ({a.tipo})
+                <FormPanel title="Emitir Orden de Compra" subtitle="Desde una cotización adjudicada" onSubmit={enviar} className="text-xs">
+                    <FormSection title="Cotización" columns={1}>
+                        <Field label="Oferta adjudicada" required>
+                            <Select value={crear.data.cotizacion_id} onChange={(e) => crear.setData('cotizacion_id', e.target.value)}>
+                                <option value="">Selecciona cotización…</option>
+                                {cotizacionesDb.map((c) => (
+                                    <option key={c.id} value={String(c.id)}>
+                                        {c.proveedor?.razon_social ?? `Proveedor #${c.proveedor_id}`} — {formatMoneda(Number(c.total))}
                                     </option>
                                 ))}
                             </Select>
                         </Field>
-                        <Field label="Punto de Entrega / Descarga en Obra">
-                            <Input
-                                value={ocLugarEntrega}
-                                onChange={(e) => setOcLugarEntrega(e.target.value)}
-                                placeholder="Ej: Plataforma Central Almacén Comuneros"
-                                required
-                            />
+                        {cotSel && (
+                            <div className="rounded-lg border border-line bg-canvas p-2 text-[11px] text-muted">
+                                <p>Requerimiento: <span className="font-semibold text-ink">{cotSel.requerimiento?.codigo ?? `#${cotSel.requerimiento_id}`}</span></p>
+                                <p>Obra: {cotSel.requerimiento?.obra?.nombre ?? '—'}</p>
+                                <p>{cotSel.detalles?.length ?? 0} material(es) en el detalle</p>
+                            </div>
+                        )}
+                    </FormSection>
+
+                    <FormSection title="Destino" columns={1}>
+                        <Field label="Almacén de destino" required>
+                            <Select value={crear.data.almacen_destino_id} onChange={(e) => crear.setData('almacen_destino_id', e.target.value)}>
+                                <option value="">Selecciona almacén…</option>
+                                {almacenes.map((a) => (
+                                    <option key={a.id} value={String(a.id)}>{a.nombre}</option>
+                                ))}
+                            </Select>
                         </Field>
-                    </div>
+                        <Field label="Fecha de entrega prometida">
+                            <Input type="date" value={crear.data.fecha_entrega_prometida} onChange={(e) => crear.setData('fecha_entrega_prometida', e.target.value)} />
+                        </Field>
+                        <label className="flex items-center gap-2 text-ink">
+                            <input type="checkbox" checked={crear.data.urgente} onChange={(e) => crear.setData('urgente', e.target.checked)} className="accent-brand-600" />
+                            Marcar como urgente
+                        </label>
+                    </FormSection>
 
-                    <Field label="Términos y Condiciones de Pago">
-                        <Input
-                            value={ocCondiciones}
-                            onChange={(e) => setOcCondiciones(e.target.value)}
-                            placeholder="Crédito a 30 días, flete incluido, retención de fondo de garantía 5%"
-                            required
-                        />
-                    </Field>
+                    <SubmitButton status={crear.processing ? 'submitting' : 'idle'} className="w-full">
+                        <IconPlus size={15} />
+                        Emitir Orden de Compra
+                    </SubmitButton>
+                </FormPanel>
+            </div>
 
-                    <div className="flex justify-end gap-3 pt-2">
-                        <Button variant="secondary" type="button" onClick={() => setModalGenerarOC(false)}>
-                            Cancelar
-                        </Button>
-                        <Button variant="mint" type="submit">
-                            Emitir Orden de Compra
-                        </Button>
+            <Modal open={Boolean(detalle)} onClose={() => setDetalle(null)} title={`Orden de Compra ${detalle?.codigo ?? ''}`} wide>
+                {detalle && (
+                    <div className="space-y-4 text-xs">
+                        <div className="grid grid-cols-2 gap-3 rounded-lg border border-line bg-canvas p-3">
+                            <div>
+                                <span className="block text-muted">Proveedor:</span>
+                                <span className="font-bold text-ink">{detalle.proveedor?.razon_social ?? `#${detalle.proveedor_id}`}</span>
+                                <p className="font-mono text-[11px] text-muted">RUC: {detalle.proveedor?.ruc ?? '—'}</p>
+                            </div>
+                            <div>
+                                <span className="block text-muted">Almacén destino:</span>
+                                <span className="font-bold text-ink">{detalle.almacen_destino?.nombre ?? `Almacén #${detalle.almacen_destino_id}`}</span>
+                                <p className="text-[11px] text-muted">Entrega: {detalle.fecha_entrega_prometida ?? '—'}</p>
+                            </div>
+                        </div>
+
+                        <div className="overflow-hidden rounded-lg border border-line">
+                            <table className="w-full text-left text-xs">
+                                <thead className="border-b border-line bg-soft text-muted">
+                                    <tr>
+                                        <th className="p-2.5">Material</th>
+                                        <th className="p-2.5 text-right">Cantidad</th>
+                                        <th className="p-2.5 text-right">P. Unitario</th>
+                                        <th className="p-2.5 text-right">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-line">
+                                    {(detalle.detalles ?? []).map((d, idx) => (
+                                        <tr key={idx}>
+                                            <td className="p-2.5 font-medium text-ink">{d.material?.nombre ?? `Material #${d.material_id}`}</td>
+                                            <td className="p-2.5 text-right font-mono">{Number(d.cantidad)}</td>
+                                            <td className="p-2.5 text-right font-mono">{formatMoneda(Number(d.precio_unitario))}</td>
+                                            <td className="p-2.5 text-right font-mono font-bold text-ink">{formatMoneda(Number(d.cantidad) * Number(d.precio_unitario))}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div className="flex items-center justify-between border-t border-line pt-2 text-sm font-bold">
+                            <span>TOTAL</span>
+                            <span className="font-mono text-brand-700">{formatMoneda(Number(detalle.total))}</span>
+                        </div>
                     </div>
-                </form>
+                )}
             </Modal>
         </div>
     );

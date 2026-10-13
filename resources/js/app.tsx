@@ -7,15 +7,15 @@ import { createInertiaApp } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 
 import { AppLayout } from '@/components/layout/AppLayout';
-import { AppProvider } from '@/store/AppContext';
+import { NotificationProvider } from '@/components/notifications/NotificationProvider';
 
 const appName = 'Consorcio Pillco Marca';
 
 function AppShell({ children }: { children: ReactNode }) {
     return (
-        <AppProvider>
+        <NotificationProvider>
             <AppLayout>{children}</AppLayout>
-        </AppProvider>
+        </NotificationProvider>
     );
 }
 

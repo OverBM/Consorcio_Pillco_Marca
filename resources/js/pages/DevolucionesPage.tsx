@@ -1,418 +1,350 @@
-import { useState, useMemo } from 'react';
-import { PageHeader } from '../components/PageHeader';
-import { Card, Badge, Button, Modal } from '../components/ui';
-import { Field, Input, Select, Textarea } from '../components/form';
-import { DataTable } from '../components/DataTable';
-import { useAppStore } from '../store/AppContext';
-import { formatCantidad, formatMoneda } from '../utils/format';
-import {
-    IconAlert,
-    IconBoxes,
-    IconCheckCircle,
-    IconDollar,
-    IconFileText,
-    IconPlus,
-    IconRefresh,
-    IconSearch,
-    IconTruck,
-} from '../components/icons';
+// Devoluciones y Rechazos a Proveedor (Macroproceso MP-19 / Bizagi 26).
+// Registro de actas de no conformidad sobre una recepción y egreso de stock.
+// Datos desde props `devolucionesDb` y `recepcionesDb`; escrituras vía `useHttp`.
 
-interface DevolucionItem {
-    id: string;
-    ordenCompraId: string;
-    proveedor: string;
-    material: string;
-    cantidadRechazada: number;
-    unidad: string;
-    montoRechazado: number;
-    motivo: string;
-    fechaRegistro: string;
-    tipoSolucion: 'reposicion_fisica' | 'nota_credito' | 'en_evaluacion';
-    estado: 'pendiente' | 'en_camino' | 'resuelta';
+import { useMemo, useState, type FormEvent } from 'react';
+import { router, useHttp } from '@inertiajs/react';
+import { PageHeader } from '../components/PageHeader';
+import { Card, Badge } from '../components/ui';
+import { Field, Input, Select, Textarea, FormPanel, FormSection, SubmitButton } from '../components/form';
+import { DataTable } from '../components/DataTable';
+import { EmptyState } from '../components/EmptyState';
+import { useNotifications } from '../components/notifications/NotificationProvider';
+import { formatCantidad, formatFs } from '../utils/format';
+import { IconPlus, IconSearch, IconX } from '../components/icons';
+
+interface MaterialDb {
+    id: number;
+    nombre: string;
+    unidad_medida?: { codigo: string } | null;
 }
 
-export default function DevolucionesPage() {
-    const { materiales, almacenes } = useAppStore();
+interface DevolucionDetalleDb {
+    id: number;
+    material_id: number;
+    cantidad: number | string;
+    material?: MaterialDb | null;
+}
 
-    const [devoluciones, setDevoluciones] = useState<DevolucionItem[]>([
-        {
-            id: 'DEV-2026-001',
-            ordenCompraId: 'OC-2026-0042',
-            proveedor: 'Ferretería Industrial del Centro SAC',
-            material: 'Acero Corrugado 1/2" Grado 60',
-            cantidadRechazada: 45,
-            unidad: 'Varillas',
-            montoRechazado: 2025.00,
-            motivo: 'Oxidación superficial severa y deformación en extremos por mal estibado en transporte.',
-            fechaRegistro: '2026-10-02',
-            tipoSolucion: 'reposicion_fisica',
-            estado: 'en_camino',
-        },
-        {
-            id: 'DEV-2026-002',
-            ordenCompraId: 'OC-2026-0038',
-            proveedor: 'Unión de Concreteras Huancayo SA (UNICON)',
-            material: 'Cemento Andino Tipo I',
-            cantidadRechazada: 30,
-            unidad: 'Bolsas',
-            montoRechazado: 870.00,
-            motivo: 'Bolsas rotas con humedad detectada durante la descarga en plataforma Almacén Comuneros.',
-            fechaRegistro: '2026-09-28',
-            tipoSolucion: 'nota_credito',
-            estado: 'resuelta',
-        },
-        {
-            id: 'DEV-2026-003',
-            ordenCompraId: 'OC-2026-0049',
-            proveedor: 'Seguridad Industrial & EPPs Andina SAC',
-            material: 'Casco de Seguridad Tipo Jockey con Barbiquejo',
-            cantidadRechazada: 20,
-            unidad: 'Unidades',
-            montoRechazado: 560.00,
-            motivo: 'Lote no cuenta con certificación ANSI Z89.1 impresa en carcasa según TDR.',
-            fechaRegistro: '2026-10-04',
-            tipoSolucion: 'reposicion_fisica',
-            estado: 'pendiente',
-        },
-    ]);
+interface RecepcionDetalleDb {
+    id: number;
+    material_id: number;
+    material?: MaterialDb | null;
+}
 
-    const [filtroEstado, setFiltroEstado] = useState<string>('todos');
-    const [busqueda, setBusqueda] = useState<string>('');
-    const [modalNuevaDev, setModalNuevaDev] = useState(false);
-    const [devSeleccionada, setDevSeleccionada] = useState<DevolucionItem | null>(null);
+interface RecepcionDb {
+    id: number;
+    codigo: string;
+    almacen_id: number;
+    orden_compra_id: number;
+    almacen?: { id: number; nombre: string } | null;
+    orden_compra?: { id: number; codigo: string; proveedor?: { id: number; razon_social: string } | null } | null;
+    detalles?: RecepcionDetalleDb[];
+}
 
-    // Formulario
-    const [formOC, setFormOC] = useState('OC-2026-0050');
-    const [formProv, setFormProv] = useState('Ferretería Industrial del Centro SAC');
-    const [formMaterial, setFormMaterial] = useState('Acero Corrugado 1/2"');
-    const [formCantidad, setFormCantidad] = useState(10);
-    const [formUnidad, setFormUnidad] = useState('Varillas');
-    const [formMonto, setFormMonto] = useState(450);
-    const [formMotivo, setFormMotivo] = useState('');
-    const [formSolucion, setFormSolucion] = useState<'reposicion_fisica' | 'nota_credito' | 'en_evaluacion'>('reposicion_fisica');
+interface DevolucionDb {
+    id: number;
+    codigo: string;
+    recepcion_id: number;
+    proveedor_id: number;
+    motivo: string;
+    estado: string;
+    created_at: string;
+    proveedor?: { id: number; razon_social: string } | null;
+    recepcion?: { id: number; codigo: string; almacen?: { id: number; nombre: string } | null } | null;
+    detalles?: DevolucionDetalleDb[];
+}
 
-    const handleGuardarDevolucion = (e: React.FormEvent) => {
-        e.preventDefault();
-        const nueva: DevolucionItem = {
-            id: `DEV-2026-00${devoluciones.length + 1}`,
-            ordenCompraId: formOC,
-            proveedor: formProv,
-            material: formMaterial,
-            cantidadRechazada: Number(formCantidad),
-            unidad: formUnidad,
-            montoRechazado: Number(formMonto),
-            motivo: formMotivo || 'Rechazo por control de calidad en almacén de recepción.',
-            fechaRegistro: new Date().toISOString().slice(0, 10),
-            tipoSolucion: formSolucion,
-            estado: 'pendiente',
-        };
-        setDevoluciones((prev) => [nueva, ...prev]);
-        setModalNuevaDev(false);
-        setFormMotivo('');
+interface DevolucionesPageProps {
+    devolucionesDb?: DevolucionDb[];
+    recepcionesDb?: RecepcionDb[];
+}
+
+type DevolucionFila = Omit<DevolucionDb, 'id'> & { id: string };
+
+const ESTADO_META: Record<string, { tone: 'ok' | 'warn' | 'danger' | 'neutral'; label: string }> = {
+    registrada: { tone: 'warn', label: 'Registrada' },
+    aprobada: { tone: 'ok', label: 'Aprobada' },
+    anulada: { tone: 'neutral', label: 'Anulada' },
+};
+
+interface LineaDev {
+    material_id: string;
+    cantidad: string;
+}
+
+function materialPrincipal(d: { detalles?: DevolucionDetalleDb[] }): string {
+    const detalles = d.detalles ?? [];
+    if (detalles.length === 0) return '—';
+    const primero = detalles[0].material?.nombre ?? `Material #${detalles[0].material_id}`;
+    return detalles.length > 1 ? `${primero} (+${detalles.length - 1})` : primero;
+}
+
+function cantidadTotal(d: { detalles?: DevolucionDetalleDb[] }): number {
+    return (d.detalles ?? []).reduce((acc, det) => acc + Number(det.cantidad), 0);
+}
+
+export default function DevolucionesPage({ devolucionesDb = [], recepcionesDb = [] }: DevolucionesPageProps) {
+    const notify = useNotifications();
+
+    const crear = useHttp<{
+        recepcion_id: string;
+        proveedor_id: string;
+        motivo: string;
+        detalles: LineaDev[];
+    }>({
+        recepcion_id: '',
+        proveedor_id: '',
+        motivo: '',
+        detalles: [{ material_id: '', cantidad: '' }] as LineaDev[],
+    });
+
+    const [busqueda, setBusqueda] = useState('');
+    const [filtroEstado, setFiltroEstado] = useState('todos');
+
+    const filas: DevolucionFila[] = useMemo(
+        () => devolucionesDb.map((d) => ({ ...d, id: String(d.id) })),
+        [devolucionesDb],
+    );
+
+    const filtradas = useMemo(
+        () =>
+            filas.filter((d) => {
+                if (filtroEstado !== 'todos' && d.estado !== filtroEstado) return false;
+                if (!busqueda.trim()) return true;
+                const q = busqueda.toLowerCase();
+                return (
+                    d.codigo.toLowerCase().includes(q) ||
+                    (d.proveedor?.razon_social ?? '').toLowerCase().includes(q) ||
+                    materialPrincipal(d).toLowerCase().includes(q)
+                );
+            }),
+        [filas, filtroEstado, busqueda],
+    );
+
+    const recepcionSel = recepcionesDb.find((r) => String(r.id) === crear.data.recepcion_id) ?? null;
+
+    const seleccionarRecepcion = (valor: string) => {
+        crear.setData('recepcion_id', valor);
+        const recepcion = recepcionesDb.find((r) => String(r.id) === valor);
+        crear.setData('proveedor_id', recepcion?.orden_compra?.proveedor ? String(recepcion.orden_compra.proveedor.id) : '');
+        crear.setData('detalles', [{ material_id: '', cantidad: '' }]);
     };
 
-    const devolucionesFiltradas = useMemo(() => {
-        return devoluciones.filter((d) => {
-            if (filtroEstado !== 'todos' && d.estado !== filtroEstado) return false;
-            if (busqueda.trim()) {
-                const q = busqueda.toLowerCase();
-                const matchId = d.id.toLowerCase().includes(q);
-                const matchProv = d.proveedor.toLowerCase().includes(q);
-                const matchMat = d.material.toLowerCase().includes(q);
-                if (!matchId && !matchProv && !matchMat) return false;
-            }
-            return true;
-        });
-    }, [devoluciones, filtroEstado, busqueda]);
+    const setLinea = (indice: number, campo: keyof LineaDev, valor: string) =>
+        crear.setData(
+            'detalles',
+            crear.data.detalles.map((l, i) => (i === indice ? { ...l, [campo]: valor } : l)),
+        );
 
-    // Métricas
-    const totalDevoluciones = devoluciones.length;
-    const montoTotalRechazado = devoluciones.reduce((acc, d) => acc + d.montoRechazado, 0);
-    const pendientesCount = devoluciones.filter((d) => d.estado === 'pendiente' || d.estado === 'en_camino').length;
-    const resueltasCount = devoluciones.filter((d) => d.estado === 'resuelta').length;
+    const agregarLinea = () => crear.setData('detalles', [...crear.data.detalles, { material_id: '', cantidad: '' }]);
+
+    const quitarLinea = (indice: number) => crear.setData('detalles', crear.data.detalles.filter((_, i) => i !== indice));
+
+    const reiniciar = () => {
+        crear.setData('recepcion_id', '');
+        crear.setData('proveedor_id', '');
+        crear.setData('motivo', '');
+        crear.setData('detalles', [{ material_id: '', cantidad: '' }]);
+    };
+
+    const enviar = (event: FormEvent) => {
+        event.preventDefault();
+
+        if (!crear.data.recepcion_id) {
+            notify.error('Selecciona la recepción de origen.');
+            return;
+        }
+        if (!crear.data.proveedor_id) {
+            notify.error('La recepción seleccionada no tiene proveedor asociado.');
+            return;
+        }
+        if (!crear.data.motivo.trim()) {
+            notify.error('Describe el motivo de la no conformidad.');
+            return;
+        }
+
+        const detalles = crear.data.detalles
+            .filter((l) => l.material_id && Number(l.cantidad) > 0)
+            .map((l) => ({ material_id: Number(l.material_id), cantidad: Number(l.cantidad) }));
+
+        if (detalles.length === 0) {
+            notify.error('Agrega al menos un material con cantidad mayor a cero.');
+            return;
+        }
+
+        crear.transform(() => ({
+            recepcion_id: Number(crear.data.recepcion_id),
+            proveedor_id: Number(crear.data.proveedor_id),
+            motivo: crear.data.motivo,
+            detalles,
+        }));
+
+        crear.post('/api/v1/devoluciones', {
+            onSuccess: () => {
+                notify.success('Devolución registrada y stock actualizado.');
+                reiniciar();
+                router.reload({ only: ['devolucionesDb'] });
+            },
+            onError: (errors: Record<string, string>) => {
+                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar la devolución.');
+            },
+        });
+    };
 
     return (
         <div className="space-y-6">
             <PageHeader
                 title="Devoluciones y Rechazos a Proveedor"
-                subtitle="Registro de actas de no conformidad, reposición física de materiales y compensación por nota de crédito"
-                action={
-                    <Button variant="mint" onClick={() => setModalNuevaDev(true)}>
-                        <IconPlus size={16} />
-                        Registrar Acta de Rechazo
-                    </Button>
-                }
+                subtitle="Actas de no conformidad, egreso de inventario y compensación al proveedor"
             />
 
-            {/* KPIs */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <Card className="p-4 bg-surface border-line">
-                    <span className="text-xs font-mono uppercase text-muted">Devoluciones Totales</span>
-                    <p className="mt-1 text-2xl font-bold font-mono text-ink">{totalDevoluciones}</p>
-                    <span className="text-xs text-muted">Actas de rechazo emitidas</span>
-                </Card>
-                <Card className="p-4 bg-surface border-line">
-                    <span className="text-xs font-mono uppercase text-muted">Monto Observado / Rechazado</span>
-                    <p className="mt-1 text-2xl font-bold font-mono text-red-600">{formatMoneda(montoTotalRechazado)}</p>
-                    <span className="text-xs text-muted">En proceso de recupero económico</span>
-                </Card>
-                <Card className="p-4 bg-surface border-line">
-                    <span className="text-xs font-mono uppercase text-muted">Pendientes de Reposición</span>
-                    <p className="mt-1 text-2xl font-bold font-mono text-amber-600">{pendientesCount}</p>
-                    <span className="text-xs text-muted">A la espera de nuevo lote</span>
-                </Card>
-                <Card className="p-4 bg-surface border-line">
-                    <span className="text-xs font-mono uppercase text-muted">Casos Resueltos</span>
-                    <p className="mt-1 text-2xl font-bold font-mono text-emerald-600">{resueltasCount}</p>
-                    <span className="text-xs text-emerald-700">Reposición o N/C completada</span>
-                </Card>
-            </div>
-
-            {/* Filtros */}
-            <Card className="p-4 bg-surface border-line">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div className="flex flex-wrap items-center gap-3">
-                        <div className="relative min-w-[240px]">
-                            <IconSearch size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-                            <input
-                                type="text"
-                                placeholder="Buscar por acta, proveedor o material..."
-                                value={busqueda}
-                                onChange={(e) => setBusqueda(e.target.value)}
-                                className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-line bg-canvas text-ink focus:outline-none focus:ring-2 focus:ring-primary-500"
-                            />
+            <div className="grid gap-6 lg:grid-cols-3">
+                <div className="space-y-4 lg:col-span-2">
+                    <Card className="p-4">
+                        <div className="flex flex-wrap items-center gap-3">
+                            <div className="relative min-w-[240px] flex-1">
+                                <IconSearch size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+                                <input
+                                    type="text"
+                                    placeholder="Buscar por codigo o proveedor…"
+                                    value={busqueda}
+                                    onChange={(e) => setBusqueda(e.target.value)}
+                                    className="w-full rounded-lg border border-line bg-canvas py-1.5 pl-9 pr-3 text-xs text-ink focus:outline-none focus:ring-2 focus:ring-brand-500"
+                                />
+                            </div>
+                            <Select value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)} aria-label="Filtrar estado">
+                                <option value="todos">Todos los estados</option>
+                                <option value="registrada">Registrada</option>
+                                <option value="aprobada">Aprobada</option>
+                                <option value="anulada">Anulada</option>
+                            </Select>
                         </div>
-                        <select
-                            value={filtroEstado}
-                            onChange={(e) => setFiltroEstado(e.target.value)}
-                            className="px-3 py-1.5 text-xs rounded-lg border border-line bg-canvas text-ink font-mono"
-                        >
-                            <option value="todos">Todos los Estados</option>
-                            <option value="pendiente">Pendiente</option>
-                            <option value="en_camino">En Tránsito / Reposición</option>
-                            <option value="resuelta">Resuelta</option>
-                        </select>
-                    </div>
-                    <span className="text-xs text-muted font-mono">
-                        Mostrando {devolucionesFiltradas.length} de {devoluciones.length} devoluciones
-                    </span>
+                    </Card>
+
+                    <Card title={`Devoluciones (${filtradas.length})`}>
+                        {filas.length === 0 ? (
+                            <EmptyState title="Sin devoluciones registradas" hint="Registra un acta de rechazo sobre una recepción." />
+                        ) : (
+                            <DataTable
+                                emptyLabel="No hay devoluciones que coincidan con la búsqueda."
+                                columns={[
+                                    { key: 'codigo', header: 'Acta', mono: true, cell: (d) => <span className="font-semibold text-ink">{d.codigo}</span> },
+                                    { key: 'proveedor', header: 'Proveedor', cell: (d) => d.proveedor?.razon_social ?? `Proveedor #${d.proveedor_id}` },
+                                    { key: 'recepcion', header: 'Recepción', mono: true, cell: (d) => d.recepcion?.codigo ?? `#${d.recepcion_id}` },
+                                    {
+                                        key: 'material',
+                                        header: 'Material y Rechazo',
+                                        cell: (d) => (
+                                            <div>
+                                                <p className="text-xs font-semibold text-ink">{materialPrincipal(d)}</p>
+                                                <p className="text-[11px] font-mono text-muted">Rechazo: {formatCantidad(cantidadTotal(d))}</p>
+                                            </div>
+                                        ),
+                                    },
+                                    { key: 'fecha', header: 'Fecha', mono: true, cell: (d) => formatFs(d.created_at) },
+                                    {
+                                        key: 'estado',
+                                        header: 'Estado',
+                                        align: 'center',
+                                        cell: (d) => {
+                                            const meta = ESTADO_META[d.estado] ?? { tone: 'neutral' as const, label: d.estado };
+                                            return <Badge tone={meta.tone}>{meta.label}</Badge>;
+                                        },
+                                    },
+                                    {
+                                        key: 'motivo',
+                                        header: 'Motivo',
+                                        cell: (d) => <span className="block max-w-56 truncate text-xs text-muted" title={d.motivo}>{d.motivo}</span>,
+                                    },
+                                ]}
+                                rows={filtradas}
+                            />
+                        )}
+                    </Card>
                 </div>
-            </Card>
 
-            {/* Tabla de Devoluciones */}
-            <Card className="p-5">
-                <DataTable<{ id: string }>
-                    emptyLabel="No hay actas de devolución que coincidan con la búsqueda."
-                    columns={[
-                        { key: 'id', header: 'Acta Devolución', mono: true },
-                        { key: 'oc', header: 'OC Origen', mono: true },
-                        { key: 'proveedor', header: 'Proveedor Afectado' },
-                        { key: 'material', header: 'Material y Rechazo' },
-                        { key: 'monto', header: 'Valor Rechazado', align: 'right', mono: true },
-                        { key: 'solucion', header: 'Tipo Solución', align: 'center' },
-                        { key: 'estado', header: 'Estado', align: 'center' },
-                        { key: 'acciones', header: 'Acciones', align: 'right' },
-                    ]}
-                    rows={devolucionesFiltradas.map((dev) => {
-                        return {
-                            id: dev.id,
-                            oc: dev.ordenCompraId,
-                            proveedor: dev.proveedor,
-                            material: (
-                                <div>
-                                    <p className="font-semibold text-ink">{dev.material}</p>
-                                    <p className="text-xs font-mono text-muted">
-                                        Rechazo: {dev.cantidadRechazada} {dev.unidad}
-                                    </p>
-                                </div>
-                            ),
-                            monto: (
-                                <span className="font-bold font-mono text-red-600 text-sm">
-                                    {formatMoneda(dev.montoRechazado)}
-                                </span>
-                            ),
-                            solucion: (
-                                <Badge tone={dev.tipoSolucion === 'reposicion_fisica' ? 'neutral' : 'ok'}>
-                                    {dev.tipoSolucion === 'reposicion_fisica'
-                                        ? 'Reposición Física'
-                                        : dev.tipoSolucion === 'nota_credito'
-                                        ? 'Nota de Crédito'
-                                        : 'En Evaluación'}
-                                </Badge>
-                            ),
-                            estado: (
-                                <Badge
-                                    tone={
-                                        dev.estado === 'resuelta'
-                                            ? 'ok'
-                                            : dev.estado === 'en_camino'
-                                            ? 'warn'
-                                            : 'danger'
-                                    }
-                                >
-                                    {dev.estado === 'resuelta'
-                                        ? 'Resuelta'
-                                        : dev.estado === 'en_camino'
-                                        ? 'En Reposición'
-                                        : 'Pendiente'}
-                                </Badge>
-                            ),
-                            acciones: (
-                                <div className="flex items-center justify-end gap-2">
-                                    <Button
-                                        variant="secondary"
-                                        size="sm"
-                                        onClick={() => setDevSeleccionada(dev)}
-                                    >
-                                        <IconFileText size={13} />
-                                        Ver Acta
-                                    </Button>
-                                </div>
-                            ),
-                        };
-                    })}
-                />
-            </Card>
-
-            {/* Modal Detalle Acta de Devolución */}
-            <Modal
-                open={Boolean(devSeleccionada)}
-                onClose={() => setDevSeleccionada(null)}
-                title={`Acta de No Conformidad: ${devSeleccionada?.id ?? ''}`}
-                wide
-            >
-                {devSeleccionada && (
-                    <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-3 text-xs bg-canvas p-3 rounded-lg border border-line">
-                            <div>
-                                <span className="text-muted block">Orden de Compra Asociada:</span>
-                                <span className="font-bold font-mono text-ink">{devSeleccionada.ordenCompraId}</span>
-                            </div>
-                            <div>
-                                <span className="text-muted block">Fecha de Registro:</span>
-                                <span className="font-mono text-ink">{devSeleccionada.fechaRegistro}</span>
-                            </div>
-                            <div>
-                                <span className="text-muted block">Proveedor Notificado:</span>
-                                <span className="font-bold text-ink">{devSeleccionada.proveedor}</span>
-                            </div>
-                            <div>
-                                <span className="text-muted block">Valoración Económica del Lote:</span>
-                                <span className="font-mono font-bold text-red-600">
-                                    {formatMoneda(devSeleccionada.montoRechazado)}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className="p-3 bg-red-50/70 border border-red-200 rounded-lg text-xs space-y-1">
-                            <span className="font-bold text-red-900 block">Sustento Técnico del Rechazo:</span>
-                            <p className="text-red-800">{devSeleccionada.motivo}</p>
-                        </div>
-
-                        <div className="p-3 bg-canvas rounded-lg border border-line text-xs">
-                            <span className="font-bold text-muted block mb-1">Solución Acordada:</span>
-                            <p className="text-ink">
-                                {devSeleccionada.tipoSolucion === 'reposicion_fisica'
-                                    ? 'El proveedor realizará el retiro del lote observado y el despacho de nuevo material certificado en un plazo máximo de 48 horas.'
-                                    : 'Se emitirá Nota de Crédito por el monto total observado y se anulará la cuenta por pagar en módulo de finanzas.'}
-                            </p>
-                        </div>
-
-                        <div className="flex justify-end gap-2 pt-2">
-                            <Button variant="secondary" onClick={() => setDevSeleccionada(null)}>
-                                Cerrar
-                            </Button>
-                        </div>
-                    </div>
-                )}
-            </Modal>
-
-            {/* Modal Nueva Acta de Devolución */}
-            <Modal
-                open={modalNuevaDev}
-                onClose={() => setModalNuevaDev(false)}
-                title="Emitir Acta de Rechazo / Devolución a Proveedor"
-                wide
-            >
-                <form onSubmit={handleGuardarDevolucion} className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <Field label="N° Orden de Compra">
-                            <Input
-                                value={formOC}
-                                onChange={(e) => setFormOC(e.target.value)}
-                                placeholder="OC-2026-XXXX"
-                                required
-                            />
+                <FormPanel title="Emitir Acta de Rechazo" subtitle="Devolución sobre una recepción" onSubmit={enviar} className="text-xs">
+                    <FormSection title="Origen" columns={1}>
+                        <Field label="Recepción" required>
+                            <Select value={crear.data.recepcion_id} onChange={(e) => seleccionarRecepcion(e.target.value)}>
+                                <option value="">Selecciona recepción…</option>
+                                {recepcionesDb.map((r) => (
+                                    <option key={r.id} value={String(r.id)}>
+                                        {r.codigo} — {r.orden_compra?.proveedor?.razon_social ?? `OC #${r.orden_compra_id}`}
+                                    </option>
+                                ))}
+                            </Select>
                         </Field>
                         <Field label="Proveedor">
-                            <Input
-                                value={formProv}
-                                onChange={(e) => setFormProv(e.target.value)}
-                                placeholder="Razón social del proveedor"
-                                required
+                            <Input value={recepcionSel?.orden_compra?.proveedor?.razon_social ?? ''} placeholder="Se completa al elegir recepción" disabled />
+                        </Field>
+                    </FormSection>
+
+                    <FormSection title="Materiales rechazados" columns={1}>
+                        <div className="space-y-2">
+                            {crear.data.detalles.map((linea, i) => (
+                                <div key={i} className="flex items-end gap-2">
+                                    <div className="flex-1">
+                                        <Select
+                                            value={linea.material_id}
+                                            onChange={(e) => setLinea(i, 'material_id', e.target.value)}
+                                            className="!py-1.5"
+                                            aria-label="Material"
+                                        >
+                                            <option value="">Material…</option>
+                                            {(recepcionSel?.detalles ?? []).map((det) => (
+                                                <option key={det.id} value={String(det.material_id)}>
+                                                    {det.material?.nombre ?? `Material #${det.material_id}`}
+                                                </option>
+                                            ))}
+                                        </Select>
+                                    </div>
+                                    <input
+                                        type="number"
+                                        min={0}
+                                        step="0.001"
+                                        value={linea.cantidad}
+                                        onChange={(e) => setLinea(i, 'cantidad', e.target.value)}
+                                        placeholder="Cant."
+                                        className="field !w-24 !py-1.5"
+                                        aria-label="Cantidad rechazada"
+                                    />
+                                    {crear.data.detalles.length > 1 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => quitarLinea(i)}
+                                            aria-label="Quitar material"
+                                            className="rounded p-2 text-muted hover:bg-danger-soft hover:text-danger"
+                                        >
+                                            <IconX size={14} />
+                                        </button>
+                                    )}
+                                </div>
+                            ))}
+                            <button type="button" onClick={agregarLinea} className="text-[11px] font-bold text-brand-600 hover:underline">
+                                + Añadir material
+                            </button>
+                        </div>
+                    </FormSection>
+
+                    <FormSection title="Motivo" columns={1}>
+                        <Field label="Detalle de no conformidad" required>
+                            <Textarea
+                                value={crear.data.motivo}
+                                onChange={(e) => crear.setData('motivo', e.target.value)}
+                                rows={3}
+                                placeholder="Daño físico, humedad, falta de certificado de calidad…"
                             />
                         </Field>
-                    </div>
+                    </FormSection>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <Field label="Material Observado">
-                            <Input
-                                value={formMaterial}
-                                onChange={(e) => setFormMaterial(e.target.value)}
-                                required
-                            />
-                        </Field>
-                        <Field label="Cantidad Rechazada">
-                            <Input
-                                type="number"
-                                value={formCantidad}
-                                onChange={(e) => setFormCantidad(Number(e.target.value))}
-                                min="1"
-                                required
-                            />
-                        </Field>
-                        <Field label="Monto Estimado (S/.)">
-                            <Input
-                                type="number"
-                                step="0.01"
-                                value={formMonto}
-                                onChange={(e) => setFormMonto(Number(e.target.value))}
-                                required
-                            />
-                        </Field>
-                    </div>
-
-                    <Field label="Tipo de Compensación Solicitada">
-                        <Select
-                            value={formSolucion}
-                            onChange={(e) => setFormSolucion(e.target.value as any)}
-                        >
-                            <option value="reposicion_fisica">Reposición Física de Material Conforme</option>
-                            <option value="nota_credito">Emisión de Nota de Crédito</option>
-                            <option value="en_evaluacion">En Evaluación por Residencia</option>
-                        </Select>
-                    </Field>
-
-                    <Field label="Motivo y Detalle de No Conformidad">
-                        <Textarea
-                            rows={3}
-                            value={formMotivo}
-                            onChange={(e) => setFormMotivo(e.target.value)}
-                            placeholder="Describa la falla: daño físico, humedad, falta de certificado de calidad de fábrica, etc."
-                            required
-                        />
-                    </Field>
-
-                    <div className="flex justify-end gap-3 pt-2">
-                        <Button variant="secondary" type="button" onClick={() => setModalNuevaDev(false)}>
-                            Cancelar
-                        </Button>
-                        <Button variant="mint" type="submit">
-                            Emitir Acta de Rechazo
-                        </Button>
-                    </div>
-                </form>
-            </Modal>
+                    <SubmitButton status={crear.processing ? 'submitting' : 'idle'} className="w-full">
+                        <IconPlus size={15} />
+                        Emitir Acta de Rechazo
+                    </SubmitButton>
+                </FormPanel>
+            </div>
         </div>
     );
 }

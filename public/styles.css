@@ -491,3 +491,56 @@ button, a { -webkit-tap-highlight-color: transparent; }
   border: 0 !important;
   clip-path: inset(50%) !important;
 }
+
+.project-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.portfolio-status {
+  margin: 26px 0 0;
+  color: var(--color-slate);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: .03em;
+}
+
+.portfolio-status[hidden] { display: none; }
+
+.portfolio-retry { margin-left: 10px; }
+
+.project-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 18px;
+}
+
+.project-progress-track {
+  flex: 1;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 50px;
+  background: var(--color-mist);
+}
+
+.project-progress-bar {
+  display: block;
+  height: 100%;
+  border-radius: 50px;
+  background: var(--color-black);
+}
+
+.project-progress-value {
+  min-width: 34px;
+  color: var(--color-slate);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-align: right;
+}
+
+@media (max-width: 1050px) {
+  .project-filters { align-items: flex-start; }
+}

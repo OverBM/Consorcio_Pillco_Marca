@@ -14,7 +14,7 @@ import {
 } from '../utils/estados';
 import { MAP_H, MAP_W, projectToMap } from '../utils/geo';
 import { formatCantidad } from '../utils/format';
-import type { StockState } from '../data/stock';
+import type { StockState } from '../types/stock';
 import type { Almacen, Material, Obra } from '../types';
 import { IconMapPin, IconSearch } from './icons';
 import { GeoDetalle } from './GeoDetalle';

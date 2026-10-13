@@ -1,533 +1,362 @@
-// Módulo de Solicitudes de Material (Macroprocesos Bizagi 22, 23, 24 y 25).
-// Registro por Obrero/Residente, cálculo de cercanía GPS al almacén asignado,
-// búsqueda multi-almacén si hay déficit local y alerta de desabastecimiento a Logística.
+// Módulo de Solicitudes de Material (Macroprocesos Bizagi 22-25).
+// Pedidos de frente de obra vinculados a un almacén; atención/despacho con
+// descuento automático de stock. Datos desde props `solicitudesDb`.
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type FormEvent } from 'react';
+import { router, useHttp, usePage } from '@inertiajs/react';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge, Modal } from '../components/ui';
-import { Button, Field, Input, Select, Textarea } from '../components/form';
+import { Button, Field, Input, Select, FormPanel, FormSection, SubmitButton } from '../components/form';
 import { DataTable } from '../components/DataTable';
 import { EmptyState } from '../components/EmptyState';
-import { useAppStore } from '../store/AppContext';
-import { formatCantidad, formatKm } from '../utils/format';
-import { rankWarehousesForRequest } from '../utils/geo';
-import type { SolicitudMaterial, UrgenciaSolicitud } from '../types';
-import {
-    IconAlert,
-    IconBoxes,
-    IconCheck,
-    IconClipboardList,
-    IconMapPin,
-    IconPlus,
-    IconRepeat,
-    IconSearch,
-    IconTruck,
-} from '../components/icons';
-import { Link } from '@inertiajs/react';
+import { useNotifications } from '../components/notifications/NotificationProvider';
+import { formatCantidad, formatFs } from '../utils/format';
+import type { CatalogoAlmacen, CatalogoMaterial, CatalogoObra } from '../types';
+import { IconPlus, IconTruck, IconX } from '../components/icons';
 
-export default function SolicitudesPage() {
-    const {
-        solicitudes,
-        obras,
-        almacenes,
-        materiales,
-        stock,
-        obraActiva,
-        rolActivo,
-        createSolicitud,
-        createDespacho,
-    } = useAppStore();
+interface SolicitudDetalleDb {
+    id: number;
+    material_id: number;
+    cantidad: number | string;
+    cantidad_atendida: number | string;
+    material?: { id: number; nombre: string; unidad_medida?: { codigo: string } | null } | null;
+}
 
-    const [modalCrear, setModalCrear] = useState(false);
-    const [busqueda, setBusqueda] = useState('');
-    const [filtroUrgencia, setFiltroUrgencia] = useState('todas');
-    const [filtroEstado, setFiltroEstado] = useState('todos');
-    const [solicitudDetalle, setSolicitudDetalle] = useState<SolicitudMaterial | null>(null);
+interface SolicitudDb {
+    id: number;
+    codigo: string;
+    obra_id: number;
+    almacen_id: number;
+    estado: string;
+    urgente: boolean;
+    created_at: string;
+    atendida_en: string | null;
+    obra?: { id: number; nombre: string } | null;
+    detalles?: SolicitudDetalleDb[];
+}
 
-    // Formulario de nueva solicitud
-    const [formObraId, setFormObraId] = useState(obraActiva.id);
-    const [formFrente, setFormFrente] = useState(obraActiva.nombre);
-    const [formSolicitante, setFormSolicitante] = useState(
-        rolActivo === 'residente_obra' ? 'Ing. Marco Paucar' : 'Residente de Turno',
+interface SolicitudesPageProps {
+    solicitudesDb?: SolicitudDb[];
+}
+
+type SolicitudFila = Omit<SolicitudDb, 'id'> & { id: string };
+
+const ESTADO_META: Record<string, { tone: 'ok' | 'warn' | 'danger' | 'neutral'; label: string }> = {
+    registrada: { tone: 'warn', label: 'Registrada' },
+    atendida: { tone: 'ok', label: 'Atendida' },
+    anulada: { tone: 'neutral', label: 'Anulada' },
+};
+
+interface LineaForm {
+    material_id: string;
+    cantidad: string;
+}
+
+function unidadDe(solicitud: { detalles?: SolicitudDetalleDb[] }): string {
+    return solicitud.detalles?.[0]?.material?.unidad_medida?.codigo ?? 'und';
+}
+
+function totalSolicitado(solicitud: { detalles?: SolicitudDetalleDb[] }): number {
+    return (solicitud.detalles ?? []).reduce((acc, d) => acc + Number(d.cantidad), 0);
+}
+
+function materialPrincipal(solicitud: { detalles?: SolicitudDetalleDb[] }): string {
+    const primero = solicitud.detalles?.[0];
+    if (!primero) return '—';
+    const extra = (solicitud.detalles ?? []).length - 1;
+    const nombre = primero.material?.nombre ?? `Material #${primero.material_id}`;
+    return extra > 0 ? `${nombre} (+${extra})` : nombre;
+}
+
+export default function SolicitudesPage({ solicitudesDb = [] }: SolicitudesPageProps) {
+    const notify = useNotifications();
+    const { catalogos } = usePage().props;
+
+    const obras: CatalogoObra[] = catalogos.obras;
+    const almacenes: CatalogoAlmacen[] = catalogos.almacenes;
+    const materiales: CatalogoMaterial[] = catalogos.materiales;
+
+    const http = useHttp<{
+        obra_id: string;
+        almacen_id: string;
+        urgente: boolean;
+        detalles: LineaForm[];
+    }>({
+        obra_id: '',
+        almacen_id: '',
+        urgente: false,
+        detalles: [{ material_id: '', cantidad: '' }] as LineaForm[],
+    });
+
+    const [atendiendo, setAtendiendo] = useState<SolicitudFila | null>(null);
+
+    const filas: SolicitudFila[] = useMemo(
+        () => solicitudesDb.map((s) => ({ ...s, id: String(s.id) })),
+        [solicitudesDb],
     );
-    const [formMaterialId, setFormMaterialId] = useState(materiales[0]?.id ?? '');
-    const [formCantidad, setFormCantidad] = useState(100);
-    const [formUrgencia, setFormUrgencia] = useState<UrgenciaSolicitud>('normal');
-    const [formFechaRequerida, setFormFechaRequerida] = useState(
-        new Date(Date.now() + 86400000).toISOString().slice(0, 10),
-    );
-    const [formObs, setFormObs] = useState('');
 
-    const obraSeleccionada = obras.find((o) => o.id === formObraId) ?? obraActiva;
-    const obrasMap = useMemo(() => new Map(obras.map((o) => [o.id, o])), [obras]);
+    const almacenesObra = http.data.obra_id
+        ? almacenes.filter((a) => String(a.obra_id) === http.data.obra_id)
+        : almacenes;
 
-    // Evaluación en tiempo real del almacén más cercano con stock para el formulario (Bizagi 23, 24, 25)
-    const evaluacionAlmacenes = useMemo(() => {
-        if (!formMaterialId) return [];
-        return rankWarehousesForRequest({
-            frenteCoords: obraSeleccionada.coords,
-            materialId: formMaterialId,
-            cantidadRequerida: Number(formCantidad),
-            almacenes,
-            obras: Object.fromEntries(obrasMap),
-            stock: stock.stock,
-        });
-    }, [obraSeleccionada, formMaterialId, formCantidad, almacenes, obrasMap, stock.stock]);
-
-    const almacenSugerido = evaluacionAlmacenes[0];
-    const tieneDesabastecimientoTotal = evaluacionAlmacenes.every((a) => a.stockDisponible <= 0);
-
-    const handleGuardarSolicitud = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!formMaterialId || Number(formCantidad) <= 0) return;
-
-        createSolicitud({
-            obraSolicitanteId: formObraId,
-            frenteNombre: formFrente,
-            frenteCoords: obraSeleccionada.coords,
-            solicitanteNombre: formSolicitante,
-            rolSolicitante: 'Residente de Obra',
-            fechaSolicitud: new Date().toISOString().slice(0, 16).replace('T', ' '),
-            fechaRequerida: formFechaRequerida,
-            urgencia: formUrgencia,
-            materialId: formMaterialId,
-            cantidad: Number(formCantidad),
-            observaciones: formObs,
-            almacenAsignadoId: almacenSugerido?.tieneStockSuficiente ? almacenSugerido.almacen.id : undefined,
-            distanciaAsignadaKm: almacenSugerido?.distanciaKm,
-            estado: tieneDesabastecimientoTotal
-                ? 'desabastecido'
-                : almacenSugerido?.tieneStockSuficiente
-                ? 'asignado'
-                : 'pendiente',
-        });
-
-        setModalCrear(false);
-        setFormObs('');
+    const setLinea = (indice: number, campo: keyof LineaForm, valor: string) => {
+        http.setData(
+            'detalles',
+            http.data.detalles.map((linea, i) => (i === indice ? { ...linea, [campo]: valor } : linea)),
+        );
     };
 
-    const solicitudesFiltradas = useMemo(() => {
-        return solicitudes.filter((s) => {
-            if (busqueda.trim()) {
-                const q = busqueda.toLowerCase();
-                const mat = materiales.find((m) => m.id === s.materialId);
-                const matchCod = s.codigo.toLowerCase().includes(q);
-                const matchSol = s.solicitanteNombre.toLowerCase().includes(q);
-                const matchMat = mat?.nombre.toLowerCase().includes(q) ?? false;
-                if (!matchCod && !matchSol && !matchMat) return false;
-            }
-            if (filtroUrgencia !== 'todas' && s.urgencia !== filtroUrgencia) return false;
-            if (filtroEstado !== 'todos' && s.estado !== filtroEstado) return false;
-            return true;
+    const agregarLinea = () => http.setData('detalles', [...http.data.detalles, { material_id: '', cantidad: '' }]);
+
+    const quitarLinea = (indice: number) =>
+        http.setData('detalles', http.data.detalles.filter((_, i) => i !== indice));
+
+    const reiniciar = () => {
+        http.setData('obra_id', '');
+        http.setData('almacen_id', '');
+        http.setData('urgente', false);
+        http.setData('detalles', [{ material_id: '', cantidad: '' }]);
+    };
+
+    const enviar = (event: FormEvent) => {
+        event.preventDefault();
+
+        if (!http.data.obra_id || !http.data.almacen_id) {
+            notify.error('Selecciona la obra y el almacén que atenderá la solicitud.');
+            return;
+        }
+
+        const detalles = http.data.detalles
+            .filter((linea) => linea.material_id && Number(linea.cantidad) > 0)
+            .map((linea) => ({ material_id: Number(linea.material_id), cantidad: Number(linea.cantidad) }));
+
+        if (detalles.length === 0) {
+            notify.error('Agrega al menos un material con cantidad mayor a cero.');
+            return;
+        }
+
+        http.transform(() => ({
+            obra_id: Number(http.data.obra_id),
+            almacen_id: Number(http.data.almacen_id),
+            urgente: http.data.urgente,
+            detalles,
+        }));
+
+        http.post('/api/v1/solicitudes', {
+            onSuccess: () => {
+                notify.success('Solicitud de material registrada.');
+                reiniciar();
+                router.reload({ only: ['solicitudesDb'] });
+            },
+            onError: (errors: Record<string, string>) => {
+                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar la solicitud.');
+            },
         });
-    }, [solicitudes, busqueda, filtroUrgencia, filtroEstado, materiales]);
+    };
+
+    const atender = () => {
+        if (!atendiendo) return;
+
+        http.post(
+            `/api/v1/solicitudes/${atendiendo.id}/atender`,
+            {
+                onSuccess: () => {
+                    notify.success('Solicitud atendida y stock descontado.');
+                    setAtendiendo(null);
+                    router.reload({ only: ['solicitudesDb'] });
+                },
+                onError: (errors: Record<string, string>) => {
+                    notify.error(Object.values(errors).flat().join(' ') || 'No se pudo atender la solicitud.');
+                },
+            },
+        );
+    };
 
     return (
         <div className="space-y-6">
             <PageHeader
                 title="Solicitudes de Material"
-                subtitle="Pedidos de frente de obra, geolocalización de almacén asignado y búsqueda multi-almacén"
-                actions={
-                    <button
-                        className="btn-primary"
-                        onClick={() => {
-                            setFormObraId(obraActiva.id);
-                            setFormFrente(obraActiva.nombre);
-                            setModalCrear(true);
-                        }}
-                    >
-                        <IconPlus size={16} />
-                        Nueva Solicitud de Material
-                    </button>
-                }
+                subtitle="Pedidos de frente de obra, almacén asignado y despacho con descuento de stock"
             />
 
-            {/* Filtros */}
-            <Card className="p-4">
-                <div className="grid gap-3 sm:grid-cols-3">
-                    <div className="flex items-center gap-2 rounded-field border border-line bg-canvas px-3 py-2 text-sm text-muted">
-                        <IconSearch size={16} />
-                        <input
-                            value={busqueda}
-                            onChange={(e) => setBusqueda(e.target.value)}
-                            placeholder="Buscar código, solicitante o material…"
-                            className="w-full bg-transparent text-ink outline-none placeholder:text-muted/70 text-xs"
-                        />
-                    </div>
-                    <Select value={filtroUrgencia} onChange={(e) => setFiltroUrgencia(e.target.value)} aria-label="Filtrar urgencia">
-                        <option value="todas">Todas las urgencias</option>
-                        <option value="normal">Normal</option>
-                        <option value="urgente">Urgente</option>
-                        <option value="critica">Crítica</option>
-                    </Select>
-                    <Select value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)} aria-label="Filtrar estado">
-                        <option value="todos">Todos los estados</option>
-                        <option value="pendiente">Pendiente de evaluación</option>
-                        <option value="asignado">Asignado por cercanía</option>
-                        <option value="desabastecido">Desabastecido en red</option>
-                        <option value="atendido">Atendido / Despachado</option>
-                    </Select>
-                </div>
-            </Card>
-
-            {/* Tabla de Solicitudes */}
-            <Card>
-                {solicitudesFiltradas.length === 0 ? (
-                    <EmptyState
-                        title="Sin solicitudes registradas"
-                        hint="Genera una nueva solicitud para asignar el almacén más cercano con disponibilidad."
-                    />
-                ) : (
-                    <DataTable<SolicitudMaterial>
-                        emptyLabel="Sin solicitudes."
-                        columns={[
-                            {
-                                key: 'codigo',
-                                header: 'Código',
-                                mono: true,
-                                cell: (s) => (
-                                    <button
-                                        onClick={() => setSolicitudDetalle(s)}
-                                        className="font-bold text-brand-600 hover:underline"
-                                    >
-                                        {s.codigo}
-                                    </button>
-                                ),
-                            },
-                            {
-                                key: 'fecha',
-                                header: 'Fecha',
-                                cell: (s) => <span className="text-xs text-muted">{s.fechaSolicitud}</span>,
-                            },
-                            {
-                                key: 'frente',
-                                header: 'Frente de Obra / Solicitante',
-                                cell: (s) => (
-                                    <div>
-                                        <p className="font-semibold text-ink text-xs">{s.frenteNombre}</p>
-                                        <p className="text-[11px] text-muted">{s.solicitanteNombre}</p>
-                                    </div>
-                                ),
-                            },
-                            {
-                                key: 'material',
-                                header: 'Material y Cantidad',
-                                cell: (s) => {
-                                    const mat = materiales.find((m) => m.id === s.materialId);
-                                    return (
+            <div className="grid gap-6 lg:grid-cols-3">
+                <Card title={`Solicitudes (${solicitudesDb.length})`} className="lg:col-span-2">
+                    {solicitudesDb.length === 0 ? (
+                        <EmptyState title="Sin solicitudes registradas" hint="Genera una solicitud para un frente de obra." />
+                    ) : (
+                        <DataTable
+                            emptyLabel="Sin solicitudes."
+                            columns={[
+                                { key: 'codigo', header: 'Código', mono: true },
+                                { key: 'fecha', header: 'Fecha', cell: (s) => formatFs(s.created_at) },
+                                {
+                                    key: 'obra',
+                                    header: 'Obra / Frente',
+                                    cell: (s) => (
                                         <div>
-                                            <p className="font-bold text-ink text-xs">{mat?.nombre ?? s.materialId}</p>
+                                            <p className="text-xs font-semibold text-ink">{s.obra?.nombre ?? `Obra #${s.obra_id}`}</p>
+                                            <p className="text-[11px] text-muted">Almacén #{s.almacen_id}</p>
+                                        </div>
+                                    ),
+                                },
+                                {
+                                    key: 'material',
+                                    header: 'Material y Cantidad',
+                                    cell: (s) => (
+                                        <div>
+                                            <p className="text-xs font-bold text-ink">{materialPrincipal(s)}</p>
                                             <p className="text-[11px] font-mono font-semibold text-brand-700">
-                                                {formatCantidad(s.cantidad)} {mat?.unidad ?? 'und'}
+                                                {formatCantidad(totalSolicitado(s))} {unidadDe(s)}
                                             </p>
                                         </div>
-                                    );
+                                    ),
                                 },
-                            },
-                            {
-                                key: 'urgencia',
-                                header: 'Urgencia',
-                                cell: (s) => (
-                                    <Badge
-                                        tone={
-                                            s.urgencia === 'critica'
-                                                ? 'danger'
-                                                : s.urgencia === 'urgente'
-                                                ? 'warn'
-                                                : 'neutral'
-                                        }
-                                    >
-                                        {s.urgencia.toUpperCase()}
-                                    </Badge>
-                                ),
-                            },
-                            {
-                                key: 'asignacion',
-                                header: 'Almacén Asignado (GPS)',
-                                cell: (s) => {
-                                    const alm = almacenes.find((a) => a.id === s.almacenAsignadoId);
-                                    if (!alm) {
-                                        return <span className="text-xs text-rose-600 font-semibold">Sin stock cercano</span>;
-                                    }
-                                    return (
-                                        <div className="flex items-center gap-1.5 text-xs">
-                                            <IconMapPin size={13} className="text-brand-500 shrink-0" />
-                                            <div>
-                                                <span className="font-semibold text-ink">{alm.nombre}</span>
-                                                {s.distanciaAsignadaKm !== undefined && (
-                                                    <span className="block text-[10px] text-muted">
-                                                        a {formatKm(s.distanciaAsignadaKm)}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    );
+                                {
+                                    key: 'urgencia',
+                                    header: 'Urgencia',
+                                    cell: (s) => <Badge tone={s.urgente ? 'danger' : 'neutral'}>{s.urgente ? 'URGENTE' : 'Normal'}</Badge>,
                                 },
-                            },
-                            {
-                                key: 'estado',
-                                header: 'Estado',
-                                cell: (s) => (
-                                    <Badge
-                                        tone={
-                                            s.estado === 'asignado'
-                                                ? 'ok'
-                                                : s.estado === 'desabastecido'
-                                                ? 'danger'
-                                                : s.estado === 'atendido'
-                                                ? 'neutral'
-                                                : 'warn'
-                                        }
-                                    >
-                                        {s.estado.replace('_', ' ')}
-                                    </Badge>
-                                ),
-                            },
-                            {
-                                key: 'acciones',
-                                header: 'Acciones',
-                                align: 'right',
-                                cell: (s) => (
-                                    <div className="flex items-center justify-end gap-1.5">
-                                        {s.estado === 'asignado' && (
-                                            <Link
-                                                href={`/despachos?crear=solicitud&solicitudId=${s.id}&materialId=${s.materialId}&origen=${s.almacenAsignadoId}&cantidad=${s.cantidad}`}
-                                                className="btn-primary !px-2 !py-1 text-xs"
-                                                title="Preparar despacho de salida"
-                                            >
+                                {
+                                    key: 'estado',
+                                    header: 'Estado',
+                                    cell: (s) => {
+                                        const meta = ESTADO_META[s.estado] ?? { tone: 'neutral' as const, label: s.estado };
+                                        return <Badge tone={meta.tone}>{meta.label}</Badge>;
+                                    },
+                                },
+                                {
+                                    key: 'acciones',
+                                    header: 'Acciones',
+                                    align: 'right',
+                                    cell: (s) =>
+                                        s.estado === 'registrada' ? (
+                                            <button className="btn-primary !px-2 !py-1 text-xs" onClick={() => setAtendiendo(s)}>
                                                 <IconTruck size={13} />
-                                                Despachar
-                                            </Link>
-                                        )}
-                                        {s.estado === 'desabastecido' && (
-                                            <Link
-                                                href={`/compras?crear=req&obraId=${s.obraSolicitanteId}&materialId=${s.materialId}&cantidad=${s.cantidad}`}
-                                                className="btn-secondary !px-2 !py-1 text-xs !border-rose-300 !text-rose-700"
-                                                title="Propuesta: Generar requerimiento de compra por desabastecimiento"
-                                            >
-                                                <IconBoxes size={13} />
-                                                Req. Compra
-                                            </Link>
-                                        )}
-                                    </div>
-                                ),
-                            },
-                        ]}
-                        rows={solicitudesFiltradas}
-                    />
-                )}
-            </Card>
+                                                Atender
+                                            </button>
+                                        ) : (
+                                            <span className="text-[11px] text-muted">{s.atendida_en ? formatFs(s.atendida_en) : '—'}</span>
+                                        ),
+                                },
+                            ]}
+                            rows={filas}
+                        />
+                    )}
+                </Card>
 
-            {/* Modal de Nueva Solicitud con Asignación GPS en Tiempo Real */}
-            <Modal open={modalCrear} onClose={() => setModalCrear(false)} title="Registrar Solicitud de Material" wide>
-                <form onSubmit={handleGuardarSolicitud} className="space-y-4">
-                    <div className="grid gap-3 sm:grid-cols-2">
-                        <Field label="Frente de Obra Solicitante">
+                <FormPanel
+                    title="Nueva Solicitud de Material"
+                    subtitle="Pedido del frente de obra"
+                    onSubmit={enviar}
+                    className="text-xs"
+                >
+                    <FormSection title="Origen del pedido" columns={1}>
+                        <Field label="Obra solicitante" required>
                             <Select
-                                value={formObraId}
+                                value={http.data.obra_id}
                                 onChange={(e) => {
-                                    setFormObraId(e.target.value);
-                                    const o = obras.find((x) => x.id === e.target.value);
-                                    if (o) setFormFrente(o.nombre);
+                                    http.setData('obra_id', e.target.value);
+                                    http.setData('almacen_id', '');
                                 }}
                             >
+                                <option value="">Selecciona obra…</option>
                                 {obras.map((o) => (
-                                    <option key={o.id} value={o.id}>
-                                        {o.nombre} ({o.distrito})
+                                    <option key={o.id} value={String(o.id)}>
+                                        {o.nombre}
                                     </option>
                                 ))}
                             </Select>
                         </Field>
-                        <Field label="Nombre del Solicitante / Residente">
-                            <Input
-                                value={formSolicitante}
-                                onChange={(e) => setFormSolicitante(e.target.value)}
-                                required
-                            />
-                        </Field>
-                    </div>
 
-                    <div className="grid gap-3 sm:grid-cols-3">
-                        <Field label="Material Requerido">
-                            <Select value={formMaterialId} onChange={(e) => setFormMaterialId(e.target.value)}>
-                                {materiales.map((m) => (
-                                    <option key={m.id} value={m.id}>
-                                        {m.nombre} ({m.unidad})
+                        <Field label="Almacén que atenderá" required>
+                            <Select value={http.data.almacen_id} onChange={(e) => http.setData('almacen_id', e.target.value)}>
+                                <option value="">Selecciona almacén…</option>
+                                {almacenesObra.map((a) => (
+                                    <option key={a.id} value={String(a.id)}>
+                                        {a.nombre}
                                     </option>
                                 ))}
                             </Select>
                         </Field>
-                        <Field label="Cantidad Requerida">
-                            <Input
-                                type="number"
-                                min={1}
-                                value={formCantidad}
-                                onChange={(e) => setFormCantidad(Number(e.target.value))}
-                                required
+
+                        <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-line px-3 py-2">
+                            <input
+                                type="checkbox"
+                                checked={http.data.urgente}
+                                onChange={(e) => http.setData('urgente', e.target.checked)}
+                                className="h-4 w-4 rounded border-line"
                             />
-                        </Field>
-                        <Field label="Nivel de Urgencia">
-                            <Select
-                                value={formUrgencia}
-                                onChange={(e) => setFormUrgencia(e.target.value as UrgenciaSolicitud)}
-                            >
-                                <option value="normal">Normal (48h)</option>
-                                <option value="urgente">Urgente (24h)</option>
-                                <option value="critica">Crítica (Inmediato)</option>
-                            </Select>
-                        </Field>
-                    </div>
+                            <span className="text-xs font-semibold text-ink">Marcar como urgente</span>
+                        </label>
+                    </FormSection>
 
-                    <Field label="Fecha Requerida en Frente">
-                        <Input
-                            type="date"
-                            value={formFechaRequerida}
-                            onChange={(e) => setFormFechaRequerida(e.target.value)}
-                            required
-                        />
-                    </Field>
-
-                    <Field label="Observaciones / Justificación de la partida">
-                        <Textarea
-                            value={formObs}
-                            onChange={(e) => setFormObs(e.target.value)}
-                            placeholder="Indicar partida de destino o especificaciones particulares…"
-                            rows={2}
-                        />
-                    </Field>
-
-                    {/* Evaluación de Asignación Automática por GPS (Bizagi 23, 24, 25) */}
-                    <div className="rounded-xl border border-brand-200 bg-brand-50/60 p-4">
-                        <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-brand-900">
-                            <IconMapPin size={14} />
-                            Asignación Automática de Almacén por Proximidad GPS
-                        </h4>
-
-                        <div className="mt-3 space-y-2">
-                            {evaluacionAlmacenes.map((res, index) => (
-                                <div
-                                    key={res.almacen.id}
-                                    className={`flex items-center justify-between rounded-lg border p-2.5 text-xs transition-all ${
-                                        res.esOptimo
-                                            ? 'border-emerald-300 bg-emerald-50 shadow-sm'
-                                            : res.stockDisponible > 0
-                                            ? 'border-line bg-surface'
-                                            : 'border-line bg-soft/50 text-muted opacity-75'
-                                    }`}
-                                >
-                                    <div className="flex items-center gap-2.5">
-                                        <span
-                                            className={`grid h-5 w-5 place-items-center rounded-full text-[10px] font-bold ${
-                                                res.esOptimo
-                                                    ? 'bg-emerald-600 text-white'
-                                                    : 'bg-soft text-muted'
-                                            }`}
+                    <FormSection title="Materiales solicitados" columns={1}>
+                        <div className="space-y-2">
+                            {http.data.detalles.map((linea, i) => (
+                                <div key={i} className="flex items-end gap-2">
+                                    <div className="flex-1">
+                                        <Select
+                                            value={linea.material_id}
+                                            onChange={(e) => setLinea(i, 'material_id', e.target.value)}
+                                            className="!py-1.5"
+                                            aria-label="Material"
                                         >
-                                            {index + 1}
-                                        </span>
-                                        <div>
-                                            <p className="font-bold text-ink">
-                                                {res.almacen.nombre}{' '}
-                                                {res.esOptimo && (
-                                                    <span className="ml-1 px-1.5 py-0.5 rounded bg-emerald-100 text-[10px] text-emerald-800 font-extrabold uppercase">
-                                                        Óptimo Asignado
-                                                    </span>
-                                                )}
-                                            </p>
-                                            <p className="text-[11px] text-muted">
-                                                Distancia al frente: <strong>{formatKm(res.distanciaKm)}</strong>
-                                            </p>
-                                        </div>
+                                            <option value="">Material…</option>
+                                            {materiales.map((m) => (
+                                                <option key={m.id} value={String(m.id)}>
+                                                    {m.nombre}
+                                                </option>
+                                            ))}
+                                        </Select>
                                     </div>
-                                    <div className="text-right">
-                                        <span
-                                            className={`font-mono font-bold ${
-                                                res.tieneStockSuficiente
-                                                    ? 'text-emerald-700'
-                                                    : res.stockDisponible > 0
-                                                    ? 'text-amber-700'
-                                                    : 'text-rose-700'
-                                            }`}
+                                    <Input
+                                        type="number"
+                                        min={0}
+                                        step="0.001"
+                                        value={linea.cantidad}
+                                        onChange={(e) => setLinea(i, 'cantidad', e.target.value)}
+                                        placeholder="Cant."
+                                        className="!w-24 !py-1.5"
+                                    />
+                                    {http.data.detalles.length > 1 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => quitarLinea(i)}
+                                            aria-label="Quitar material"
+                                            className="rounded p-2 text-muted hover:bg-danger-soft hover:text-danger"
                                         >
-                                            {formatCantidad(res.stockDisponible)}{' '}
-                                            {materiales.find((m) => m.id === formMaterialId)?.unidad}
-                                        </span>
-                                        <span className="block text-[10px] text-muted">
-                                            {res.tieneStockSuficiente
-                                                ? 'Stock suficiente'
-                                                : res.stockDisponible > 0
-                                                ? 'Stock parcial'
-                                                : 'Sin stock'}
-                                        </span>
-                                    </div>
+                                            <IconX size={14} />
+                                        </button>
+                                    )}
                                 </div>
                             ))}
+                            <button type="button" onClick={agregarLinea} className="text-[11px] font-bold text-brand-600 hover:underline">
+                                + Añadir material
+                            </button>
                         </div>
+                    </FormSection>
 
-                        {tieneDesabastecimientoTotal && (
-                            <div className="mt-3 rounded-lg border border-rose-200 bg-rose-50 p-2.5 text-xs text-rose-800">
-                                <strong>Alerta de Desabastecimiento:</strong> Ningún almacén de la red cuenta
-                                con stock disponible para este pedido. Se notificará a Logística para la compra.
-                            </div>
-                        )}
-                    </div>
+                    <SubmitButton status={http.processing ? 'submitting' : 'idle'} className="w-full">
+                        <IconPlus size={15} />
+                        Generar Solicitud
+                    </SubmitButton>
+                </FormPanel>
+            </div>
 
-                    <div className="flex justify-end gap-2 pt-2 border-t border-line">
-                        <Button type="button" variant="secondary" onClick={() => setModalCrear(false)}>
-                            Cancelar
-                        </Button>
-                        <Button type="submit" variant="primary">
-                            <IconCheck size={15} />
-                            Generar Solicitud
-                        </Button>
-                    </div>
-                </form>
-            </Modal>
-
-            {/* Modal de Detalle de Solicitud */}
-            <Modal open={!!solicitudDetalle} onClose={() => setSolicitudDetalle(null)} title={`Solicitud ${solicitudDetalle?.codigo ?? ''}`}>
-                {solicitudDetalle && (
+            <Modal open={!!atendiendo} onClose={() => setAtendiendo(null)} title="Atender Solicitud">
+                {atendiendo && (
                     <div className="space-y-4 text-xs">
-                        <div className="grid grid-cols-2 gap-3 rounded-lg bg-soft/60 p-3">
-                            <div>
-                                <span className="text-muted block">FRENTE DE TRABAJO</span>
-                                <span className="font-bold text-ink text-sm">{solicitudDetalle.frenteNombre}</span>
-                            </div>
-                            <div>
-                                <span className="text-muted block">SOLICITANTE</span>
-                                <span className="font-bold text-ink">{solicitudDetalle.solicitanteNombre}</span>
-                            </div>
-                            <div>
-                                <span className="text-muted block">FECHA SOLICITUD</span>
-                                <span className="font-semibold text-ink">{solicitudDetalle.fechaSolicitud}</span>
-                            </div>
-                            <div>
-                                <span className="text-muted block">FECHA REQUERIDA</span>
-                                <span className="font-semibold text-ink">{solicitudDetalle.fechaRequerida}</span>
-                            </div>
-                        </div>
-
-                        <div className="rounded-lg border border-line p-3">
-                            <span className="text-muted block font-semibold mb-1">MATERIAL SOLICITADO</span>
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm font-bold text-ink">
-                                    {materiales.find((m) => m.id === solicitudDetalle.materialId)?.nombre}
-                                </span>
-                                <span className="font-mono text-sm font-bold text-brand-600">
-                                    {formatCantidad(solicitudDetalle.cantidad)}{' '}
-                                    {materiales.find((m) => m.id === solicitudDetalle.materialId)?.unidad}
-                                </span>
-                            </div>
-                            {solicitudDetalle.observaciones && (
-                                <p className="mt-2 text-muted italic border-t border-line pt-2">
-                                    "{solicitudDetalle.observaciones}"
-                                </p>
-                            )}
-                        </div>
-
-                        <div className="flex justify-end gap-2 pt-2 border-t border-line">
-                            <Button variant="secondary" onClick={() => setSolicitudDetalle(null)}>
-                                Cerrar
+                        <p className="text-muted">
+                            Al atender <strong className="text-ink">{atendiendo.codigo}</strong> se descontará del almacén el
+                            material solicitado y se asentará el movimiento en el kardex.
+                        </p>
+                        <div className="flex justify-end gap-2 border-t border-line pt-2">
+                            <Button variant="secondary" onClick={() => setAtendiendo(null)}>
+                                Cancelar
+                            </Button>
+                            <Button variant="primary" onClick={atender} disabled={http.processing}>
+                                <IconTruck size={15} />
+                                Confirmar Atención
                             </Button>
                         </div>
                     </div>

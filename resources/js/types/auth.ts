@@ -1,16 +1,63 @@
 export type { AppRoleId, AppRoleItem } from '../navigation.config';
 
+export type UserRole = {
+    codigo: string;
+    nombre: string;
+};
+
+export type UserOption = {
+    id: number;
+    codigo: string;
+    nombre: string;
+};
+
 export type User = {
     id: number;
     name: string;
     email: string;
+    dni: string | null;
+    roles: UserRole[];
+    permisos: string[];
+    obras: UserOption[];
+    almacenes: UserOption[];
     avatar?: string;
-    email_verified_at: string | null;
-    created_at: string;
-    updated_at: string;
     [key: string]: unknown;
 };
 
 export type Auth = {
-    user: User;
+    user: User | null;
+};
+
+export type CatalogoObra = {
+    id: number;
+    codigo: string;
+    nombre: string;
+    distrito: string | null;
+    estado: string;
+    avance_fisico_pct: string | number | null;
+};
+
+export type CatalogoAlmacen = {
+    id: number;
+    codigo: string;
+    nombre: string;
+    obra_id: number;
+};
+
+export type CatalogoMaterial = {
+    id: number;
+    codigo: string;
+    nombre: string;
+    unidad: { id: number; codigo: string; nombre: string } | null;
+};
+
+export type Catalogos = {
+    obras: CatalogoObra[];
+    almacenes: CatalogoAlmacen[];
+    materiales: CatalogoMaterial[];
+};
+
+export type Contexto = {
+    obra_activa_id: number | null;
+    almacen_activo_id: number | null;
 };

@@ -8,7 +8,7 @@ import { cn } from '../utils/cn';
 import { ESTADO_META, estadoDeAlmacen, estadoDeStock, type StockEstado } from '../utils/estados';
 import { formatCoordenadas, haversineDistanceKm } from '../utils/geo';
 import { formatCantidad, formatKm } from '../utils/format';
-import type { StockState } from '../data/stock';
+import type { StockState } from '../types/stock';
 import type { Almacen, Material, Obra } from '../types';
 import { IconCheck, IconMapPin, IconRadar, IconX } from './icons';
 
