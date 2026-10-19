@@ -2,7 +2,11 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import { DashboardSidebar } from '../../design-system/DashboardSidebar';
 import { HeaderBar } from '../../design-system/HeaderBar';
-import { APP_ROLES, NAVIGATION_CONFIG, filtrarNavegacion } from '../../navigation.config';
+import {
+    APP_ROLES,
+    NAVIGATION_CONFIG,
+    filtrarNavegacion,
+} from '../../navigation.config';
 import contexto from '@/routes/contexto';
 
 const SIDEBAR_PREF_KEY = 'cicaao.sidebar.collapsed';
@@ -34,18 +38,24 @@ export function AppLayout({ children }: { children: ReactNode }) {
     const pathname = url.split('?')[0] ?? '/';
     const [obraMenuOpen, setObraMenuOpen] = useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [sidebarCollapsed, setSidebarCollapsed] = useState(leerPreferenciaContraido);
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(
+        leerPreferenciaContraido,
+    );
 
     const usuario = props.auth.user;
     const obras = props.catalogos.obras;
-    const obraActiva = obras.find((o) => o.id === props.contexto.obra_activa_id) ?? obras[0] ?? null;
+    const obraActiva =
+        obras.find((o) => o.id === props.contexto.obra_activa_id) ??
+        obras[0] ??
+        null;
 
     const rolCodigo = usuario?.roles[0]?.codigo ?? '';
-    const currentRol: { id: string; nombre: string; badge: string } = APP_ROLES.find((r) => r.id === rolCodigo) ?? {
-        id: rolCodigo || 'residente_obra',
-        nombre: usuario?.roles[0]?.nombre ?? 'Usuario',
-        badge: usuario ? iniciales(usuario.name) : 'U',
-    };
+    const currentRol: { id: string; nombre: string; badge: string } =
+        APP_ROLES.find((r) => r.id === rolCodigo) ?? {
+            id: rolCodigo || 'residente_obra',
+            nombre: usuario?.roles[0]?.nombre ?? 'Usuario',
+            badge: usuario ? iniciales(usuario.name) : 'U',
+        };
 
     const permisos = usuario?.permisos ?? [];
     const navegacion = filtrarNavegacion(permisos);
@@ -54,7 +64,9 @@ export function AppLayout({ children }: { children: ReactNode }) {
     const userInitials = iniciales(userName);
 
     // Buscar el item de navegación actual para migas de pan y título
-    const currentItem = NAVIGATION_CONFIG.flatMap((g) => g.items).find((i) => i.href === pathname) ?? {
+    const currentItem = NAVIGATION_CONFIG.flatMap((g) => g.items).find(
+        (i) => i.href === pathname,
+    ) ?? {
         id: 'panel-general',
         label: 'Panel General',
         href: '/',
@@ -82,7 +94,10 @@ export function AppLayout({ children }: { children: ReactNode }) {
             const siguiente = !anterior;
 
             if (typeof window !== 'undefined') {
-                window.localStorage.setItem(SIDEBAR_PREF_KEY, siguiente ? '1' : '0');
+                window.localStorage.setItem(
+                    SIDEBAR_PREF_KEY,
+                    siguiente ? '1' : '0',
+                );
             }
 
             return siguiente;
@@ -103,7 +118,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
     };
 
     return (
-        <div className="flex min-h-screen bg-[#e5e5e5] text-[#000000] font-sans antialiased">
+        <div className="flex min-h-screen bg-[#e5e5e5] font-sans text-[#000000] antialiased">
             {/* Overlay del drawer móvil */}
             {sidebarOpen && (
                 <button
@@ -123,17 +138,19 @@ export function AppLayout({ children }: { children: ReactNode }) {
                 collapsed={sidebarCollapsed}
                 onToggleCollapse={alternarSidebarContraido}
                 onNavigate={() => setSidebarOpen(false)}
-                className={`fixed inset-y-0 left-0 z-50 lg:sticky lg:top-0 lg:z-auto lg:h-screen ${
-                    sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-                } lg:translate-x-0`}
+                className={`fixed inset-y-0 left-0 z-50 lg:sticky lg:top-0 lg:z-auto lg:h-screen ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
             />
 
             {/* Main Area */}
-            <div className="flex-1 flex flex-col min-w-0">
-                <div className="p-4 sm:p-6 md:p-8 flex-1">
+            <div className="flex min-w-0 flex-1 flex-col">
+                <div className="flex-1 p-4 sm:p-6 md:p-8">
                     <HeaderBar
                         title={currentItem.label}
-                        breadcrumb={['CONSORCIO PILLCO MARCA', 'VALLE DEL MANTARO', currentItem.label.toUpperCase()]}
+                        breadcrumb={[
+                            'CONSORCIO PILLCO MARCA',
+                            'VALLE DEL MANTARO',
+                            currentItem.label.toUpperCase(),
+                        ]}
                         userName={userName}
                         userInitials={userInitials}
                         onMenuClick={() => setSidebarOpen(true)}
@@ -143,11 +160,17 @@ export function AppLayout({ children }: { children: ReactNode }) {
                                 {/* Selector de Obra Activa */}
                                 <div className="relative">
                                     <button
-                                        onClick={() => setObraMenuOpen(!obraMenuOpen)}
-                                        className="px-3 py-1.5 rounded-lg bg-white border border-[#c6c6c6] text-xs font-mono font-semibold text-black hover:bg-[#f3f3f3] flex items-center gap-1.5 shadow-sm max-w-[60vw] sm:max-w-none"
+                                        onClick={() =>
+                                            setObraMenuOpen(!obraMenuOpen)
+                                        }
+                                        className="flex max-w-[60vw] items-center gap-1.5 rounded-lg border border-[#c6c6c6] bg-white px-3 py-1.5 font-mono text-xs font-semibold text-black shadow-sm hover:bg-[#f3f3f3] sm:max-w-none"
                                     >
-                                        <span className="w-2 h-2 rounded-full bg-[#d1ffca] shrink-0" />
-                                        <span className="truncate">OBRA: {obraActiva?.nombre ?? 'Sin asignar'}</span>
+                                        <span className="h-2 w-2 shrink-0 rounded-full bg-[#d1ffca]" />
+                                        <span className="truncate">
+                                            OBRA:{' '}
+                                            {obraActiva?.nombre ??
+                                                'Sin asignar'}
+                                        </span>
                                         <span className="text-[10px]">▼</span>
                                     </button>
                                     {obraMenuOpen && (
@@ -155,30 +178,38 @@ export function AppLayout({ children }: { children: ReactNode }) {
                                             <button
                                                 type="button"
                                                 aria-label="Cerrar menú de obra"
-                                                className="fixed inset-0 z-20 w-full h-full bg-transparent border-0 cursor-default p-0"
-                                                onClick={() => setObraMenuOpen(false)}
+                                                className="fixed inset-0 z-20 h-full w-full cursor-default border-0 bg-transparent p-0"
+                                                onClick={() =>
+                                                    setObraMenuOpen(false)
+                                                }
                                             />
-                                            <div className="absolute right-0 mt-1 w-64 rounded-xl bg-white border border-[#c6c6c6] shadow-lg p-1.5 z-30 space-y-1">
-                                                <div className="px-2 py-1 text-[10px] font-mono text-[#888888] uppercase">
+                                            <div className="absolute right-0 z-30 mt-1 w-64 space-y-1 rounded-xl border border-[#c6c6c6] bg-white p-1.5 shadow-lg">
+                                                <div className="px-2 py-1 font-mono text-[10px] text-[#888888] uppercase">
                                                     Seleccionar Frente / Obra
                                                 </div>
                                                 {obras.map((o) => (
                                                     <button
                                                         key={o.id}
-                                                        onClick={() => cambiarObra(o.id)}
-                                                        className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 ${
-                                                            o.id === obraActiva?.id
-                                                                ? 'bg-[#d1ffca] text-black font-bold'
-                                                                : 'hover:bg-[#f3f3f3] text-[#333333]'
+                                                        onClick={() =>
+                                                            cambiarObra(o.id)
+                                                        }
+                                                        className={`flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium ${
+                                                            o.id ===
+                                                            obraActiva?.id
+                                                                ? 'bg-[#d1ffca] font-bold text-black'
+                                                                : 'text-[#333333] hover:bg-[#f3f3f3]'
                                                         }`}
                                                     >
-                                                        <span className="w-1.5 h-1.5 rounded-full bg-black" />
-                                                        <span className="truncate">{o.nombre}</span>
+                                                        <span className="h-1.5 w-1.5 rounded-full bg-black" />
+                                                        <span className="truncate">
+                                                            {o.nombre}
+                                                        </span>
                                                     </button>
                                                 ))}
                                                 {obras.length === 0 && (
                                                     <div className="px-2.5 py-1.5 text-xs text-[#888888]">
-                                                        No tiene obras asignadas.
+                                                        No tiene obras
+                                                        asignadas.
                                                     </div>
                                                 )}
                                             </div>

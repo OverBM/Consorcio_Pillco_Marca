@@ -7,7 +7,15 @@ import { useHttp, usePage } from '@inertiajs/react';
 import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge, Modal } from '../components/ui';
-import { Button, Field, Input, Select, FormPanel, FormSection, SubmitButton } from '../components/form';
+import {
+    Button,
+    Field,
+    Input,
+    Select,
+    FormPanel,
+    FormSection,
+    SubmitButton,
+} from '../components/form';
 import { DataTable } from '../components/DataTable';
 import { EmptyState } from '../components/EmptyState';
 import { useNotifications } from '../components/notifications/NotificationProvider';
@@ -21,7 +29,11 @@ interface InventarioDetalleDb {
     cantidad_sistema: number | string;
     cantidad_contada: number | string | null;
     justificacion: string | null;
-    material?: { id: number; nombre: string; unidad_medida?: { codigo: string } | null } | null;
+    material?: {
+        id: number;
+        nombre: string;
+        unidad_medida?: { codigo: string } | null;
+    } | null;
 }
 
 interface InventarioFisicoDb {
@@ -42,7 +54,10 @@ interface InventarioFisicoPageProps {
 
 type InventarioFila = Omit<InventarioFisicoDb, 'id'> & { id: string };
 
-const ESTADO_META: Record<string, { tone: 'ok' | 'warn' | 'violet' | 'neutral'; label: string }> = {
+const ESTADO_META: Record<
+    string,
+    { tone: 'ok' | 'warn' | 'violet' | 'neutral'; label: string }
+> = {
     en_conteo: { tone: 'warn', label: 'En conteo' },
     cerrado: { tone: 'ok', label: 'Cerrado' },
 };
@@ -52,22 +67,31 @@ function unidadDe(det: InventarioDetalleDb): string {
 }
 
 function contadosDe(inv: { detalles?: InventarioDetalleDb[] }): number {
-    return (inv.detalles ?? []).filter((d) => d.cantidad_contada !== null && d.cantidad_contada !== undefined).length;
+    return (inv.detalles ?? []).filter(
+        (d) => d.cantidad_contada !== null && d.cantidad_contada !== undefined,
+    ).length;
 }
 
 function diferenciaTotal(inv: { detalles?: InventarioDetalleDb[] }): number {
     return (inv.detalles ?? []).reduce((acc, d) => {
-        if (d.cantidad_contada === null || d.cantidad_contada === undefined) return acc;
+        if (d.cantidad_contada === null || d.cantidad_contada === undefined)
+            return acc;
         return acc + (Number(d.cantidad_contada) - Number(d.cantidad_sistema));
     }, 0);
 }
 
-export default function InventarioFisicoPage({ inventariosDb = [] }: InventarioFisicoPageProps) {
+export default function InventarioFisicoPage({
+    inventariosDb = [],
+}: InventarioFisicoPageProps) {
     const notify = useNotifications();
     const { catalogos } = usePage().props;
     const almacenes: CatalogoAlmacen[] = catalogos.almacenes;
 
-    const crear = useHttp<{ almacen_id: string; periodo: string; tolerancia_pct: string }>({
+    const crear = useHttp<{
+        almacen_id: string;
+        periodo: string;
+        tolerancia_pct: string;
+    }>({
         almacen_id: '',
         periodo: '',
         tolerancia_pct: '1',
@@ -77,7 +101,9 @@ export default function InventarioFisicoPage({ inventariosDb = [] }: InventarioF
 
     const [contando, setContando] = useState<InventarioFila | null>(null);
     const [valores, setValores] = useState<Record<number, string>>({});
-    const [justificaciones, setJustificaciones] = useState<Record<number, string>>({});
+    const [justificaciones, setJustificaciones] = useState<
+        Record<number, string>
+    >({});
 
     const filas: InventarioFila[] = useMemo(
         () => inventariosDb.map((i) => ({ ...i, id: String(i.id) })),
@@ -116,7 +142,10 @@ export default function InventarioFisicoPage({ inventariosDb = [] }: InventarioF
                 refrescarProps('inventariosDb');
             },
             onError: (errors: Record<string, string>) => {
-                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo programar el inventario.');
+                notify.error(
+                    Object.values(errors).flat().join(' ') ||
+                        'No se pudo programar el inventario.',
+                );
             },
         });
     };
@@ -126,7 +155,10 @@ export default function InventarioFisicoPage({ inventariosDb = [] }: InventarioF
         if (!contando) return;
 
         const conteos = (contando.detalles ?? [])
-            .filter((det) => valores[det.id] !== undefined && valores[det.id] !== '')
+            .filter(
+                (det) =>
+                    valores[det.id] !== undefined && valores[det.id] !== '',
+            )
             .map((det) => ({
                 id: det.id,
                 cantidad_contada: Number(valores[det.id]),
@@ -147,7 +179,10 @@ export default function InventarioFisicoPage({ inventariosDb = [] }: InventarioF
                 refrescarProps('inventariosDb');
             },
             onError: (errors: Record<string, string>) => {
-                notify.error(Object.values(errors).flat().join(' ') || 'No se pudieron registrar los conteos.');
+                notify.error(
+                    Object.values(errors).flat().join(' ') ||
+                        'No se pudieron registrar los conteos.',
+                );
             },
         });
     };
@@ -160,21 +195,43 @@ export default function InventarioFisicoPage({ inventariosDb = [] }: InventarioF
             />
 
             <div className="grid gap-6 lg:grid-cols-3">
-                <Card title={`Inventarios (${inventariosDb.length})`} className="lg:col-span-2">
+                <Card
+                    title={`Inventarios (${inventariosDb.length})`}
+                    className="lg:col-span-2"
+                >
                     {inventariosDb.length === 0 ? (
-                        <EmptyState title="Sin inventarios físicos" hint="Programa una toma física para un almacén." />
+                        <EmptyState
+                            title="Sin inventarios físicos"
+                            hint="Programa una toma física para un almacén."
+                        />
                     ) : (
                         <DataTable
                             emptyLabel="Sin registros de inventario físico."
                             columns={[
-                                { key: 'periodo', header: 'Periodo', mono: true, cell: (i) => <span className="font-semibold text-ink">{i.periodo}</span> },
-                                { key: 'almacen', header: 'Almacén', cell: (i) => i.almacen?.nombre ?? `Almacén #${i.almacen_id}` },
+                                {
+                                    key: 'periodo',
+                                    header: 'Periodo',
+                                    mono: true,
+                                    cell: (i) => (
+                                        <span className="text-ink font-semibold">
+                                            {i.periodo}
+                                        </span>
+                                    ),
+                                },
+                                {
+                                    key: 'almacen',
+                                    header: 'Almacén',
+                                    cell: (i) =>
+                                        i.almacen?.nombre ??
+                                        `Almacén #${i.almacen_id}`,
+                                },
                                 {
                                     key: 'avance',
                                     header: 'Avance',
                                     cell: (i) => (
                                         <span className="text-xs">
-                                            {contadosDe(i)} / {(i.detalles ?? []).length} contados
+                                            {contadosDe(i)} /{' '}
+                                            {(i.detalles ?? []).length} contados
                                         </span>
                                     ),
                                 },
@@ -185,7 +242,9 @@ export default function InventarioFisicoPage({ inventariosDb = [] }: InventarioF
                                     cell: (i) => {
                                         const dif = diferenciaTotal(i);
                                         return (
-                                            <span className={`font-mono text-xs font-bold ${dif < 0 ? 'text-danger' : dif > 0 ? 'text-ok' : 'text-muted'}`}>
+                                            <span
+                                                className={`font-mono text-xs font-bold ${dif < 0 ? 'text-danger' : dif > 0 ? 'text-ok' : 'text-muted'}`}
+                                            >
                                                 {dif > 0 ? `+${dif}` : dif}
                                             </span>
                                         );
@@ -195,8 +254,15 @@ export default function InventarioFisicoPage({ inventariosDb = [] }: InventarioF
                                     key: 'estado',
                                     header: 'Estado',
                                     cell: (i) => {
-                                        const meta = ESTADO_META[i.estado] ?? { tone: 'neutral' as const, label: i.estado };
-                                        return <Badge tone={meta.tone}>{meta.label}</Badge>;
+                                        const meta = ESTADO_META[i.estado] ?? {
+                                            tone: 'neutral' as const,
+                                            label: i.estado,
+                                        };
+                                        return (
+                                            <Badge tone={meta.tone}>
+                                                {meta.label}
+                                            </Badge>
+                                        );
                                     },
                                 },
                                 {
@@ -205,12 +271,20 @@ export default function InventarioFisicoPage({ inventariosDb = [] }: InventarioF
                                     align: 'right',
                                     cell: (i) =>
                                         i.estado === 'en_conteo' ? (
-                                            <button className="btn-primary !px-2.5 !py-1 text-xs" onClick={() => abrirConteo(i)} disabled={conteo.processing}>
+                                            <button
+                                                className="btn-primary !px-2.5 !py-1 text-xs"
+                                                onClick={() => abrirConteo(i)}
+                                                disabled={conteo.processing}
+                                            >
                                                 <IconBoxes size={13} />
                                                 Registrar conteo
                                             </button>
                                         ) : (
-                                            <span className="text-[11px] text-muted">{i.cerrado_en ? formatFs(i.cerrado_en) : '—'}</span>
+                                            <span className="text-muted text-[11px]">
+                                                {i.cerrado_en
+                                                    ? formatFs(i.cerrado_en)
+                                                    : '—'}
+                                            </span>
                                         ),
                                 },
                             ]}
@@ -219,10 +293,20 @@ export default function InventarioFisicoPage({ inventariosDb = [] }: InventarioF
                     )}
                 </Card>
 
-                <FormPanel title="Programar Toma Física" subtitle="Conteo ciego por almacén" onSubmit={enviarCrear} className="text-xs">
+                <FormPanel
+                    title="Programar Toma Física"
+                    subtitle="Conteo ciego por almacén"
+                    onSubmit={enviarCrear}
+                    className="text-xs"
+                >
                     <FormSection title="Parámetros" columns={1}>
                         <Field label="Almacén a auditar" required>
-                            <Select value={crear.data.almacen_id} onChange={(e) => crear.setData('almacen_id', e.target.value)}>
+                            <Select
+                                value={crear.data.almacen_id}
+                                onChange={(e) =>
+                                    crear.setData('almacen_id', e.target.value)
+                                }
+                            >
                                 <option value="">Selecciona almacén…</option>
                                 {almacenes.map((a) => (
                                     <option key={a.id} value={String(a.id)}>
@@ -232,54 +316,97 @@ export default function InventarioFisicoPage({ inventariosDb = [] }: InventarioF
                             </Select>
                         </Field>
                         <Field label="Periodo" required hint="Ej. 2026-10">
-                            <Input value={crear.data.periodo} onChange={(e) => crear.setData('periodo', e.target.value)} maxLength={20} placeholder="2026-10" />
+                            <Input
+                                value={crear.data.periodo}
+                                onChange={(e) =>
+                                    crear.setData('periodo', e.target.value)
+                                }
+                                maxLength={20}
+                                placeholder="2026-10"
+                            />
                         </Field>
-                        <Field label="Tolerancia (%)" hint="Diferencia aceptable antes de justificar.">
+                        <Field
+                            label="Tolerancia (%)"
+                            hint="Diferencia aceptable antes de justificar."
+                        >
                             <Input
                                 type="number"
                                 min={0}
                                 max={100}
                                 step="0.1"
                                 value={crear.data.tolerancia_pct}
-                                onChange={(e) => crear.setData('tolerancia_pct', e.target.value)}
+                                onChange={(e) =>
+                                    crear.setData(
+                                        'tolerancia_pct',
+                                        e.target.value,
+                                    )
+                                }
                             />
                         </Field>
                     </FormSection>
-                    <SubmitButton status={crear.processing ? 'submitting' : 'idle'} className="w-full">
+                    <SubmitButton
+                        status={crear.processing ? 'submitting' : 'idle'}
+                        className="w-full"
+                    >
                         <IconBoxes size={15} />
                         Programar Inventario
                     </SubmitButton>
                 </FormPanel>
             </div>
 
-            <Modal open={!!contando} onClose={() => setContando(null)} title={`Conteo físico — ${contando?.periodo ?? ''}`} wide>
+            <Modal
+                open={!!contando}
+                onClose={() => setContando(null)}
+                title={`Conteo físico — ${contando?.periodo ?? ''}`}
+                wide
+            >
                 {contando && (
                     <form onSubmit={enviarConteo} className="space-y-4 text-xs">
-                        <p className="rounded-lg bg-soft/60 px-3 py-2 text-muted">
-                            Conteo <strong className="text-ink">a ciegas</strong>: registra solo la cantidad física observada. El ajuste
-                            contra el sistema se aplica automáticamente.
+                        <p className="bg-soft/60 text-muted rounded-lg px-3 py-2">
+                            Conteo{' '}
+                            <strong className="text-ink">a ciegas</strong>:
+                            registra solo la cantidad física observada. El
+                            ajuste contra el sistema se aplica automáticamente.
                         </p>
 
                         <div className="space-y-2">
                             {(contando.detalles ?? []).map((det) => (
-                                <div key={det.id} className="flex items-center gap-2 rounded-lg border border-line p-2.5">
+                                <div
+                                    key={det.id}
+                                    className="border-line flex items-center gap-2 rounded-lg border p-2.5"
+                                >
                                     <div className="flex-1">
-                                        <p className="text-xs font-semibold text-ink">{det.material?.nombre ?? `Material #${det.material_id}`}</p>
-                                        <p className="text-[11px] text-muted">{unidadDe(det)}</p>
+                                        <p className="text-ink text-xs font-semibold">
+                                            {det.material?.nombre ??
+                                                `Material #${det.material_id}`}
+                                        </p>
+                                        <p className="text-muted text-[11px]">
+                                            {unidadDe(det)}
+                                        </p>
                                     </div>
                                     <input
                                         type="number"
                                         min={0}
                                         step="0.001"
                                         value={valores[det.id] ?? ''}
-                                        onChange={(e) => setValores((v) => ({ ...v, [det.id]: e.target.value }))}
+                                        onChange={(e) =>
+                                            setValores((v) => ({
+                                                ...v,
+                                                [det.id]: e.target.value,
+                                            }))
+                                        }
                                         placeholder="Contado"
                                         className="field !w-24 !py-1.5"
                                         aria-label={`Cantidad contada de ${det.material?.nombre ?? det.material_id}`}
                                     />
                                     <input
                                         value={justificaciones[det.id] ?? ''}
-                                        onChange={(e) => setJustificaciones((j) => ({ ...j, [det.id]: e.target.value }))}
+                                        onChange={(e) =>
+                                            setJustificaciones((j) => ({
+                                                ...j,
+                                                [det.id]: e.target.value,
+                                            }))
+                                        }
                                         placeholder="Justificación (opcional)"
                                         className="field !w-48 !py-1.5"
                                         aria-label="Justificación"
@@ -288,11 +415,19 @@ export default function InventarioFisicoPage({ inventariosDb = [] }: InventarioF
                             ))}
                         </div>
 
-                        <div className="flex justify-end gap-2 border-t border-line pt-2">
-                            <Button type="button" variant="secondary" onClick={() => setContando(null)}>
+                        <div className="border-line flex justify-end gap-2 border-t pt-2">
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                onClick={() => setContando(null)}
+                            >
                                 Cancelar
                             </Button>
-                            <SubmitButton status={conteo.processing ? 'submitting' : 'idle'}>
+                            <SubmitButton
+                                status={
+                                    conteo.processing ? 'submitting' : 'idle'
+                                }
+                            >
                                 <IconCheckCircle size={15} />
                                 Registrar y ajustar
                             </SubmitButton>

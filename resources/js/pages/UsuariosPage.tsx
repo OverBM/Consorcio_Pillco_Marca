@@ -6,7 +6,14 @@ import { Deferred, useHttp, usePage } from '@inertiajs/react';
 import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge, Button, Modal } from '../components/ui';
-import { Field, Input, Select, FormPanel, FormSection, SubmitButton } from '../components/form';
+import {
+    Field,
+    Input,
+    Select,
+    FormPanel,
+    FormSection,
+    SubmitButton,
+} from '../components/form';
 import { DataTable } from '../components/DataTable';
 import { EmptyState } from '../components/EmptyState';
 import { SkeletonTable } from '../components/Skeleton';
@@ -54,12 +61,20 @@ const VACIO = {
     estado: 'activo',
 };
 
-export default function UsuariosPage({ usuariosDb = [], rolesDb = [] }: UsuariosPageProps) {
+export default function UsuariosPage({
+    usuariosDb = [],
+    rolesDb = [],
+}: UsuariosPageProps) {
     const notify = useNotifications();
-    const { catalogos } = usePage().props as unknown as { catalogos?: Catalogos };
+    const { catalogos } = usePage().props as unknown as {
+        catalogos?: Catalogos;
+    };
     const obras = catalogos?.obras ?? [];
 
-    const filas = useMemo(() => usuariosDb.map((u) => ({ ...u, id: String(u.id) })), [usuariosDb]);
+    const filas = useMemo(
+        () => usuariosDb.map((u) => ({ ...u, id: String(u.id) })),
+        [usuariosDb],
+    );
 
     const crear = useHttp<typeof VACIO>({
         ...VACIO,
@@ -109,12 +124,22 @@ export default function UsuariosPage({ usuariosDb = [], rolesDb = [] }: Usuarios
                 refrescarProps('usuariosDb');
             },
             onError: (errors: Record<string, string>) => {
-                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar el usuario.');
+                notify.error(
+                    Object.values(errors).flat().join(' ') ||
+                        'No se pudo registrar el usuario.',
+                );
             },
         });
     };
 
-    const editar = useHttp<{ name: string; email: string; password: string; rol_codigo: string; obra_id: string; estado: string }>({
+    const editar = useHttp<{
+        name: string;
+        email: string;
+        password: string;
+        rol_codigo: string;
+        obra_id: string;
+        estado: string;
+    }>({
         name: '',
         email: '',
         password: '',
@@ -158,7 +183,10 @@ export default function UsuariosPage({ usuariosDb = [], rolesDb = [] }: Usuarios
                 refrescarProps('usuariosDb');
             },
             onError: (errors: Record<string, string>) => {
-                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo actualizar el usuario.');
+                notify.error(
+                    Object.values(errors).flat().join(' ') ||
+                        'No se pudo actualizar el usuario.',
+                );
             },
         });
     };
@@ -173,65 +201,160 @@ export default function UsuariosPage({ usuariosDb = [], rolesDb = [] }: Usuarios
             <div className="grid gap-6 lg:grid-cols-3">
                 <div className="lg:col-span-2">
                     <Card title={`Usuarios Registrados (${filas.length})`}>
-                        <Deferred data="usuariosDb" fallback={<SkeletonTable />}>
-                        {filas.length === 0 ? (
-                            <EmptyState title="Sin usuarios registrados" hint="Registra el primer usuario con el panel lateral." />
-                        ) : (
-                            <DataTable
-                                emptyLabel="Sin usuarios registrados."
-                                columns={[
-                                    { key: 'nombre', header: 'Nombre y Apellidos', cell: (r) => <span className="font-bold text-ink">{r.nombre}</span> },
-                                    { key: 'email', header: 'Correo Corporativo', mono: true },
-                                    { key: 'rol', header: 'Rol Asignado', cell: (r) => <Badge tone="violet">{r.rol}</Badge> },
-                                    { key: 'obra', header: 'Alcance Asignado' },
-                                    {
-                                        key: 'estado',
-                                        header: 'Estado',
-                                        align: 'center',
-                                        cell: (r) => <Badge tone={r.activo ? 'ok' : 'danger'}>{r.activo ? 'Activo' : 'Inactivo'}</Badge>,
-                                    },
-                                    {
-                                        key: 'acciones',
-                                        header: 'Acción',
-                                        align: 'right',
-                                        cell: (r) => (
-                                            <Button variant="secondary" size="sm" onClick={() => abrirEdicion(r)}>
-                                                Editar
-                                            </Button>
-                                        ),
-                                    },
-                                ]}
-                                rows={filas}
-                            />
-                        )}
+                        <Deferred
+                            data="usuariosDb"
+                            fallback={<SkeletonTable />}
+                        >
+                            {filas.length === 0 ? (
+                                <EmptyState
+                                    title="Sin usuarios registrados"
+                                    hint="Registra el primer usuario con el panel lateral."
+                                />
+                            ) : (
+                                <DataTable
+                                    emptyLabel="Sin usuarios registrados."
+                                    columns={[
+                                        {
+                                            key: 'nombre',
+                                            header: 'Nombre y Apellidos',
+                                            cell: (r) => (
+                                                <span className="text-ink font-bold">
+                                                    {r.nombre}
+                                                </span>
+                                            ),
+                                        },
+                                        {
+                                            key: 'email',
+                                            header: 'Correo Corporativo',
+                                            mono: true,
+                                        },
+                                        {
+                                            key: 'rol',
+                                            header: 'Rol Asignado',
+                                            cell: (r) => (
+                                                <Badge tone="violet">
+                                                    {r.rol}
+                                                </Badge>
+                                            ),
+                                        },
+                                        {
+                                            key: 'obra',
+                                            header: 'Alcance Asignado',
+                                        },
+                                        {
+                                            key: 'estado',
+                                            header: 'Estado',
+                                            align: 'center',
+                                            cell: (r) => (
+                                                <Badge
+                                                    tone={
+                                                        r.activo
+                                                            ? 'ok'
+                                                            : 'danger'
+                                                    }
+                                                >
+                                                    {r.activo
+                                                        ? 'Activo'
+                                                        : 'Inactivo'}
+                                                </Badge>
+                                            ),
+                                        },
+                                        {
+                                            key: 'acciones',
+                                            header: 'Acción',
+                                            align: 'right',
+                                            cell: (r) => (
+                                                <Button
+                                                    variant="secondary"
+                                                    size="sm"
+                                                    onClick={() =>
+                                                        abrirEdicion(r)
+                                                    }
+                                                >
+                                                    Editar
+                                                </Button>
+                                            ),
+                                        },
+                                    ]}
+                                    rows={filas}
+                                />
+                            )}
                         </Deferred>
                     </Card>
                 </div>
 
-                <FormPanel title="Registrar Usuario" subtitle="Credenciales y rol de acceso" onSubmit={enviar} className="text-xs">
+                <FormPanel
+                    title="Registrar Usuario"
+                    subtitle="Credenciales y rol de acceso"
+                    onSubmit={enviar}
+                    className="text-xs"
+                >
                     <FormSection title="Identidad" columns={1}>
                         <Field label="Nombre y Apellidos" required>
-                            <Input value={crear.data.name} onChange={(e) => crear.setData('name', e.target.value)} placeholder="Ing. Carlos Mendoza" />
+                            <Input
+                                value={crear.data.name}
+                                onChange={(e) =>
+                                    crear.setData('name', e.target.value)
+                                }
+                                placeholder="Ing. Carlos Mendoza"
+                            />
                         </Field>
                         <Field label="Correo Corporativo" required>
-                            <Input type="email" value={crear.data.email} onChange={(e) => crear.setData('email', e.target.value)} placeholder="usuario@pillcomarca.pe" />
+                            <Input
+                                type="email"
+                                value={crear.data.email}
+                                onChange={(e) =>
+                                    crear.setData('email', e.target.value)
+                                }
+                                placeholder="usuario@pillcomarca.pe"
+                            />
                         </Field>
-                        <Field label="Contraseña" required hint="Mínimo 8 caracteres.">
-                            <Input type="password" value={crear.data.password} onChange={(e) => crear.setData('password', e.target.value)} />
+                        <Field
+                            label="Contraseña"
+                            required
+                            hint="Mínimo 8 caracteres."
+                        >
+                            <Input
+                                type="password"
+                                value={crear.data.password}
+                                onChange={(e) =>
+                                    crear.setData('password', e.target.value)
+                                }
+                            />
                         </Field>
                         <div className="grid grid-cols-2 gap-3">
                             <Field label="DNI">
-                                <Input value={crear.data.dni} onChange={(e) => crear.setData('dni', e.target.value)} maxLength={12} />
+                                <Input
+                                    value={crear.data.dni}
+                                    onChange={(e) =>
+                                        crear.setData('dni', e.target.value)
+                                    }
+                                    maxLength={12}
+                                />
                             </Field>
                             <Field label="Teléfono">
-                                <Input value={crear.data.telefono} onChange={(e) => crear.setData('telefono', e.target.value)} maxLength={30} />
+                                <Input
+                                    value={crear.data.telefono}
+                                    onChange={(e) =>
+                                        crear.setData(
+                                            'telefono',
+                                            e.target.value,
+                                        )
+                                    }
+                                    maxLength={30}
+                                />
                             </Field>
                         </div>
                     </FormSection>
 
                     <FormSection title="Acceso y Alcance" columns={1}>
                         <Field label="Rol Asignado" required>
-                            <Select value={crear.data.rol_codigo} onChange={(e) => crear.setData('rol_codigo', e.target.value)}>
+                            <Select
+                                value={crear.data.rol_codigo}
+                                onChange={(e) =>
+                                    crear.setData('rol_codigo', e.target.value)
+                                }
+                            >
                                 <option value="">Selecciona rol…</option>
                                 {rolesDb.map((r) => (
                                     <option key={r.codigo} value={r.codigo}>
@@ -241,7 +364,12 @@ export default function UsuariosPage({ usuariosDb = [], rolesDb = [] }: Usuarios
                             </Select>
                         </Field>
                         <Field label="Obra / Alcance">
-                            <Select value={crear.data.obra_id} onChange={(e) => crear.setData('obra_id', e.target.value)}>
+                            <Select
+                                value={crear.data.obra_id}
+                                onChange={(e) =>
+                                    crear.setData('obra_id', e.target.value)
+                                }
+                            >
                                 <option value="">Todas las Obras</option>
                                 {obras.map((o) => (
                                     <option key={o.id} value={String(o.id)}>
@@ -251,7 +379,12 @@ export default function UsuariosPage({ usuariosDb = [], rolesDb = [] }: Usuarios
                             </Select>
                         </Field>
                         <Field label="Estado">
-                            <Select value={crear.data.estado} onChange={(e) => crear.setData('estado', e.target.value)}>
+                            <Select
+                                value={crear.data.estado}
+                                onChange={(e) =>
+                                    crear.setData('estado', e.target.value)
+                                }
+                            >
                                 {ESTADOS.map((s) => (
                                     <option key={s.value} value={s.value}>
                                         {s.label}
@@ -261,28 +394,50 @@ export default function UsuariosPage({ usuariosDb = [], rolesDb = [] }: Usuarios
                         </Field>
                     </FormSection>
 
-                    <SubmitButton status={crear.processing ? 'submitting' : 'idle'} className="w-full">
+                    <SubmitButton
+                        status={crear.processing ? 'submitting' : 'idle'}
+                        className="w-full"
+                    >
                         <IconPlus size={15} />
                         Registrar Usuario
                     </SubmitButton>
                 </FormPanel>
             </div>
 
-            <Modal open={Boolean(editando)} onClose={() => setEditando(null)} title="Editar Usuario">
+            <Modal
+                open={Boolean(editando)}
+                onClose={() => setEditando(null)}
+                title="Editar Usuario"
+            >
                 {editando && (
                     <form onSubmit={guardarEdicion} className="space-y-4">
-                        <div className="bg-canvas p-3 rounded-lg border border-line text-xs">
+                        <div className="bg-canvas border-line rounded-lg border p-3 text-xs">
                             <span className="text-muted block">Usuario:</span>
-                            <span className="font-bold text-ink">{editando.email}</span>
+                            <span className="text-ink font-bold">
+                                {editando.email}
+                            </span>
                         </div>
 
                         <Field label="Nombre y Apellidos" required>
-                            <Input value={editar.data.name} onChange={(e) => editar.setData('name', e.target.value)} />
+                            <Input
+                                value={editar.data.name}
+                                onChange={(e) =>
+                                    editar.setData('name', e.target.value)
+                                }
+                            />
                         </Field>
 
                         <div className="grid grid-cols-2 gap-3">
                             <Field label="Rol Asignado" required>
-                                <Select value={editar.data.rol_codigo} onChange={(e) => editar.setData('rol_codigo', e.target.value)}>
+                                <Select
+                                    value={editar.data.rol_codigo}
+                                    onChange={(e) =>
+                                        editar.setData(
+                                            'rol_codigo',
+                                            e.target.value,
+                                        )
+                                    }
+                                >
                                     {rolesDb.map((r) => (
                                         <option key={r.codigo} value={r.codigo}>
                                             {r.nombre}
@@ -291,7 +446,12 @@ export default function UsuariosPage({ usuariosDb = [], rolesDb = [] }: Usuarios
                                 </Select>
                             </Field>
                             <Field label="Estado">
-                                <Select value={editar.data.estado} onChange={(e) => editar.setData('estado', e.target.value)}>
+                                <Select
+                                    value={editar.data.estado}
+                                    onChange={(e) =>
+                                        editar.setData('estado', e.target.value)
+                                    }
+                                >
                                     {ESTADOS.map((s) => (
                                         <option key={s.value} value={s.value}>
                                             {s.label}
@@ -302,7 +462,12 @@ export default function UsuariosPage({ usuariosDb = [], rolesDb = [] }: Usuarios
                         </div>
 
                         <Field label="Obra / Alcance">
-                            <Select value={editar.data.obra_id} onChange={(e) => editar.setData('obra_id', e.target.value)}>
+                            <Select
+                                value={editar.data.obra_id}
+                                onChange={(e) =>
+                                    editar.setData('obra_id', e.target.value)
+                                }
+                            >
                                 <option value="">Todas las Obras</option>
                                 {obras.map((o) => (
                                     <option key={o.id} value={String(o.id)}>
@@ -312,15 +477,32 @@ export default function UsuariosPage({ usuariosDb = [], rolesDb = [] }: Usuarios
                             </Select>
                         </Field>
 
-                        <Field label="Nueva Contraseña" hint="Déjala vacía para conservar la actual.">
-                            <Input type="password" value={editar.data.password} onChange={(e) => editar.setData('password', e.target.value)} />
+                        <Field
+                            label="Nueva Contraseña"
+                            hint="Déjala vacía para conservar la actual."
+                        >
+                            <Input
+                                type="password"
+                                value={editar.data.password}
+                                onChange={(e) =>
+                                    editar.setData('password', e.target.value)
+                                }
+                            />
                         </Field>
 
                         <div className="flex justify-end gap-2 pt-2">
-                            <Button variant="secondary" type="button" onClick={() => setEditando(null)}>
+                            <Button
+                                variant="secondary"
+                                type="button"
+                                onClick={() => setEditando(null)}
+                            >
                                 Cancelar
                             </Button>
-                            <Button variant="mint" type="submit" disabled={editar.processing}>
+                            <Button
+                                variant="mint"
+                                type="submit"
+                                disabled={editar.processing}
+                            >
                                 <IconSave size={14} />
                                 Guardar Cambios
                             </Button>

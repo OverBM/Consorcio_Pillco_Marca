@@ -7,7 +7,14 @@ import { useHttp } from '@inertiajs/react';
 import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge } from '../components/ui';
-import { Field, Input, Select, FormPanel, FormSection, SubmitButton } from '../components/form';
+import {
+    Field,
+    Input,
+    Select,
+    FormPanel,
+    FormSection,
+    SubmitButton,
+} from '../components/form';
 import { DataTable } from '../components/DataTable';
 import { EmptyState } from '../components/EmptyState';
 import { useNotifications } from '../components/notifications/NotificationProvider';
@@ -59,11 +66,19 @@ function tonoEstado(estado: string): 'ok' | 'warn' | 'neutral' {
     return 'neutral';
 }
 
-export default function CronogramaEvmPage({ obrasDb = [], evmData, hitosDb = [] }: CronogramaEvmPageProps) {
+export default function CronogramaEvmPage({
+    obrasDb = [],
+    evmData,
+    hitosDb = [],
+}: CronogramaEvmPageProps) {
     const notify = useNotifications();
     const [obraId, setObraId] = useState('');
 
-    const crear = useHttp<{ nombre: string; fecha_planificada: string; estado: string }>({
+    const crear = useHttp<{
+        nombre: string;
+        fecha_planificada: string;
+        estado: string;
+    }>({
         nombre: '',
         fecha_planificada: '',
         estado: 'pendiente',
@@ -76,7 +91,10 @@ export default function CronogramaEvmPage({ obrasDb = [], evmData, hitosDb = [] 
     }, [obrasDb, obraId]);
 
     const hitos = useMemo(
-        () => hitosDb.filter((h) => String(h.obra_id) === obraId).map((h) => ({ ...h, id: String(h.id) })),
+        () =>
+            hitosDb
+                .filter((h) => String(h.obra_id) === obraId)
+                .map((h) => ({ ...h, id: String(h.id) })),
         [hitosDb, obraId],
     );
 
@@ -101,11 +119,18 @@ export default function CronogramaEvmPage({ obrasDb = [], evmData, hitosDb = [] 
         void crear.post(`/api/v1/proyectos/${obraId}/hitos`, {
             onSuccess: () => {
                 notify.success('Hito registrado en el cronograma.');
-                crear.setData({ nombre: '', fecha_planificada: '', estado: 'pendiente' });
+                crear.setData({
+                    nombre: '',
+                    fecha_planificada: '',
+                    estado: 'pendiente',
+                });
                 refrescarProps('hitosDb');
             },
             onError: (errors: Record<string, string>) => {
-                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar el hito.');
+                notify.error(
+                    Object.values(errors).flat().join(' ') ||
+                        'No se pudo registrar el hito.',
+                );
             },
         });
     };
@@ -117,12 +142,14 @@ export default function CronogramaEvmPage({ obrasDb = [], evmData, hitosDb = [] 
                 subtitle="Indicadores de desempeño de costo y plazo bajo metodología PMI (SPI, CPI, EAC, VAC)"
             />
 
-            <Card className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <span className="text-xs font-mono uppercase text-muted">Obra Evaluada:</span>
+            <Card className="flex flex-col items-start justify-between gap-3 p-4 sm:flex-row sm:items-center">
+                <span className="text-muted font-mono text-xs uppercase">
+                    Obra Evaluada:
+                </span>
                 <select
                     value={obraId}
                     onChange={(e) => setObraId(e.target.value)}
-                    className="rounded-field border border-line bg-canvas px-3 py-1.5 text-xs text-ink outline-none"
+                    className="rounded-field border-line bg-canvas text-ink border px-3 py-1.5 text-xs outline-none"
                 >
                     {obrasDb.map((o) => (
                         <option key={o.id} value={String(o.id)}>
@@ -134,72 +161,159 @@ export default function CronogramaEvmPage({ obrasDb = [], evmData, hitosDb = [] 
 
             {evmData ? (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <Card className="p-4 bg-surface border-line">
-                        <span className="text-xs font-mono uppercase text-muted">SPI (Desempeño Cronograma)</span>
-                        <p className="mt-2 text-2xl font-bold font-mono text-ink">{evmData.spi.toFixed(4)}</p>
-                        <span className="text-xs text-muted">SV: {formatMoneda(evmData.sv)}</span>
+                    <Card className="bg-surface border-line p-4">
+                        <span className="text-muted font-mono text-xs uppercase">
+                            SPI (Desempeño Cronograma)
+                        </span>
+                        <p className="text-ink mt-2 font-mono text-2xl font-bold">
+                            {evmData.spi.toFixed(4)}
+                        </p>
+                        <span className="text-muted text-xs">
+                            SV: {formatMoneda(evmData.sv)}
+                        </span>
                     </Card>
 
-                    <Card className="p-4 bg-surface border-line">
-                        <span className="text-xs font-mono uppercase text-muted">CPI (Desempeño Costo)</span>
-                        <p className="mt-2 text-2xl font-bold font-mono text-ink">{evmData.cpi.toFixed(4)}</p>
-                        <span className="text-xs text-muted">CV: {formatMoneda(evmData.cv)}</span>
+                    <Card className="bg-surface border-line p-4">
+                        <span className="text-muted font-mono text-xs uppercase">
+                            CPI (Desempeño Costo)
+                        </span>
+                        <p className="text-ink mt-2 font-mono text-2xl font-bold">
+                            {evmData.cpi.toFixed(4)}
+                        </p>
+                        <span className="text-muted text-xs">
+                            CV: {formatMoneda(evmData.cv)}
+                        </span>
                     </Card>
 
-                    <Card className="p-4 bg-surface border-line">
-                        <span className="text-xs font-mono uppercase text-muted">EAC (Estimado a Conclusión)</span>
-                        <p className="mt-2 text-2xl font-bold font-mono text-ink">{formatMoneda(evmData.eac)}</p>
-                        <span className="text-xs text-muted">BAC: {formatMoneda(evmData.bac)}</span>
+                    <Card className="bg-surface border-line p-4">
+                        <span className="text-muted font-mono text-xs uppercase">
+                            EAC (Estimado a Conclusión)
+                        </span>
+                        <p className="text-ink mt-2 font-mono text-2xl font-bold">
+                            {formatMoneda(evmData.eac)}
+                        </p>
+                        <span className="text-muted text-xs">
+                            BAC: {formatMoneda(evmData.bac)}
+                        </span>
                     </Card>
 
-                    <Card className="p-4 bg-surface border-line">
-                        <span className="text-xs font-mono uppercase text-muted">VAC (Variación Final)</span>
-                        <p className="mt-2 text-2xl font-bold font-mono text-ink">{formatMoneda(evmData.vac)}</p>
-                        <span className="text-xs text-muted">Obra: {evmData.nombre}</span>
+                    <Card className="bg-surface border-line p-4">
+                        <span className="text-muted font-mono text-xs uppercase">
+                            VAC (Variación Final)
+                        </span>
+                        <p className="text-ink mt-2 font-mono text-2xl font-bold">
+                            {formatMoneda(evmData.vac)}
+                        </p>
+                        <span className="text-muted text-xs">
+                            Obra: {evmData.nombre}
+                        </span>
                     </Card>
                 </div>
             ) : (
-                <EmptyState title="Sin datos EVM" hint="Aún no hay valorizaciones registradas para calcular indicadores." />
+                <EmptyState
+                    title="Sin datos EVM"
+                    hint="Aún no hay valorizaciones registradas para calcular indicadores."
+                />
             )}
 
             <div className="grid gap-6 lg:grid-cols-3">
-                <Card title="Hitos Contractuales de Cronograma" className="lg:col-span-2">
+                <Card
+                    title="Hitos Contractuales de Cronograma"
+                    className="lg:col-span-2"
+                >
                     {hitos.length === 0 ? (
-                        <EmptyState title="Sin hitos registrados" hint="Registra el primer hito con el panel lateral." />
+                        <EmptyState
+                            title="Sin hitos registrados"
+                            hint="Registra el primer hito con el panel lateral."
+                        />
                     ) : (
                         <DataTable
                             emptyLabel="Sin hitos registrados."
                             columns={[
                                 { key: 'nombre', header: 'Hito Contractual' },
-                                { key: 'fecha_planificada', header: 'Fecha Planificada', mono: true, cell: (h) => formatFecha(h.fecha_planificada) },
-                                { key: 'fecha_real', header: 'Fecha Real', mono: true, cell: (h) => (h.fecha_real ? formatFecha(h.fecha_real) : '—') },
-                                { key: 'estado', header: 'Estado', cell: (h) => <Badge tone={tonoEstado(h.estado)}>{h.estado.replace('_', ' ')}</Badge> },
+                                {
+                                    key: 'fecha_planificada',
+                                    header: 'Fecha Planificada',
+                                    mono: true,
+                                    cell: (h) =>
+                                        formatFecha(h.fecha_planificada),
+                                },
+                                {
+                                    key: 'fecha_real',
+                                    header: 'Fecha Real',
+                                    mono: true,
+                                    cell: (h) =>
+                                        h.fecha_real
+                                            ? formatFecha(h.fecha_real)
+                                            : '—',
+                                },
+                                {
+                                    key: 'estado',
+                                    header: 'Estado',
+                                    cell: (h) => (
+                                        <Badge tone={tonoEstado(h.estado)}>
+                                            {h.estado.replace('_', ' ')}
+                                        </Badge>
+                                    ),
+                                },
                             ]}
                             rows={hitos}
                         />
                     )}
                 </Card>
 
-                <FormPanel title="Registrar Hito" subtitle="Nuevo hito del cronograma contractual" onSubmit={enviar} className="text-xs">
+                <FormPanel
+                    title="Registrar Hito"
+                    subtitle="Nuevo hito del cronograma contractual"
+                    onSubmit={enviar}
+                    className="text-xs"
+                >
                     <FormSection title="Detalle del Hito" columns={1}>
                         <Field label="Obra" required>
-                            <Select value={obraId} onChange={(e) => setObraId(e.target.value)}>
+                            <Select
+                                value={obraId}
+                                onChange={(e) => setObraId(e.target.value)}
+                            >
                                 {obrasDb.map((o) => (
-                                    <option key={o.id} value={String(o.id)}>{o.nombre}</option>
+                                    <option key={o.id} value={String(o.id)}>
+                                        {o.nombre}
+                                    </option>
                                 ))}
                             </Select>
                         </Field>
                         <Field label="Nombre del Hito" required>
-                            <Input value={crear.data.nombre} onChange={(e) => crear.setData('nombre', e.target.value)} placeholder="Culminación de movimiento de tierras" />
+                            <Input
+                                value={crear.data.nombre}
+                                onChange={(e) =>
+                                    crear.setData('nombre', e.target.value)
+                                }
+                                placeholder="Culminación de movimiento de tierras"
+                            />
                         </Field>
                         <div className="grid grid-cols-2 gap-3">
                             <Field label="Fecha Planificada" required>
-                                <Input type="date" value={crear.data.fecha_planificada} onChange={(e) => crear.setData('fecha_planificada', e.target.value)} />
+                                <Input
+                                    type="date"
+                                    value={crear.data.fecha_planificada}
+                                    onChange={(e) =>
+                                        crear.setData(
+                                            'fecha_planificada',
+                                            e.target.value,
+                                        )
+                                    }
+                                />
                             </Field>
                             <Field label="Estado">
-                                <Select value={crear.data.estado} onChange={(e) => crear.setData('estado', e.target.value)}>
+                                <Select
+                                    value={crear.data.estado}
+                                    onChange={(e) =>
+                                        crear.setData('estado', e.target.value)
+                                    }
+                                >
                                     <option value="pendiente">Pendiente</option>
-                                    <option value="en_proceso">En Proceso</option>
+                                    <option value="en_proceso">
+                                        En Proceso
+                                    </option>
                                     <option value="cumplido">Cumplido</option>
                                     <option value="retrasado">Retrasado</option>
                                 </Select>
@@ -207,7 +321,10 @@ export default function CronogramaEvmPage({ obrasDb = [], evmData, hitosDb = [] 
                         </div>
                     </FormSection>
 
-                    <SubmitButton status={crear.processing ? 'submitting' : 'idle'} className="w-full">
+                    <SubmitButton
+                        status={crear.processing ? 'submitting' : 'idle'}
+                        className="w-full"
+                    >
                         <IconPlus size={15} />
                         Registrar Hito
                     </SubmitButton>

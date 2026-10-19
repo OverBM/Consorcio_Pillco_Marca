@@ -13,7 +13,12 @@ export class ApiError extends Error {
 
     public readonly errors: FieldErrors;
 
-    constructor(message: string, status = 0, errors: FieldErrors = {}, code?: string) {
+    constructor(
+        message: string,
+        status = 0,
+        errors: FieldErrors = {},
+        code?: string,
+    ) {
         super(message);
         this.name = 'ApiError';
         this.status = status;
@@ -26,7 +31,9 @@ export class ApiError extends Error {
     }
 }
 
-const API_BASE = (import.meta as { env?: Record<string, string> }).env?.VITE_API_URL || '/api/v1';
+const API_BASE =
+    (import.meta as { env?: Record<string, string> }).env?.VITE_API_URL ||
+    '/api/v1';
 
 function csrfToken(): string {
     const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
@@ -49,7 +56,10 @@ function normalizeEnvelope<T>(payload: unknown): ApiEnvelope<T> {
             return {
                 data: record.data as T,
                 meta: (record.meta as Record<string, unknown>) ?? undefined,
-                message: (record.message as string) ?? (record.mensaje as string) ?? undefined,
+                message:
+                    (record.message as string) ??
+                    (record.mensaje as string) ??
+                    undefined,
             };
         }
     }
@@ -98,7 +108,10 @@ export class HttpClient {
                 headers,
             });
         } catch (error) {
-            const message = error instanceof Error ? error.message : 'Error de conexión con el servidor';
+            const message =
+                error instanceof Error
+                    ? error.message
+                    : 'Error de conexión con el servidor';
             throw new ApiError(message, 0);
         }
 
@@ -123,28 +136,39 @@ export class HttpClient {
         return this.request<T>(endpoint, { method: 'GET' });
     }
 
-    public static post<T = unknown>(endpoint: string, body?: unknown): Promise<ApiEnvelope<T>> {
+    public static post<T = unknown>(
+        endpoint: string,
+        body?: unknown,
+    ): Promise<ApiEnvelope<T>> {
         return this.request<T>(endpoint, {
             method: 'POST',
             body: body === undefined ? undefined : JSON.stringify(body),
         });
     }
 
-    public static put<T = unknown>(endpoint: string, body?: unknown): Promise<ApiEnvelope<T>> {
+    public static put<T = unknown>(
+        endpoint: string,
+        body?: unknown,
+    ): Promise<ApiEnvelope<T>> {
         return this.request<T>(endpoint, {
             method: 'PUT',
             body: body === undefined ? undefined : JSON.stringify(body),
         });
     }
 
-    public static patch<T = unknown>(endpoint: string, body?: unknown): Promise<ApiEnvelope<T>> {
+    public static patch<T = unknown>(
+        endpoint: string,
+        body?: unknown,
+    ): Promise<ApiEnvelope<T>> {
         return this.request<T>(endpoint, {
             method: 'PATCH',
             body: body === undefined ? undefined : JSON.stringify(body),
         });
     }
 
-    public static delete<T = unknown>(endpoint: string): Promise<ApiEnvelope<T>> {
+    public static delete<T = unknown>(
+        endpoint: string,
+    ): Promise<ApiEnvelope<T>> {
         return this.request<T>(endpoint, { method: 'DELETE' });
     }
 }

@@ -35,11 +35,17 @@ export function DataTable<T extends { id: string }>({
 }) {
     if (rows.length === 0) {
         return (
-            <div className="flex h-32 items-center justify-center text-sm text-muted">{emptyLabel}</div>
+            <div className="text-muted flex h-32 items-center justify-center text-sm">
+                {emptyLabel}
+            </div>
         );
     }
 
-    const alignCls = { left: 'text-left', right: 'text-right', center: 'text-center' } as const;
+    const alignCls = {
+        left: 'text-left',
+        right: 'text-right',
+        center: 'text-center',
+    } as const;
     const cardColumns = columns.filter((c) => !c.hideOnCard);
 
     return (
@@ -48,12 +54,12 @@ export function DataTable<T extends { id: string }>({
             <div className="hidden overflow-x-auto md:block">
                 <table className="w-full border-collapse text-sm">
                     <thead>
-                        <tr className="border-b border-line text-left">
+                        <tr className="border-line border-b text-left">
                             {columns.map((c) => (
                                 <th
                                     key={c.key}
                                     className={cn(
-                                        'whitespace-nowrap px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-muted',
+                                        'text-muted px-3 py-2 text-[11px] font-semibold tracking-wide whitespace-nowrap uppercase',
                                         alignCls[c.align ?? 'left'],
                                         c.className,
                                     )}
@@ -69,15 +75,16 @@ export function DataTable<T extends { id: string }>({
                                 key={row.id}
                                 onClick={() => onRowClick?.(row)}
                                 className={cn(
-                                    'border-b border-line/70 transition-colors last:border-0',
-                                    onRowClick && 'cursor-pointer hover:bg-brand-50/40',
+                                    'border-line/70 border-b transition-colors last:border-0',
+                                    onRowClick &&
+                                        'hover:bg-brand-50/40 cursor-pointer',
                                 )}
                             >
                                 {columns.map((c) => (
                                     <td
                                         key={c.key}
                                         className={cn(
-                                            'whitespace-nowrap px-3 py-2.5 align-middle',
+                                            'px-3 py-2.5 align-middle whitespace-nowrap',
                                             alignCls[c.align ?? 'left'],
                                             c.mono && 'num',
                                             c.className,
@@ -93,18 +100,24 @@ export function DataTable<T extends { id: string }>({
             </div>
 
             {/* Vista de tarjetas (pantallas pequeñas) */}
-            <ul className="divide-y divide-line/70 md:hidden">
+            <ul className="divide-line/70 divide-y md:hidden">
                 {rows.map((row) => (
                     <li
                         key={row.id}
                         onClick={() => onRowClick?.(row)}
-                        className={cn('space-y-2 py-3', onRowClick && 'cursor-pointer')}
+                        className={cn(
+                            'space-y-2 py-3',
+                            onRowClick && 'cursor-pointer',
+                        )}
                     >
                         {cardColumns.map((c, idx) => (
-                            <div key={c.key} className="flex items-start justify-between gap-3">
+                            <div
+                                key={c.key}
+                                className="flex items-start justify-between gap-3"
+                            >
                                 <span
                                     className={cn(
-                                        'shrink-0 text-[10px] font-semibold uppercase tracking-wide text-muted',
+                                        'text-muted shrink-0 text-[10px] font-semibold tracking-wide uppercase',
                                         idx === 0 && 'sr-only',
                                     )}
                                 >
@@ -112,8 +125,9 @@ export function DataTable<T extends { id: string }>({
                                 </span>
                                 <span
                                     className={cn(
-                                        'min-w-0 text-right text-sm text-ink',
-                                        idx === 0 && 'w-full text-left font-semibold',
+                                        'text-ink min-w-0 text-right text-sm',
+                                        idx === 0 &&
+                                            'w-full text-left font-semibold',
                                         alignCls[c.align ?? 'left'],
                                         c.mono && 'num',
                                         c.className,

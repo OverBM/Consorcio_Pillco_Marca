@@ -60,7 +60,9 @@ type AuditoriaFila = Omit<AuditoriaDb, 'id'> & { id: string };
 
 const TONOS_CREACION = ['CREATE', 'INSERT', 'STORE', 'CREAR', 'crear'];
 
-function resumirCambio(registro: Pick<AuditoriaDb, 'antes' | 'despues'>): string {
+function resumirCambio(
+    registro: Pick<AuditoriaDb, 'antes' | 'despues'>,
+): string {
     const fuente = registro.despues ?? registro.antes;
 
     if (!fuente || Object.keys(fuente).length === 0) {
@@ -77,14 +79,19 @@ function TablaAuditoria({ registros }: { registros: AuditoriaDb[] }) {
             registros.map((registro) => ({
                 ...registro,
                 id: String(registro.id),
-                entidad: registro.entidad_id ? `${registro.entidad} #${registro.entidad_id}` : registro.entidad,
+                entidad: registro.entidad_id
+                    ? `${registro.entidad} #${registro.entidad_id}`
+                    : registro.entidad,
             })),
         [registros],
     );
 
     if (filas.length === 0) {
         return (
-            <EmptyState title="Sin registros de auditoría" hint="Las acciones registradas por los usuarios aparecerán aquí." />
+            <EmptyState
+                title="Sin registros de auditoría"
+                hint="Las acciones registradas por los usuarios aparecerán aquí."
+            />
         );
     }
 
@@ -92,19 +99,46 @@ function TablaAuditoria({ registros }: { registros: AuditoriaDb[] }) {
         <DataTable
             emptyLabel="Sin registros de auditoría."
             columns={[
-                { key: 'created_at', header: 'Fecha', mono: true, cell: (r) => formatFecha(r.created_at) },
-                { key: 'usuario', header: 'Usuario', cell: (r) => r.usuario?.email ?? r.usuario?.name ?? 'Sistema' },
+                {
+                    key: 'created_at',
+                    header: 'Fecha',
+                    mono: true,
+                    cell: (r) => formatFecha(r.created_at),
+                },
+                {
+                    key: 'usuario',
+                    header: 'Usuario',
+                    cell: (r) =>
+                        r.usuario?.email ?? r.usuario?.name ?? 'Sistema',
+                },
                 {
                     key: 'accion',
                     header: 'Acción',
                     mono: true,
                     cell: (r) => (
-                        <Badge tone={TONOS_CREACION.includes(r.accion) ? 'ok' : 'violet'}>{r.accion}</Badge>
+                        <Badge
+                            tone={
+                                TONOS_CREACION.includes(r.accion)
+                                    ? 'ok'
+                                    : 'violet'
+                            }
+                        >
+                            {r.accion}
+                        </Badge>
                     ),
                 },
                 { key: 'entidad', header: 'Entidad Afectada', mono: true },
-                { key: 'detalle', header: 'Detalle de la Operación', cell: (r) => resumirCambio(r) },
-                { key: 'ip', header: 'Dirección IP', mono: true, cell: (r) => r.ip ?? '—' },
+                {
+                    key: 'detalle',
+                    header: 'Detalle de la Operación',
+                    cell: (r) => resumirCambio(r),
+                },
+                {
+                    key: 'ip',
+                    header: 'Dirección IP',
+                    mono: true,
+                    cell: (r) => r.ip ?? '—',
+                },
             ]}
             rows={filas}
         />
@@ -126,7 +160,11 @@ export default function AuditoriaPage({
     const total = auditoriaDb?.total ?? registros.length;
     const hayFiltro = usuarioId !== '' || modulo !== '';
 
-    const navegar = (params: { usuario_id?: string; modulo?: string; page?: number }) => {
+    const navegar = (params: {
+        usuario_id?: string;
+        modulo?: string;
+        page?: number;
+    }) => {
         router.get(
             '/admin/auditoria',
             {
@@ -134,7 +172,11 @@ export default function AuditoriaPage({
                 modulo: params.modulo ?? modulo,
                 page: params.page ?? 1,
             },
-            { preserveState: true, preserveScroll: true, only: ['auditoriaDb'] },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                only: ['auditoriaDb'],
+            },
         );
     };
 
@@ -201,9 +243,10 @@ export default function AuditoriaPage({
                 <TablaAuditoria registros={registros} />
 
                 {ultimaPagina > 1 && (
-                    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
-                        <span className="text-xs text-muted">
-                            Mostrando {auditoriaDb?.from ?? 0}–{auditoriaDb?.to ?? 0} de {total} registros
+                    <div className="border-line mt-4 flex flex-wrap items-center justify-between gap-3 border-t pt-4">
+                        <span className="text-muted text-xs">
+                            Mostrando {auditoriaDb?.from ?? 0}–
+                            {auditoriaDb?.to ?? 0} de {total} registros
                         </span>
                         <div className="flex items-center gap-2">
                             <Button
@@ -214,7 +257,7 @@ export default function AuditoriaPage({
                             >
                                 Anterior
                             </Button>
-                            <span className="text-xs font-medium text-muted">
+                            <span className="text-muted text-xs font-medium">
                                 Página {pagina} de {ultimaPagina}
                             </span>
                             <Button

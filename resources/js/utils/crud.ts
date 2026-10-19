@@ -20,6 +20,9 @@ export function opcionesHttp(
             alExito();
             refrescar();
         },
-        onError: (errors) => notify.error(Object.values(errors).flat().join(' ') || fallbackError),
+        onError: (errors) =>
+            notify.error(
+                Object.values(errors).flat().join(' ') || fallbackError,
+            ),
     };
 }

@@ -31,7 +31,9 @@ interface ProveedoresPageProps {
 
 type ProveedorFila = Omit<ProveedorDb, 'id'> & { id: string };
 
-export default function ProveedoresPage({ proveedoresDb = [] }: ProveedoresPageProps) {
+export default function ProveedoresPage({
+    proveedoresDb = [],
+}: ProveedoresPageProps) {
     const notify = useNotifications();
 
     const http = useHttp<{
@@ -75,9 +77,14 @@ export default function ProveedoresPage({ proveedoresDb = [] }: ProveedoresPageP
     );
 
     const calificacionPromedio = useMemo(() => {
-        const conScore = filas.filter((p) => p.calificacion !== null && p.calificacion !== undefined);
+        const conScore = filas.filter(
+            (p) => p.calificacion !== null && p.calificacion !== undefined,
+        );
         if (conScore.length === 0) return 0;
-        return conScore.reduce((acc, p) => acc + Number(p.calificacion), 0) / conScore.length;
+        return (
+            conScore.reduce((acc, p) => acc + Number(p.calificacion), 0) /
+            conScore.length
+        );
     }, [filas]);
 
     const abrirNuevo = () => {
@@ -110,7 +117,9 @@ export default function ProveedoresPage({ proveedoresDb = [] }: ProveedoresPageP
             telefono: http.data.telefono || null,
             email: http.data.email || null,
             direccion: http.data.direccion || null,
-            calificacion: http.data.calificacion ? Number(http.data.calificacion) : null,
+            calificacion: http.data.calificacion
+                ? Number(http.data.calificacion)
+                : null,
         }));
 
         void http.post('/api/v1/proveedores', {
@@ -120,7 +129,10 @@ export default function ProveedoresPage({ proveedoresDb = [] }: ProveedoresPageP
                 refrescarProps('proveedoresDb');
             },
             onError: (errors: Record<string, string>) => {
-                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar el proveedor.');
+                notify.error(
+                    Object.values(errors).flat().join(' ') ||
+                        'No se pudo registrar el proveedor.',
+                );
             },
         });
     };
@@ -140,43 +152,68 @@ export default function ProveedoresPage({ proveedoresDb = [] }: ProveedoresPageP
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <Card className="p-4">
-                    <span className="text-xs font-mono uppercase text-muted">Proveedores Registrados</span>
-                    <p className="mt-1 text-2xl font-bold font-mono text-ink">{filas.length}</p>
-                    <span className="text-xs text-muted">Empresas en base de datos</span>
+                    <span className="text-muted font-mono text-xs uppercase">
+                        Proveedores Registrados
+                    </span>
+                    <p className="text-ink mt-1 font-mono text-2xl font-bold">
+                        {filas.length}
+                    </p>
+                    <span className="text-muted text-xs">
+                        Empresas en base de datos
+                    </span>
                 </Card>
                 <Card className="p-4">
-                    <span className="text-xs font-mono uppercase text-muted">Activos / Homologados</span>
-                    <p className="mt-1 text-2xl font-bold font-mono text-emerald-600">{filas.filter((p) => p.activo).length}</p>
-                    <span className="text-xs text-muted">Aptos para cotización directa</span>
+                    <span className="text-muted font-mono text-xs uppercase">
+                        Activos / Homologados
+                    </span>
+                    <p className="mt-1 font-mono text-2xl font-bold text-emerald-600">
+                        {filas.filter((p) => p.activo).length}
+                    </p>
+                    <span className="text-muted text-xs">
+                        Aptos para cotización directa
+                    </span>
                 </Card>
                 <Card className="p-4">
-                    <span className="text-xs font-mono uppercase text-muted">Calificación Promedio</span>
-                    <p className="mt-1 text-2xl font-bold font-mono text-brand-600">{calificacionPromedio.toFixed(2)} / 5.0</p>
-                    <span className="text-xs text-muted">Cumplimiento de calidad y plazos</span>
+                    <span className="text-muted font-mono text-xs uppercase">
+                        Calificación Promedio
+                    </span>
+                    <p className="text-brand-600 mt-1 font-mono text-2xl font-bold">
+                        {calificacionPromedio.toFixed(2)} / 5.0
+                    </p>
+                    <span className="text-muted text-xs">
+                        Cumplimiento de calidad y plazos
+                    </span>
                 </Card>
             </div>
 
             <Card className="p-4">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <div className="relative min-w-[240px] flex-1">
-                        <IconSearch size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+                        <IconSearch
+                            size={16}
+                            className="text-muted absolute top-1/2 left-3 -translate-y-1/2"
+                        />
                         <input
                             type="text"
                             placeholder="Buscar por RUC, razón social o contacto…"
                             value={busqueda}
                             onChange={(e) => setBusqueda(e.target.value)}
-                            className="w-full rounded-lg border border-line bg-canvas py-1.5 pl-9 pr-3 text-xs text-ink focus:outline-none focus:ring-2 focus:ring-brand-500"
+                            className="border-line bg-canvas text-ink focus:ring-brand-500 w-full rounded-lg border py-1.5 pr-3 pl-9 text-xs focus:ring-2 focus:outline-none"
                         />
                     </div>
-                    <span className="text-xs font-mono text-muted">
-                        Mostrando {filtrados.length} de {filas.length} proveedores
+                    <span className="text-muted font-mono text-xs">
+                        Mostrando {filtrados.length} de {filas.length}{' '}
+                        proveedores
                     </span>
                 </div>
             </Card>
 
             <Card className="p-5">
                 {filas.length === 0 ? (
-                    <EmptyState title="Sin proveedores registrados" hint="Registra el primer proveedor del consorcio." />
+                    <EmptyState
+                        title="Sin proveedores registrados"
+                        hint="Registra el primer proveedor del consorcio."
+                    />
                 ) : (
                     <DataTable
                         emptyLabel="No hay proveedores que coincidan con la búsqueda."
@@ -187,8 +224,12 @@ export default function ProveedoresPage({ proveedoresDb = [] }: ProveedoresPageP
                                 header: 'Razón Social',
                                 cell: (p) => (
                                     <span className="block max-w-64">
-                                        <span className="block font-semibold text-ink">{p.razon_social}</span>
-                                        <span className="block truncate text-xs text-muted">{p.direccion ?? '—'}</span>
+                                        <span className="text-ink block font-semibold">
+                                            {p.razon_social}
+                                        </span>
+                                        <span className="text-muted block truncate text-xs">
+                                            {p.direccion ?? '—'}
+                                        </span>
                                     </span>
                                 ),
                             },
@@ -197,9 +238,12 @@ export default function ProveedoresPage({ proveedoresDb = [] }: ProveedoresPageP
                                 header: 'Contacto',
                                 cell: (p) => (
                                     <span className="block">
-                                        <span className="block text-xs font-medium text-ink">{p.contacto ?? '—'}</span>
-                                        <span className="block text-xs font-mono text-muted">
-                                            {p.telefono ?? ''} {p.email ? `• ${p.email}` : ''}
+                                        <span className="text-ink block text-xs font-medium">
+                                            {p.contacto ?? '—'}
+                                        </span>
+                                        <span className="text-muted block font-mono text-xs">
+                                            {p.telefono ?? ''}{' '}
+                                            {p.email ? `• ${p.email}` : ''}
                                         </span>
                                     </span>
                                 ),
@@ -209,19 +253,27 @@ export default function ProveedoresPage({ proveedoresDb = [] }: ProveedoresPageP
                                 header: 'Score Calidad',
                                 align: 'center',
                                 cell: (p) =>
-                                    p.calificacion !== null && p.calificacion !== undefined ? (
+                                    p.calificacion !== null &&
+                                    p.calificacion !== undefined ? (
                                         <span className="inline-flex items-center gap-1 rounded border border-amber-200 bg-amber-50 px-2 py-0.5 font-mono text-xs font-bold text-amber-600">
-                                            ★ {Number(p.calificacion).toFixed(1)}
+                                            ★{' '}
+                                            {Number(p.calificacion).toFixed(1)}
                                         </span>
                                     ) : (
-                                        <span className="text-xs text-muted">—</span>
+                                        <span className="text-muted text-xs">
+                                            —
+                                        </span>
                                     ),
                             },
                             {
                                 key: 'estado',
                                 header: 'Estado',
                                 align: 'center',
-                                cell: (p) => <Badge tone={p.activo ? 'ok' : 'neutral'}>{p.activo ? 'Homologado' : 'Inactivo'}</Badge>,
+                                cell: (p) => (
+                                    <Badge tone={p.activo ? 'ok' : 'neutral'}>
+                                        {p.activo ? 'Homologado' : 'Inactivo'}
+                                    </Badge>
+                                ),
                             },
                         ]}
                         rows={filtrados}
@@ -229,13 +281,25 @@ export default function ProveedoresPage({ proveedoresDb = [] }: ProveedoresPageP
                 )}
             </Card>
 
-            <Modal open={modalNuevo} onClose={() => setModalNuevo(false)} title="Homologar Nuevo Proveedor" wide>
+            <Modal
+                open={modalNuevo}
+                onClose={() => setModalNuevo(false)}
+                title="Homologar Nuevo Proveedor"
+                wide
+            >
                 <form onSubmit={enviar} className="space-y-4 text-xs">
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <Field label="RUC (11 dígitos)" required>
                             <Input
                                 value={http.data.ruc}
-                                onChange={(e) => http.setData('ruc', e.target.value.replace(/\D/g, '').slice(0, 11))}
+                                onChange={(e) =>
+                                    http.setData(
+                                        'ruc',
+                                        e.target.value
+                                            .replace(/\D/g, '')
+                                            .slice(0, 11),
+                                    )
+                                }
                                 placeholder="20XXXXXXXXX"
                                 maxLength={11}
                                 invalid={!!http.errors.ruc}
@@ -244,7 +308,9 @@ export default function ProveedoresPage({ proveedoresDb = [] }: ProveedoresPageP
                         <Field label="Razón Social" required>
                             <Input
                                 value={http.data.razon_social}
-                                onChange={(e) => http.setData('razon_social', e.target.value)}
+                                onChange={(e) =>
+                                    http.setData('razon_social', e.target.value)
+                                }
                                 placeholder="Nombre según SUNAT"
                                 invalid={!!http.errors.razon_social}
                             />
@@ -253,16 +319,35 @@ export default function ProveedoresPage({ proveedoresDb = [] }: ProveedoresPageP
 
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <Field label="Contacto comercial">
-                            <Input value={http.data.contacto} onChange={(e) => http.setData('contacto', e.target.value)} placeholder="Ing. Contacto" />
+                            <Input
+                                value={http.data.contacto}
+                                onChange={(e) =>
+                                    http.setData('contacto', e.target.value)
+                                }
+                                placeholder="Ing. Contacto"
+                            />
                         </Field>
                         <Field label="Teléfono">
-                            <Input value={http.data.telefono} onChange={(e) => http.setData('telefono', e.target.value)} placeholder="9XXXXXXXX" />
+                            <Input
+                                value={http.data.telefono}
+                                onChange={(e) =>
+                                    http.setData('telefono', e.target.value)
+                                }
+                                placeholder="9XXXXXXXX"
+                            />
                         </Field>
                     </div>
 
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <Field label="Correo electrónico">
-                            <Input type="email" value={http.data.email} onChange={(e) => http.setData('email', e.target.value)} placeholder="ventas@proveedor.pe" />
+                            <Input
+                                type="email"
+                                value={http.data.email}
+                                onChange={(e) =>
+                                    http.setData('email', e.target.value)
+                                }
+                                placeholder="ventas@proveedor.pe"
+                            />
                         </Field>
                         <Field label="Calificación (0-5)">
                             <Input
@@ -271,20 +356,34 @@ export default function ProveedoresPage({ proveedoresDb = [] }: ProveedoresPageP
                                 max={5}
                                 step="0.1"
                                 value={http.data.calificacion}
-                                onChange={(e) => http.setData('calificacion', e.target.value)}
+                                onChange={(e) =>
+                                    http.setData('calificacion', e.target.value)
+                                }
                             />
                         </Field>
                     </div>
 
                     <Field label="Dirección">
-                        <Input value={http.data.direccion} onChange={(e) => http.setData('direccion', e.target.value)} placeholder="Av. / Jr. / distrito" />
+                        <Input
+                            value={http.data.direccion}
+                            onChange={(e) =>
+                                http.setData('direccion', e.target.value)
+                            }
+                            placeholder="Av. / Jr. / distrito"
+                        />
                     </Field>
 
-                    <div className="flex justify-end gap-3 border-t border-line pt-2">
-                        <Button variant="secondary" type="button" onClick={() => setModalNuevo(false)}>
+                    <div className="border-line flex justify-end gap-3 border-t pt-2">
+                        <Button
+                            variant="secondary"
+                            type="button"
+                            onClick={() => setModalNuevo(false)}
+                        >
                             Cancelar
                         </Button>
-                        <SubmitButton status={http.processing ? 'submitting' : 'idle'}>
+                        <SubmitButton
+                            status={http.processing ? 'submitting' : 'idle'}
+                        >
                             <IconPlus size={15} />
                             Registrar
                         </SubmitButton>

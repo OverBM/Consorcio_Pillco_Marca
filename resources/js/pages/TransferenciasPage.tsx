@@ -8,13 +8,28 @@ import { useHttp, usePage } from '@inertiajs/react';
 import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge, Modal } from '../components/ui';
-import { Button, Field, Input, Select, Textarea, FormPanel, FormSection, SubmitButton } from '../components/form';
+import {
+    Button,
+    Field,
+    Input,
+    Select,
+    Textarea,
+    FormPanel,
+    FormSection,
+    SubmitButton,
+} from '../components/form';
 import { DataTable } from '../components/DataTable';
 import { EmptyState } from '../components/EmptyState';
 import { useNotifications } from '../components/notifications/NotificationProvider';
 import { formatCantidad, formatFs } from '../utils/format';
 import type { CatalogoAlmacen, CatalogoMaterial } from '../types';
-import { IconBoxes, IconCheck, IconPlus, IconSearch, IconX } from '../components/icons';
+import {
+    IconBoxes,
+    IconCheck,
+    IconPlus,
+    IconSearch,
+    IconX,
+} from '../components/icons';
 
 interface MaterialDb {
     id: number;
@@ -58,7 +73,10 @@ interface TransferenciasPageProps {
 
 type TransferenciaFila = Omit<TransferenciaDb, 'id'> & { id: string };
 
-const ESTADO_META: Record<string, { tone: 'ok' | 'warn' | 'violet' | 'danger' | 'neutral'; label: string }> = {
+const ESTADO_META: Record<
+    string,
+    { tone: 'ok' | 'warn' | 'violet' | 'danger' | 'neutral'; label: string }
+> = {
     solicitada: { tone: 'warn', label: 'Solicitada' },
     aprobada: { tone: 'violet', label: 'Aprobada' },
     en_transito: { tone: 'violet', label: 'En tránsito' },
@@ -79,26 +97,40 @@ interface LineaRecepcion {
     recibida: string;
 }
 
-function origenNombre(t: { almacen_origen?: AlmacenDb | null; almacen_origen_id: number }): string {
+function origenNombre(t: {
+    almacen_origen?: AlmacenDb | null;
+    almacen_origen_id: number;
+}): string {
     return t.almacen_origen?.nombre ?? `Almacén #${t.almacen_origen_id}`;
 }
 
-function destinoNombre(t: { almacen_destino?: AlmacenDb | null; almacen_destino_id: number }): string {
+function destinoNombre(t: {
+    almacen_destino?: AlmacenDb | null;
+    almacen_destino_id: number;
+}): string {
     return t.almacen_destino?.nombre ?? `Almacén #${t.almacen_destino_id}`;
 }
 
 function materialPrincipal(t: { detalles?: TransferenciaDetalleDb[] }): string {
     const detalles = t.detalles ?? [];
     if (detalles.length === 0) return '—';
-    const primero = detalles[0].material?.nombre ?? `Material #${detalles[0].material_id}`;
-    return detalles.length > 1 ? `${primero} (+${detalles.length - 1})` : primero;
+    const primero =
+        detalles[0].material?.nombre ?? `Material #${detalles[0].material_id}`;
+    return detalles.length > 1
+        ? `${primero} (+${detalles.length - 1})`
+        : primero;
 }
 
 function totalSolicitado(t: { detalles?: TransferenciaDetalleDb[] }): number {
-    return (t.detalles ?? []).reduce((acc, d) => acc + Number(d.cantidad_solicitada), 0);
+    return (t.detalles ?? []).reduce(
+        (acc, d) => acc + Number(d.cantidad_solicitada),
+        0,
+    );
 }
 
-export default function TransferenciasPage({ transferenciasDb = [] }: TransferenciasPageProps) {
+export default function TransferenciasPage({
+    transferenciasDb = [],
+}: TransferenciasPageProps) {
     const notify = useNotifications();
     const { catalogos } = usePage().props;
 
@@ -114,14 +146,17 @@ export default function TransferenciasPage({ transferenciasDb = [] }: Transferen
         almacen_origen_id: '',
         almacen_destino_id: '',
         motivo: '',
-        detalles: [{ material_id: '', cantidad_solicitada: '' }] as LineaCrear[],
+        detalles: [
+            { material_id: '', cantidad_solicitada: '' },
+        ] as LineaCrear[],
     });
 
     const accion = useHttp<Record<string, string>>({});
     const confirmar = useHttp<Record<string, string>>({});
 
-    const [modalCrear, setModalCrear] = useState(false);
-    const [recibiendo, setRecibiendo] = useState<TransferenciaFila | null>(null);
+    const [recibiendo, setRecibiendo] = useState<TransferenciaFila | null>(
+        null,
+    );
     const [receptoras, setReceptoras] = useState<LineaRecepcion[]>([]);
     const [observaciones, setObservaciones] = useState('');
     const [busqueda, setBusqueda] = useState('');
@@ -134,7 +169,8 @@ export default function TransferenciasPage({ transferenciasDb = [] }: Transferen
 
     const filtradas = useMemo(() => {
         return filas.filter((t) => {
-            if (filtroEstado !== 'todos' && t.estado !== filtroEstado) return false;
+            if (filtroEstado !== 'todos' && t.estado !== filtroEstado)
+                return false;
             if (busqueda.trim()) {
                 const q = busqueda.toLowerCase();
                 const hay =
@@ -147,25 +183,29 @@ export default function TransferenciasPage({ transferenciasDb = [] }: Transferen
         });
     }, [filas, filtroEstado, busqueda]);
 
-    const setLineaCrear = (indice: number, campo: keyof LineaCrear, valor: string) =>
+    const setLineaCrear = (
+        indice: number,
+        campo: keyof LineaCrear,
+        valor: string,
+    ) =>
         crear.setData(
             'detalles',
-            crear.data.detalles.map((l, i) => (i === indice ? { ...l, [campo]: valor } : l)),
+            crear.data.detalles.map((l, i) =>
+                i === indice ? { ...l, [campo]: valor } : l,
+            ),
         );
 
     const agregarLineaCrear = () =>
-        crear.setData('detalles', [...crear.data.detalles, { material_id: '', cantidad_solicitada: '' }]);
+        crear.setData('detalles', [
+            ...crear.data.detalles,
+            { material_id: '', cantidad_solicitada: '' },
+        ]);
 
     const quitarLineaCrear = (indice: number) =>
-        crear.setData('detalles', crear.data.detalles.filter((_, i) => i !== indice));
-
-    const abrirCrear = () => {
-        crear.setData('almacen_origen_id', '');
-        crear.setData('almacen_destino_id', '');
-        crear.setData('motivo', '');
-        crear.setData('detalles', [{ material_id: '', cantidad_solicitada: '' }]);
-        setModalCrear(true);
-    };
+        crear.setData(
+            'detalles',
+            crear.data.detalles.filter((_, i) => i !== indice),
+        );
 
     const enviarCrear = (event: FormEvent) => {
         event.preventDefault();
@@ -185,10 +225,15 @@ export default function TransferenciasPage({ transferenciasDb = [] }: Transferen
 
         const detalles = crear.data.detalles
             .filter((l) => l.material_id && Number(l.cantidad_solicitada) > 0)
-            .map((l) => ({ material_id: Number(l.material_id), cantidad_solicitada: Number(l.cantidad_solicitada) }));
+            .map((l) => ({
+                material_id: Number(l.material_id),
+                cantidad_solicitada: Number(l.cantidad_solicitada),
+            }));
 
         if (detalles.length === 0) {
-            notify.error('Agrega al menos un material con cantidad mayor a cero.');
+            notify.error(
+                'Agrega al menos un material con cantidad mayor a cero.',
+            );
             return;
         }
 
@@ -202,11 +247,13 @@ export default function TransferenciasPage({ transferenciasDb = [] }: Transferen
         void crear.post('/api/v1/transferencias', {
             onSuccess: () => {
                 notify.success('Orden de transferencia registrada.');
-                setModalCrear(false);
                 refrescarProps('transferenciasDb');
             },
             onError: (errors: Record<string, string>) => {
-                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar la transferencia.');
+                notify.error(
+                    Object.values(errors).flat().join(' ') ||
+                        'No se pudo registrar la transferencia.',
+                );
             },
         });
     };
@@ -214,11 +261,16 @@ export default function TransferenciasPage({ transferenciasDb = [] }: Transferen
     const aprobar = (t: TransferenciaFila) => {
         void accion.post(`/api/v1/transferencias/${t.id}/aprobar`, {
             onSuccess: () => {
-                notify.success('Transferencia aprobada y stock reservado en origen.');
+                notify.success(
+                    'Transferencia aprobada y stock reservado en origen.',
+                );
                 refrescarProps('transferenciasDb');
             },
             onError: (errors: Record<string, string>) => {
-                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo aprobar la transferencia.');
+                notify.error(
+                    Object.values(errors).flat().join(' ') ||
+                        'No se pudo aprobar la transferencia.',
+                );
             },
         });
     };
@@ -228,10 +280,13 @@ export default function TransferenciasPage({ transferenciasDb = [] }: Transferen
         setObservaciones('');
         setReceptoras(
             (t.detalles ?? []).map((det) => {
-                const esperada = Number(det.cantidad_despachada ?? det.cantidad_solicitada);
+                const esperada = Number(
+                    det.cantidad_despachada ?? det.cantidad_solicitada,
+                );
                 return {
                     id: det.id,
-                    material: det.material?.nombre ?? `Material #${det.material_id}`,
+                    material:
+                        det.material?.nombre ?? `Material #${det.material_id}`,
                     unidad: det.material?.unidad_medida?.codigo ?? 'und',
                     esperada,
                     recibida: String(esperada),
@@ -241,14 +296,21 @@ export default function TransferenciasPage({ transferenciasDb = [] }: Transferen
     };
 
     const setRecibida = (id: number, valor: string) =>
-        setReceptoras((actual) => actual.map((l) => (l.id === id ? { ...l, recibida: valor } : l)));
+        setReceptoras((actual) =>
+            actual.map((l) => (l.id === id ? { ...l, recibida: valor } : l)),
+        );
 
     const enviarRecepcion = (event: FormEvent) => {
         event.preventDefault();
         if (!recibiendo) return;
 
-        const detalles = receptoras.map((l) => ({ id: l.id, cantidad_recibida: Number(l.recibida) }));
-        const hayDiferencias = receptoras.some((l) => Number(l.recibida) !== l.esperada);
+        const detalles = receptoras.map((l) => ({
+            id: l.id,
+            cantidad_recibida: Number(l.recibida),
+        }));
+        const hayDiferencias = receptoras.some(
+            (l) => Number(l.recibida) !== l.esperada,
+        );
 
         confirmar.transform(() => ({
             hay_diferencias: hayDiferencias,
@@ -256,16 +318,24 @@ export default function TransferenciasPage({ transferenciasDb = [] }: Transferen
             detalles,
         }));
 
-        void confirmar.post(`/api/v1/transferencias/${recibiendo.id}/confirmar-recepcion`, {
-            onSuccess: () => {
-                notify.success('Recepción confirmada e inventario actualizado en destino.');
-                setRecibiendo(null);
-                refrescarProps('transferenciasDb');
+        void confirmar.post(
+            `/api/v1/transferencias/${recibiendo.id}/confirmar-recepcion`,
+            {
+                onSuccess: () => {
+                    notify.success(
+                        'Recepción confirmada e inventario actualizado en destino.',
+                    );
+                    setRecibiendo(null);
+                    refrescarProps('transferenciasDb');
+                },
+                onError: (errors: Record<string, string>) => {
+                    notify.error(
+                        Object.values(errors).flat().join(' ') ||
+                            'No se pudo confirmar la recepción.',
+                    );
+                },
             },
-            onError: (errors: Record<string, string>) => {
-                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo confirmar la recepción.');
-            },
-        });
+        );
     };
 
     return (
@@ -279,16 +349,24 @@ export default function TransferenciasPage({ transferenciasDb = [] }: Transferen
                 <div className="space-y-4 lg:col-span-2">
                     <Card className="p-4">
                         <div className="grid gap-3 sm:grid-cols-2">
-                            <div className="flex items-center gap-2 rounded-field border border-line bg-canvas px-3 py-2 text-muted">
+                            <div className="rounded-field border-line bg-canvas text-muted flex items-center gap-2 border px-3 py-2">
                                 <IconSearch size={16} />
                                 <input
                                     value={busqueda}
-                                    onChange={(e) => setBusqueda(e.target.value)}
+                                    onChange={(e) =>
+                                        setBusqueda(e.target.value)
+                                    }
                                     placeholder="Buscar código, motivo o material…"
-                                    className="w-full bg-transparent text-xs text-ink outline-none placeholder:text-muted/70"
+                                    className="text-ink placeholder:text-muted/70 w-full bg-transparent text-xs outline-none"
                                 />
                             </div>
-                            <Select value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)} aria-label="Filtrar estado">
+                            <Select
+                                value={filtroEstado}
+                                onChange={(e) =>
+                                    setFiltroEstado(e.target.value)
+                                }
+                                aria-label="Filtrar estado"
+                            >
                                 <option value="todos">Todos los estados</option>
                                 <option value="solicitada">Solicitada</option>
                                 <option value="aprobada">Aprobada</option>
@@ -298,7 +376,9 @@ export default function TransferenciasPage({ transferenciasDb = [] }: Transferen
                         </div>
                     </Card>
 
-                    <Card title={`Órdenes de Transferencia (${filtradas.length})`}>
+                    <Card
+                        title={`Órdenes de Transferencia (${filtradas.length})`}
+                    >
                         {filtradas.length === 0 ? (
                             <EmptyState
                                 title="Sin órdenes de transferencia"
@@ -314,7 +394,9 @@ export default function TransferenciasPage({ transferenciasDb = [] }: Transferen
                                         mono: true,
                                         cell: (t) => (
                                             <div className="flex items-center gap-1.5">
-                                                <span className="font-bold text-ink">{t.codigo}</span>
+                                                <span className="text-ink font-bold">
+                                                    {t.codigo}
+                                                </span>
                                                 {t.generada_automaticamente && (
                                                     <span className="rounded bg-violet-100 px-1.5 py-0.5 text-[9px] font-bold text-violet-800">
                                                         Automática
@@ -328,8 +410,12 @@ export default function TransferenciasPage({ transferenciasDb = [] }: Transferen
                                         header: 'Origen → Destino',
                                         cell: (t) => (
                                             <div className="max-w-56">
-                                                <p className="truncate text-xs font-semibold text-ink">{origenNombre(t)}</p>
-                                                <p className="truncate text-[11px] text-muted">→ {destinoNombre(t)}</p>
+                                                <p className="text-ink truncate text-xs font-semibold">
+                                                    {origenNombre(t)}
+                                                </p>
+                                                <p className="text-muted truncate text-[11px]">
+                                                    → {destinoNombre(t)}
+                                                </p>
                                             </div>
                                         ),
                                     },
@@ -338,20 +424,41 @@ export default function TransferenciasPage({ transferenciasDb = [] }: Transferen
                                         header: 'Material y Cantidad',
                                         cell: (t) => (
                                             <div>
-                                                <p className="text-xs font-bold text-ink">{materialPrincipal(t)}</p>
-                                                <p className="font-mono text-[11px] font-semibold text-brand-700">
-                                                    {formatCantidad(totalSolicitado(t))}
+                                                <p className="text-ink text-xs font-bold">
+                                                    {materialPrincipal(t)}
+                                                </p>
+                                                <p className="text-brand-700 font-mono text-[11px] font-semibold">
+                                                    {formatCantidad(
+                                                        totalSolicitado(t),
+                                                    )}
                                                 </p>
                                             </div>
                                         ),
                                     },
-                                    { key: 'motivo', header: 'Motivo', cell: (t) => <span className="block max-w-56 truncate text-xs text-muted">{t.motivo}</span> },
+                                    {
+                                        key: 'motivo',
+                                        header: 'Motivo',
+                                        cell: (t) => (
+                                            <span className="text-muted block max-w-56 truncate text-xs">
+                                                {t.motivo}
+                                            </span>
+                                        ),
+                                    },
                                     {
                                         key: 'estado',
                                         header: 'Estado',
                                         cell: (t) => {
-                                            const meta = ESTADO_META[t.estado] ?? { tone: 'neutral' as const, label: t.estado };
-                                            return <Badge tone={meta.tone}>{meta.label}</Badge>;
+                                            const meta = ESTADO_META[
+                                                t.estado
+                                            ] ?? {
+                                                tone: 'neutral' as const,
+                                                label: t.estado,
+                                            };
+                                            return (
+                                                <Badge tone={meta.tone}>
+                                                    {meta.label}
+                                                </Badge>
+                                            );
                                         },
                                     },
                                     {
@@ -362,8 +469,12 @@ export default function TransferenciasPage({ transferenciasDb = [] }: Transferen
                                             <div className="flex items-center justify-end gap-1.5">
                                                 {t.estado === 'solicitada' && (
                                                     <button
-                                                        onClick={() => aprobar(t)}
-                                                        disabled={accion.processing}
+                                                        onClick={() =>
+                                                            aprobar(t)
+                                                        }
+                                                        disabled={
+                                                            accion.processing
+                                                        }
                                                         className="btn-primary !px-2.5 !py-1 text-xs"
                                                         title="Autorizar orden (Logística)"
                                                     >
@@ -373,7 +484,9 @@ export default function TransferenciasPage({ transferenciasDb = [] }: Transferen
                                                 )}
                                                 {t.estado === 'en_transito' && (
                                                     <button
-                                                        onClick={() => abrirRecepcion(t)}
+                                                        onClick={() =>
+                                                            abrirRecepcion(t)
+                                                        }
                                                         className="btn-primary !bg-emerald-600 !px-2.5 !py-1 text-xs hover:!bg-emerald-700"
                                                         title="Confirmar recepción física en destino"
                                                     >
@@ -382,10 +495,15 @@ export default function TransferenciasPage({ transferenciasDb = [] }: Transferen
                                                     </button>
                                                 )}
                                                 {t.estado === 'aprobada' && (
-                                                    <span className="text-[11px] text-muted">Pendiente de despacho</span>
+                                                    <span className="text-muted text-[11px]">
+                                                        Pendiente de despacho
+                                                    </span>
                                                 )}
-                                                {(t.estado === 'completada' || t.estado === 'anulada') && (
-                                                    <span className="text-[11px] text-muted">{formatFs(t.created_at)}</span>
+                                                {(t.estado === 'completada' ||
+                                                    t.estado === 'anulada') && (
+                                                    <span className="text-muted text-[11px]">
+                                                        {formatFs(t.created_at)}
+                                                    </span>
                                                 )}
                                             </div>
                                         ),
@@ -397,10 +515,23 @@ export default function TransferenciasPage({ transferenciasDb = [] }: Transferen
                     </Card>
                 </div>
 
-                <FormPanel title="Nueva Orden de Transferencia" subtitle="Traslado entre almacenes" onSubmit={enviarCrear} className="text-xs">
+                <FormPanel
+                    title="Nueva Orden de Transferencia"
+                    subtitle="Traslado entre almacenes"
+                    onSubmit={enviarCrear}
+                    className="text-xs"
+                >
                     <FormSection title="Ruta" columns={1}>
                         <Field label="Almacén de origen" required>
-                            <Select value={crear.data.almacen_origen_id} onChange={(e) => crear.setData('almacen_origen_id', e.target.value)}>
+                            <Select
+                                value={crear.data.almacen_origen_id}
+                                onChange={(e) =>
+                                    crear.setData(
+                                        'almacen_origen_id',
+                                        e.target.value,
+                                    )
+                                }
+                            >
                                 <option value="">Selecciona origen…</option>
                                 {almacenes.map((a) => (
                                     <option key={a.id} value={String(a.id)}>
@@ -410,10 +541,22 @@ export default function TransferenciasPage({ transferenciasDb = [] }: Transferen
                             </Select>
                         </Field>
                         <Field label="Almacén de destino" required>
-                            <Select value={crear.data.almacen_destino_id} onChange={(e) => crear.setData('almacen_destino_id', e.target.value)}>
+                            <Select
+                                value={crear.data.almacen_destino_id}
+                                onChange={(e) =>
+                                    crear.setData(
+                                        'almacen_destino_id',
+                                        e.target.value,
+                                    )
+                                }
+                            >
                                 <option value="">Selecciona destino…</option>
                                 {almacenes
-                                    .filter((a) => String(a.id) !== crear.data.almacen_origen_id)
+                                    .filter(
+                                        (a) =>
+                                            String(a.id) !==
+                                            crear.data.almacen_origen_id,
+                                    )
                                     .map((a) => (
                                         <option key={a.id} value={String(a.id)}>
                                             {a.nombre}
@@ -430,13 +573,22 @@ export default function TransferenciasPage({ transferenciasDb = [] }: Transferen
                                     <div className="flex-1">
                                         <Select
                                             value={linea.material_id}
-                                            onChange={(e) => setLineaCrear(i, 'material_id', e.target.value)}
+                                            onChange={(e) =>
+                                                setLineaCrear(
+                                                    i,
+                                                    'material_id',
+                                                    e.target.value,
+                                                )
+                                            }
                                             className="!py-1.5"
                                             aria-label="Material"
                                         >
                                             <option value="">Material…</option>
                                             {materiales.map((m) => (
-                                                <option key={m.id} value={String(m.id)}>
+                                                <option
+                                                    key={m.id}
+                                                    value={String(m.id)}
+                                                >
                                                     {m.nombre}
                                                 </option>
                                             ))}
@@ -447,7 +599,13 @@ export default function TransferenciasPage({ transferenciasDb = [] }: Transferen
                                         min={0}
                                         step="0.001"
                                         value={linea.cantidad_solicitada}
-                                        onChange={(e) => setLineaCrear(i, 'cantidad_solicitada', e.target.value)}
+                                        onChange={(e) =>
+                                            setLineaCrear(
+                                                i,
+                                                'cantidad_solicitada',
+                                                e.target.value,
+                                            )
+                                        }
                                         placeholder="Cant."
                                         className="field !w-24 !py-1.5"
                                         aria-label="Cantidad solicitada"
@@ -457,31 +615,47 @@ export default function TransferenciasPage({ transferenciasDb = [] }: Transferen
                                             type="button"
                                             onClick={() => quitarLineaCrear(i)}
                                             aria-label="Quitar material"
-                                            className="rounded p-2 text-muted hover:bg-danger-soft hover:text-danger"
+                                            className="text-muted hover:bg-danger-soft hover:text-danger rounded p-2"
                                         >
                                             <IconX size={14} />
                                         </button>
                                     )}
                                 </div>
                             ))}
-                            <button type="button" onClick={agregarLineaCrear} className="text-[11px] font-bold text-brand-600 hover:underline">
+                            <button
+                                type="button"
+                                onClick={agregarLineaCrear}
+                                className="text-brand-600 text-[11px] font-bold hover:underline"
+                            >
                                 + Añadir material
                             </button>
                         </div>
                     </FormSection>
 
                     <FormSection title="Justificación" columns={1}>
-                        <Field label="Motivo" hint="Máximo 25 caracteres." required>
+                        <Field
+                            label="Motivo"
+                            hint="Máximo 25 caracteres."
+                            required
+                        >
                             <Input
                                 value={crear.data.motivo}
-                                onChange={(e) => crear.setData('motivo', e.target.value.slice(0, 25))}
+                                onChange={(e) =>
+                                    crear.setData(
+                                        'motivo',
+                                        e.target.value.slice(0, 25),
+                                    )
+                                }
                                 maxLength={25}
                                 placeholder="Rebalance de stock"
                             />
                         </Field>
                     </FormSection>
 
-                    <SubmitButton status={crear.processing ? 'submitting' : 'idle'} className="w-full">
+                    <SubmitButton
+                        status={crear.processing ? 'submitting' : 'idle'}
+                        className="w-full"
+                    >
                         <IconPlus size={15} />
                         Generar Orden
                     </SubmitButton>
@@ -495,26 +669,45 @@ export default function TransferenciasPage({ transferenciasDb = [] }: Transferen
                 wide
             >
                 {recibiendo && (
-                    <form onSubmit={enviarRecepcion} className="space-y-4 text-xs">
-                        <div className="rounded-xl bg-soft/60 p-3">
+                    <form
+                        onSubmit={enviarRecepcion}
+                        className="space-y-4 text-xs"
+                    >
+                        <div className="bg-soft/60 rounded-xl p-3">
                             <p className="text-muted">
-                                {origenNombre(recibiendo)} → <strong className="text-ink">{destinoNombre(recibiendo)}</strong>
+                                {origenNombre(recibiendo)} →{' '}
+                                <strong className="text-ink">
+                                    {destinoNombre(recibiendo)}
+                                </strong>
                             </p>
                         </div>
 
                         <div className="space-y-2">
                             {receptoras.map((l) => (
-                                <div key={l.id} className="flex items-center gap-2 rounded-lg border border-line p-2.5">
+                                <div
+                                    key={l.id}
+                                    className="border-line flex items-center gap-2 rounded-lg border p-2.5"
+                                >
                                     <div className="flex-1">
-                                        <p className="text-xs font-semibold text-ink">{l.material}</p>
-                                        <p className="text-[11px] text-muted">Esperado: {formatCantidad(l.esperada, l.unidad)}</p>
+                                        <p className="text-ink text-xs font-semibold">
+                                            {l.material}
+                                        </p>
+                                        <p className="text-muted text-[11px]">
+                                            Esperado:{' '}
+                                            {formatCantidad(
+                                                l.esperada,
+                                                l.unidad,
+                                            )}
+                                        </p>
                                     </div>
                                     <input
                                         type="number"
                                         min={0}
                                         step="0.001"
                                         value={l.recibida}
-                                        onChange={(e) => setRecibida(l.id, e.target.value)}
+                                        onChange={(e) =>
+                                            setRecibida(l.id, e.target.value)
+                                        }
                                         className="field !w-24 !py-1.5"
                                         aria-label={`Cantidad recibida de ${l.material}`}
                                     />
@@ -522,26 +715,39 @@ export default function TransferenciasPage({ transferenciasDb = [] }: Transferen
                             ))}
                         </div>
 
-                        {receptoras.some((l) => Number(l.recibida) !== l.esperada) && (
-                            <p className="rounded-lg bg-warn-soft/70 px-3 py-2 text-[11px] font-semibold text-ink">
-                                Hay diferencias respecto a lo despachado; se registrará como recepción con incidencia.
+                        {receptoras.some(
+                            (l) => Number(l.recibida) !== l.esperada,
+                        ) && (
+                            <p className="bg-warn-soft/70 text-ink rounded-lg px-3 py-2 text-[11px] font-semibold">
+                                Hay diferencias respecto a lo despachado; se
+                                registrará como recepción con incidencia.
                             </p>
                         )}
 
                         <Field label="Observaciones">
                             <Textarea
                                 value={observaciones}
-                                onChange={(e) => setObservaciones(e.target.value)}
+                                onChange={(e) =>
+                                    setObservaciones(e.target.value)
+                                }
                                 rows={2}
                                 placeholder="Incidencias, bultos dañados, faltantes…"
                             />
                         </Field>
 
-                        <div className="flex justify-end gap-2 border-t border-line pt-2">
-                            <Button type="button" variant="secondary" onClick={() => setRecibiendo(null)}>
+                        <div className="border-line flex justify-end gap-2 border-t pt-2">
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                onClick={() => setRecibiendo(null)}
+                            >
                                 Cancelar
                             </Button>
-                            <SubmitButton status={confirmar.processing ? 'submitting' : 'idle'}>
+                            <SubmitButton
+                                status={
+                                    confirmar.processing ? 'submitting' : 'idle'
+                                }
+                            >
                                 <IconCheck size={15} />
                                 Confirmar Recepción
                             </SubmitButton>

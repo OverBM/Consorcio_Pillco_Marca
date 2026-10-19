@@ -2,7 +2,13 @@
 // Las coordenadas son aproximaciones reales de la zona Huancayo/Valle del Mantaro
 // (Junín, Perú); todos los cálculos son ilustrativos para el demo.
 
-import type { Almacen, Coord, Material, Obra, ObraReceptoraSugerida } from '../types';
+import type {
+    Almacen,
+    Coord,
+    Material,
+    Obra,
+    ObraReceptoraSugerida,
+} from '../types';
 
 /** Dimensiones del viewBox del mapa esquemático `MapaSchematic` (SVG). */
 export const MAP_W = 1000;
@@ -23,13 +29,16 @@ export const MAP_BOUNDS = {
  * x/y dentro del viewBox del mapa esquemático (1000×450). Los valores fuera de
  * la ventana se recortan al borde (p. ej. la etiqueta de Jauja, más al norte).
  */
-export function projectToMap(lat: number, lng: number): { x: number; y: number } {
+export function projectToMap(
+    lat: number,
+    lng: number,
+): { x: number; y: number } {
     const { latMin, latMax, lngMin, lngMax } = MAP_BOUNDS;
     const nx = Math.min(1, Math.max(0, (lng - lngMin) / (lngMax - lngMin)));
     const ny = Math.min(1, Math.max(0, (lat - latMin) / (latMax - latMin)));
     return {
         x: round1(PAD + nx * (MAP_W - 2 * PAD)),
-        y: round1((MAP_H - PAD) - ny * (MAP_H - 2 * PAD)),
+        y: round1(MAP_H - PAD - ny * (MAP_H - 2 * PAD)),
     };
 }
 
@@ -47,7 +56,9 @@ export function haversineDistanceKm(a: Coord, b: Coord): number {
     const dLng = deg2rad(b.lng - a.lng);
     const h =
         Math.sin(dLat / 2) ** 2 +
-        Math.cos(deg2rad(a.lat)) * Math.cos(deg2rad(b.lat)) * Math.sin(dLng / 2) ** 2;
+        Math.cos(deg2rad(a.lat)) *
+            Math.cos(deg2rad(b.lat)) *
+            Math.sin(dLng / 2) ** 2;
     return round2(2 * R * Math.asin(Math.sqrt(h)));
 }
 

@@ -21,12 +21,27 @@ export function RemoteImage({
     if (!src || error) {
         return (
             <div
-                className={cn('flex items-center justify-center bg-gradient-to-br from-soft to-line text-muted', className)}
+                className={cn(
+                    'from-soft to-line text-muted flex items-center justify-center bg-gradient-to-br',
+                    className,
+                )}
                 aria-label={alt}
             >
-                {kind === 'truck' ? <IconTruck size={20} /> : <IconWarehouse size={20} />}
+                {kind === 'truck' ? (
+                    <IconTruck size={20} />
+                ) : (
+                    <IconWarehouse size={20} />
+                )}
             </div>
         );
     }
-    return <img src={src} alt={alt} loading="lazy" className={className} onError={() => setError(true)} />;
+    return (
+        <img
+            src={src}
+            alt={alt}
+            loading="lazy"
+            className={className}
+            onError={() => setError(true)}
+        />
+    );
 }

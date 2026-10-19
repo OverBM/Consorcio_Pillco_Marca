@@ -7,7 +7,15 @@ import { useHttp, usePage } from '@inertiajs/react';
 import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge, Button, Modal } from '../components/ui';
-import { Field, Input, Select, Textarea, FormPanel, FormSection, SubmitButton } from '../components/form';
+import {
+    Field,
+    Input,
+    Select,
+    Textarea,
+    FormPanel,
+    FormSection,
+    SubmitButton,
+} from '../components/form';
 import { DataTable } from '../components/DataTable';
 import { EmptyState } from '../components/EmptyState';
 import { useNotifications } from '../components/notifications/NotificationProvider';
@@ -33,7 +41,15 @@ interface RiesgosPageProps {
 
 type RiesgoFila = Omit<RiesgoDb, 'id'> & { id: string };
 
-const CATEGORIAS = ['tecnico', 'logistico', 'ambiental', 'financiero', 'social', 'seguridad', 'legal'];
+const CATEGORIAS = [
+    'tecnico',
+    'logistico',
+    'ambiental',
+    'financiero',
+    'social',
+    'seguridad',
+    'legal',
+];
 const ESTADOS = ['abierto', 'mitigado', 'cerrado', 'materializado'];
 
 function tonoSeveridad(sev: number): 'danger' | 'warn' | 'neutral' {
@@ -44,7 +60,9 @@ function tonoSeveridad(sev: number): 'danger' | 'warn' | 'neutral' {
 
 export default function RiesgosPage({ riesgosDb = [] }: RiesgosPageProps) {
     const notify = useNotifications();
-    const { catalogos } = usePage().props as unknown as { catalogos?: Catalogos };
+    const { catalogos } = usePage().props as unknown as {
+        catalogos?: Catalogos;
+    };
     const obras = catalogos?.obras ?? [];
 
     const crear = useHttp<{
@@ -54,13 +72,29 @@ export default function RiesgosPage({ riesgosDb = [] }: RiesgosPageProps) {
         probabilidad: string;
         impacto: string;
         respuesta: string;
-    }>({ obra_id: '', descripcion: '', categoria: 'tecnico', probabilidad: '3', impacto: '3', respuesta: '' });
+    }>({
+        obra_id: '',
+        descripcion: '',
+        categoria: 'tecnico',
+        probabilidad: '3',
+        impacto: '3',
+        respuesta: '',
+    });
 
-    const actualizar = useHttp<{ respuesta: string; estado: string }>({ respuesta: '', estado: 'abierto' });
+    const actualizar = useHttp<{ respuesta: string; estado: string }>({
+        respuesta: '',
+        estado: 'abierto',
+    });
 
-    const [editando, setEditando] = useState<{ id: string; descripcion: string } | null>(null);
+    const [editando, setEditando] = useState<{
+        id: string;
+        descripcion: string;
+    } | null>(null);
 
-    const filas: RiesgoFila[] = useMemo(() => riesgosDb.map((r) => ({ ...r, id: String(r.id) })), [riesgosDb]);
+    const filas: RiesgoFila[] = useMemo(
+        () => riesgosDb.map((r) => ({ ...r, id: String(r.id) })),
+        [riesgosDb],
+    );
 
     const criticos = filas.filter((r) => r.severidad >= 15).length;
     const mitigados = filas.filter((r) => r.estado === 'mitigado').length;
@@ -85,17 +119,30 @@ export default function RiesgosPage({ riesgosDb = [] }: RiesgosPageProps) {
         void crear.post('/api/v1/riesgos', {
             onSuccess: () => {
                 notify.success('Riesgo registrado en la matriz.');
-                crear.setData({ obra_id: '', descripcion: '', categoria: 'tecnico', probabilidad: '3', impacto: '3', respuesta: '' });
+                crear.setData({
+                    obra_id: '',
+                    descripcion: '',
+                    categoria: 'tecnico',
+                    probabilidad: '3',
+                    impacto: '3',
+                    respuesta: '',
+                });
                 refrescarProps('riesgosDb');
             },
             onError: (errors: Record<string, string>) => {
-                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar el riesgo.');
+                notify.error(
+                    Object.values(errors).flat().join(' ') ||
+                        'No se pudo registrar el riesgo.',
+                );
             },
         });
     };
 
     const abrirEdicion = (riesgo: RiesgoFila) => {
-        actualizar.setData({ respuesta: riesgo.respuesta ?? '', estado: riesgo.estado });
+        actualizar.setData({
+            respuesta: riesgo.respuesta ?? '',
+            estado: riesgo.estado,
+        });
         setEditando({ id: String(riesgo.id), descripcion: riesgo.descripcion });
     };
 
@@ -110,7 +157,10 @@ export default function RiesgosPage({ riesgosDb = [] }: RiesgosPageProps) {
                 refrescarProps('riesgosDb');
             },
             onError: (errors: Record<string, string>) => {
-                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo actualizar el riesgo.');
+                notify.error(
+                    Object.values(errors).flat().join(' ') ||
+                        'No se pudo actualizar el riesgo.',
+                );
             },
         });
     };
@@ -123,51 +173,117 @@ export default function RiesgosPage({ riesgosDb = [] }: RiesgosPageProps) {
             />
 
             <div className="grid gap-4 sm:grid-cols-3">
-                <Card className="p-4 bg-surface border-line">
+                <Card className="bg-surface border-line p-4">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-mono uppercase text-muted">Riesgos Críticos (≥ 15)</span>
+                        <span className="text-muted font-mono text-xs uppercase">
+                            Riesgos Críticos (≥ 15)
+                        </span>
                         <IconAlert size={16} className="text-danger" />
                     </div>
-                    <p className="mt-1 text-2xl font-bold font-mono text-danger">{criticos}</p>
-                    <span className="text-xs text-muted">Requieren plan de contingencia inmediato</span>
+                    <p className="text-danger mt-1 font-mono text-2xl font-bold">
+                        {criticos}
+                    </p>
+                    <span className="text-muted text-xs">
+                        Requieren plan de contingencia inmediato
+                    </span>
                 </Card>
-                <Card className="p-4 bg-surface border-line">
-                    <span className="text-xs font-mono uppercase text-muted">Riesgos Mitigados</span>
-                    <p className="mt-1 text-2xl font-bold font-mono text-ok">{mitigados}</p>
-                    <span className="text-xs text-muted">Medidas preventivas operando</span>
+                <Card className="bg-surface border-line p-4">
+                    <span className="text-muted font-mono text-xs uppercase">
+                        Riesgos Mitigados
+                    </span>
+                    <p className="text-ok mt-1 font-mono text-2xl font-bold">
+                        {mitigados}
+                    </p>
+                    <span className="text-muted text-xs">
+                        Medidas preventivas operando
+                    </span>
                 </Card>
-                <Card className="p-4 bg-surface border-line">
-                    <span className="text-xs font-mono uppercase text-muted">Total en Matriz</span>
-                    <p className="mt-1 text-2xl font-bold font-mono text-ink">{filas.length}</p>
-                    <span className="text-xs text-muted">Riesgos identificados y monitoreados</span>
+                <Card className="bg-surface border-line p-4">
+                    <span className="text-muted font-mono text-xs uppercase">
+                        Total en Matriz
+                    </span>
+                    <p className="text-ink mt-1 font-mono text-2xl font-bold">
+                        {filas.length}
+                    </p>
+                    <span className="text-muted text-xs">
+                        Riesgos identificados y monitoreados
+                    </span>
                 </Card>
             </div>
 
             <div className="grid gap-6 lg:grid-cols-3">
-                <Card title={`Matriz de Riesgos (${filas.length})`} className="lg:col-span-2">
+                <Card
+                    title={`Matriz de Riesgos (${filas.length})`}
+                    className="lg:col-span-2"
+                >
                     {filas.length === 0 ? (
-                        <EmptyState title="Sin riesgos registrados" hint="Registra el primer riesgo con el panel lateral." />
+                        <EmptyState
+                            title="Sin riesgos registrados"
+                            hint="Registra el primer riesgo con el panel lateral."
+                        />
                     ) : (
                         <DataTable
                             emptyLabel="Sin riesgos registrados."
                             columns={[
-                                { key: 'descripcion', header: 'Descripción del Riesgo' },
-                                { key: 'categoria', header: 'Categoría', mono: true },
-                                { key: 'probabilidad', header: 'Prob.', align: 'center', mono: true },
-                                { key: 'impacto', header: 'Imp.', align: 'center', mono: true },
+                                {
+                                    key: 'descripcion',
+                                    header: 'Descripción del Riesgo',
+                                },
+                                {
+                                    key: 'categoria',
+                                    header: 'Categoría',
+                                    mono: true,
+                                },
+                                {
+                                    key: 'probabilidad',
+                                    header: 'Prob.',
+                                    align: 'center',
+                                    mono: true,
+                                },
+                                {
+                                    key: 'impacto',
+                                    header: 'Imp.',
+                                    align: 'center',
+                                    mono: true,
+                                },
                                 {
                                     key: 'severidad',
                                     header: 'Severidad',
                                     align: 'center',
-                                    cell: (r) => <Badge tone={tonoSeveridad(r.severidad)}>{r.severidad}</Badge>,
+                                    cell: (r) => (
+                                        <Badge
+                                            tone={tonoSeveridad(r.severidad)}
+                                        >
+                                            {r.severidad}
+                                        </Badge>
+                                    ),
                                 },
-                                { key: 'estado', header: 'Estado', cell: (r) => <Badge tone={r.estado === 'mitigado' || r.estado === 'cerrado' ? 'ok' : 'warn'}>{r.estado}</Badge> },
+                                {
+                                    key: 'estado',
+                                    header: 'Estado',
+                                    cell: (r) => (
+                                        <Badge
+                                            tone={
+                                                r.estado === 'mitigado' ||
+                                                r.estado === 'cerrado'
+                                                    ? 'ok'
+                                                    : 'warn'
+                                            }
+                                        >
+                                            {r.estado}
+                                        </Badge>
+                                    ),
+                                },
                                 {
                                     key: 'accion',
                                     header: 'Acción',
                                     align: 'right',
                                     cell: (r) => (
-                                        <Button size="sm" variant="secondary" onClick={() => abrirEdicion(r)}>
+                                        <Button
+                                            size="sm"
+                                            variant="secondary"
+                                            onClick={() => abrirEdicion(r)}
+                                        >
                                             <IconSave size={13} /> Actualizar
                                         </Button>
                                     ),
@@ -178,23 +294,48 @@ export default function RiesgosPage({ riesgosDb = [] }: RiesgosPageProps) {
                     )}
                 </Card>
 
-                <FormPanel title="Registrar Riesgo" subtitle="Nuevo riesgo en la matriz PMI" onSubmit={enviar} className="text-xs">
+                <FormPanel
+                    title="Registrar Riesgo"
+                    subtitle="Nuevo riesgo en la matriz PMI"
+                    onSubmit={enviar}
+                    className="text-xs"
+                >
                     <FormSection title="Identificación" columns={1}>
                         <Field label="Obra" required>
-                            <Select value={crear.data.obra_id} onChange={(e) => crear.setData('obra_id', e.target.value)}>
+                            <Select
+                                value={crear.data.obra_id}
+                                onChange={(e) =>
+                                    crear.setData('obra_id', e.target.value)
+                                }
+                            >
                                 <option value="">Selecciona obra…</option>
                                 {obras.map((o) => (
-                                    <option key={o.id} value={String(o.id)}>{o.nombre}</option>
+                                    <option key={o.id} value={String(o.id)}>
+                                        {o.nombre}
+                                    </option>
                                 ))}
                             </Select>
                         </Field>
                         <Field label="Descripción" required>
-                            <Textarea value={crear.data.descripcion} onChange={(e) => crear.setData('descripcion', e.target.value)} rows={3} />
+                            <Textarea
+                                value={crear.data.descripcion}
+                                onChange={(e) =>
+                                    crear.setData('descripcion', e.target.value)
+                                }
+                                rows={3}
+                            />
                         </Field>
                         <Field label="Categoría" required>
-                            <Select value={crear.data.categoria} onChange={(e) => crear.setData('categoria', e.target.value)}>
+                            <Select
+                                value={crear.data.categoria}
+                                onChange={(e) =>
+                                    crear.setData('categoria', e.target.value)
+                                }
+                            >
                                 {CATEGORIAS.map((c) => (
-                                    <option key={c} value={c}>{c}</option>
+                                    <option key={c} value={c}>
+                                        {c}
+                                    </option>
                                 ))}
                             </Select>
                         </Field>
@@ -203,41 +344,109 @@ export default function RiesgosPage({ riesgosDb = [] }: RiesgosPageProps) {
                     <FormSection title="Evaluación" columns={1}>
                         <div className="grid grid-cols-2 gap-3">
                             <Field label="Probabilidad (1-5)" required>
-                                <Input type="number" min={1} max={5} value={crear.data.probabilidad} onChange={(e) => crear.setData('probabilidad', e.target.value)} />
+                                <Input
+                                    type="number"
+                                    min={1}
+                                    max={5}
+                                    value={crear.data.probabilidad}
+                                    onChange={(e) =>
+                                        crear.setData(
+                                            'probabilidad',
+                                            e.target.value,
+                                        )
+                                    }
+                                />
                             </Field>
                             <Field label="Impacto (1-5)" required>
-                                <Input type="number" min={1} max={5} value={crear.data.impacto} onChange={(e) => crear.setData('impacto', e.target.value)} />
+                                <Input
+                                    type="number"
+                                    min={1}
+                                    max={5}
+                                    value={crear.data.impacto}
+                                    onChange={(e) =>
+                                        crear.setData('impacto', e.target.value)
+                                    }
+                                />
                             </Field>
                         </div>
                         <Field label="Plan de respuesta">
-                            <Textarea value={crear.data.respuesta} onChange={(e) => crear.setData('respuesta', e.target.value)} rows={2} />
+                            <Textarea
+                                value={crear.data.respuesta}
+                                onChange={(e) =>
+                                    crear.setData('respuesta', e.target.value)
+                                }
+                                rows={2}
+                            />
                         </Field>
                     </FormSection>
 
-                    <SubmitButton status={crear.processing ? 'submitting' : 'idle'} className="w-full">
+                    <SubmitButton
+                        status={crear.processing ? 'submitting' : 'idle'}
+                        className="w-full"
+                    >
                         <IconPlus size={15} />
                         Registrar Riesgo
                     </SubmitButton>
                 </FormPanel>
             </div>
 
-            <Modal open={editando !== null} onClose={() => setEditando(null)} title="Actualizar Riesgo">
+            <Modal
+                open={editando !== null}
+                onClose={() => setEditando(null)}
+                title="Actualizar Riesgo"
+            >
                 {editando && (
-                    <form onSubmit={guardarEdicion} noValidate className="space-y-4 text-xs">
-                        <p className="rounded-lg bg-soft/60 p-3 text-xs text-muted">{editando.descripcion}</p>
+                    <form
+                        onSubmit={guardarEdicion}
+                        noValidate
+                        className="space-y-4 text-xs"
+                    >
+                        <p className="bg-soft/60 text-muted rounded-lg p-3 text-xs">
+                            {editando.descripcion}
+                        </p>
                         <Field label="Estado">
-                            <Select value={actualizar.data.estado} onChange={(e) => actualizar.setData('estado', e.target.value)}>
+                            <Select
+                                value={actualizar.data.estado}
+                                onChange={(e) =>
+                                    actualizar.setData('estado', e.target.value)
+                                }
+                            >
                                 {ESTADOS.map((e) => (
-                                    <option key={e} value={e}>{e}</option>
+                                    <option key={e} value={e}>
+                                        {e}
+                                    </option>
                                 ))}
                             </Select>
                         </Field>
                         <Field label="Plan de respuesta">
-                            <Textarea value={actualizar.data.respuesta} onChange={(e) => actualizar.setData('respuesta', e.target.value)} rows={3} />
+                            <Textarea
+                                value={actualizar.data.respuesta}
+                                onChange={(e) =>
+                                    actualizar.setData(
+                                        'respuesta',
+                                        e.target.value,
+                                    )
+                                }
+                                rows={3}
+                            />
                         </Field>
                         <div className="flex justify-end gap-2">
-                            <Button type="button" variant="secondary" onClick={() => setEditando(null)}>Cancelar</Button>
-                            <SubmitButton status={actualizar.processing ? 'submitting' : 'idle'}>Guardar</SubmitButton>
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                onClick={() => setEditando(null)}
+                            >
+                                Cancelar
+                            </Button>
+                            <SubmitButton
+                                status={
+                                    actualizar.processing
+                                        ? 'submitting'
+                                        : 'idle'
+                                }
+                            >
+                                Guardar
+                            </SubmitButton>
                         </div>
                     </form>
                 )}

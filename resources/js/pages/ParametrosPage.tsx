@@ -62,13 +62,19 @@ function inferirCategoria(clave: string): Categoria {
     if (clave.includes('geo') || clave.includes('transferencia')) {
         return 'geo';
     }
-    if (clave.includes('stock') || clave.includes('merma') || clave.includes('inventario')) {
+    if (
+        clave.includes('stock') ||
+        clave.includes('merma') ||
+        clave.includes('inventario')
+    ) {
         return 'stock';
     }
     return 'general';
 }
 
-export default function ParametrosPage({ parametrosDb = [] }: ParametrosPageProps) {
+export default function ParametrosPage({
+    parametrosDb = [],
+}: ParametrosPageProps) {
     const notify = useNotifications();
 
     const parametros: ParametroFila[] = useMemo(
@@ -80,12 +86,15 @@ export default function ParametrosPage({ parametrosDb = [] }: ParametrosPageProp
                 clave: p.clave,
                 valor: String(p.valor ?? ''),
                 tipo: p.tipo ?? 'texto',
-                descripcion: p.descripcion ?? `Configuración del parámetro ${p.clave}`,
+                descripcion:
+                    p.descripcion ?? `Configuración del parámetro ${p.clave}`,
             })),
         [parametrosDb],
     );
 
-    const [categoriaActiva, setCategoriaActiva] = useState<'todas' | Categoria>('todas');
+    const [categoriaActiva, setCategoriaActiva] = useState<'todas' | Categoria>(
+        'todas',
+    );
     const [editando, setEditando] = useState<ParametroFila | null>(null);
     const [creando, setCreando] = useState(false);
     const [porEliminar, setPorEliminar] = useState<ParametroFila | null>(null);
@@ -181,16 +190,16 @@ export default function ParametrosPage({ parametrosDb = [] }: ParametrosPageProp
                 subtitle="Configuración técnica de algoritmos de optimización, matrices de distancias geodésicas y reglas de negocio"
             />
 
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-3">
+            <div className="border-line flex flex-wrap items-center justify-between gap-2 border-b pb-3">
                 <div className="flex flex-wrap gap-2">
                     {TABS.map((tab) => (
                         <button
                             key={tab.id}
                             onClick={() => setCategoriaActiva(tab.id)}
-                            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                            className={`cursor-pointer rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all ${
                                 categoriaActiva === tab.id
                                     ? 'btn-primary shadow-sm'
-                                    : 'bg-surface text-muted hover:text-ink hover:bg-soft border border-line'
+                                    : 'bg-surface text-muted hover:text-ink hover:bg-soft border-line border'
                             }`}
                         >
                             {tab.label}
@@ -205,7 +214,10 @@ export default function ParametrosPage({ parametrosDb = [] }: ParametrosPageProp
 
             <Card className="p-5">
                 {parametrosFiltrados.length === 0 ? (
-                    <EmptyState title="Sin parámetros registrados" hint="No hay parámetros para esta categoría." />
+                    <EmptyState
+                        title="Sin parámetros registrados"
+                        hint="No hay parámetros para esta categoría."
+                    />
                 ) : (
                     <DataTable
                         emptyLabel="No hay parámetros registrados para esta categoría."
@@ -230,29 +242,54 @@ export default function ParametrosPage({ parametrosDb = [] }: ParametrosPageProp
                                     </Badge>
                                 ),
                             },
-                            { key: 'clave', header: 'Clave del Parámetro', mono: true, cell: (r) => <span className="font-bold text-ink">{r.clave}</span> },
+                            {
+                                key: 'clave',
+                                header: 'Clave del Parámetro',
+                                mono: true,
+                                cell: (r) => (
+                                    <span className="text-ink font-bold">
+                                        {r.clave}
+                                    </span>
+                                ),
+                            },
                             {
                                 key: 'valor',
                                 header: 'Valor Configurado',
                                 align: 'center',
                                 mono: true,
                                 cell: (r) => (
-                                    <span className="px-2.5 py-1 rounded bg-soft border border-line font-mono font-bold text-xs text-ink">
+                                    <span className="bg-soft border-line text-ink rounded border px-2.5 py-1 font-mono text-xs font-bold">
                                         {r.valor}
                                     </span>
                                 ),
                             },
-                            { key: 'descripcion', header: 'Descripción e Impacto', cell: (r) => <p className="text-xs text-ink leading-relaxed">{r.descripcion}</p> },
+                            {
+                                key: 'descripcion',
+                                header: 'Descripción e Impacto',
+                                cell: (r) => (
+                                    <p className="text-ink text-xs leading-relaxed">
+                                        {r.descripcion}
+                                    </p>
+                                ),
+                            },
                             {
                                 key: 'acciones',
                                 header: 'Acciones',
                                 align: 'right',
                                 cell: (r) => (
                                     <div className="flex items-center justify-end gap-2">
-                                        <Button variant="secondary" size="sm" onClick={() => abrirEdicion(r)}>
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            onClick={() => abrirEdicion(r)}
+                                        >
                                             Editar
                                         </Button>
-                                        <Button variant="danger" size="sm" onClick={() => setPorEliminar(r)}>
+                                        <Button
+                                            variant="danger"
+                                            size="sm"
+                                            onClick={() => setPorEliminar(r)}
+                                        >
                                             Eliminar
                                         </Button>
                                     </div>
@@ -267,13 +304,23 @@ export default function ParametrosPage({ parametrosDb = [] }: ParametrosPageProp
             <Modal
                 open={creando || Boolean(editando)}
                 onClose={cerrarFormulario}
-                title={editando ? 'Modificar Parámetro del Sistema' : 'Nuevo Parámetro del Sistema'}
+                title={
+                    editando
+                        ? 'Modificar Parámetro del Sistema'
+                        : 'Nuevo Parámetro del Sistema'
+                }
             >
                 <form onSubmit={guardar} className="space-y-4">
-                    <Field label="Clave" required hint="Identificador único, por ejemplo geo.radio_busqueda_m">
+                    <Field
+                        label="Clave"
+                        required
+                        hint="Identificador único, por ejemplo geo.radio_busqueda_m"
+                    >
                         <Input
                             value={form.data.clave}
-                            onChange={(e) => form.setData('clave', e.target.value)}
+                            onChange={(e) =>
+                                form.setData('clave', e.target.value)
+                            }
                             placeholder="modulo.clave"
                             disabled={Boolean(editando)}
                             required
@@ -283,14 +330,21 @@ export default function ParametrosPage({ parametrosDb = [] }: ParametrosPageProp
                     <Field label="Valor" required>
                         <Input
                             value={form.data.valor}
-                            onChange={(e) => form.setData('valor', e.target.value)}
+                            onChange={(e) =>
+                                form.setData('valor', e.target.value)
+                            }
                             placeholder="Ingrese el valor"
                             required
                         />
                     </Field>
 
                     <Field label="Tipo" required>
-                        <Select value={form.data.tipo} onChange={(e) => form.setData('tipo', e.target.value)}>
+                        <Select
+                            value={form.data.tipo}
+                            onChange={(e) =>
+                                form.setData('tipo', e.target.value)
+                            }
+                        >
                             {TIPOS.map((tipo) => (
                                 <option key={tipo.value} value={tipo.value}>
                                     {tipo.label}
@@ -299,19 +353,32 @@ export default function ParametrosPage({ parametrosDb = [] }: ParametrosPageProp
                         </Select>
                     </Field>
 
-                    <Field label="Descripción" hint="Impacto o uso del parámetro dentro del sistema">
+                    <Field
+                        label="Descripción"
+                        hint="Impacto o uso del parámetro dentro del sistema"
+                    >
                         <Input
                             value={form.data.descripcion}
-                            onChange={(e) => form.setData('descripcion', e.target.value)}
+                            onChange={(e) =>
+                                form.setData('descripcion', e.target.value)
+                            }
                             placeholder="Describe el parámetro"
                         />
                     </Field>
 
                     <div className="flex justify-end gap-2 pt-2">
-                        <Button variant="secondary" type="button" onClick={cerrarFormulario}>
+                        <Button
+                            variant="secondary"
+                            type="button"
+                            onClick={cerrarFormulario}
+                        >
                             Cancelar
                         </Button>
-                        <Button variant="mint" type="submit" disabled={form.processing}>
+                        <Button
+                            variant="mint"
+                            type="submit"
+                            disabled={form.processing}
+                        >
                             <IconSave size={14} />
                             {editando ? 'Guardar Cambios' : 'Crear Parámetro'}
                         </Button>
@@ -319,18 +386,34 @@ export default function ParametrosPage({ parametrosDb = [] }: ParametrosPageProp
                 </form>
             </Modal>
 
-            <Modal open={Boolean(porEliminar)} onClose={() => setPorEliminar(null)} title="Eliminar Parámetro">
+            <Modal
+                open={Boolean(porEliminar)}
+                onClose={() => setPorEliminar(null)}
+                title="Eliminar Parámetro"
+            >
                 {porEliminar && (
                     <div className="space-y-4">
-                        <p className="text-sm text-ink">
+                        <p className="text-ink text-sm">
                             ¿Confirmas la eliminación del parámetro{' '}
-                            <span className="font-mono font-bold">{porEliminar.clave}</span>? Esta acción no se puede deshacer.
+                            <span className="font-mono font-bold">
+                                {porEliminar.clave}
+                            </span>
+                            ? Esta acción no se puede deshacer.
                         </p>
                         <div className="flex justify-end gap-2">
-                            <Button variant="secondary" type="button" onClick={() => setPorEliminar(null)}>
+                            <Button
+                                variant="secondary"
+                                type="button"
+                                onClick={() => setPorEliminar(null)}
+                            >
                                 Cancelar
                             </Button>
-                            <Button variant="danger" type="button" onClick={confirmarEliminar} disabled={eliminar.processing}>
+                            <Button
+                                variant="danger"
+                                type="button"
+                                onClick={confirmarEliminar}
+                                disabled={eliminar.processing}
+                            >
                                 <IconTrash size={14} />
                                 Eliminar
                             </Button>

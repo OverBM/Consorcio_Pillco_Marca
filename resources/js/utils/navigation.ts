@@ -5,7 +5,10 @@
  * específico (más largo) respetando el límite de segmento, de modo que
  * `/programa/redistribucion` no marque `/programa` y viceversa.
  */
-export function resolveActiveHref(pathname: string, hrefs: string[]): string | null {
+export function resolveActiveHref(
+    pathname: string,
+    hrefs: string[],
+): string | null {
     const clean = normalizar(pathname);
     let mejor: string | null = null;
     let mejorLargo = -1;
@@ -17,7 +20,8 @@ export function resolveActiveHref(pathname: string, hrefs: string[]): string | n
             return href;
         }
 
-        const coincideSegmento = objetivo !== '/' && clean.startsWith(`${objetivo}/`);
+        const coincideSegmento =
+            objetivo !== '/' && clean.startsWith(`${objetivo}/`);
 
         if (coincideSegmento && objetivo.length > mejorLargo) {
             mejor = href;

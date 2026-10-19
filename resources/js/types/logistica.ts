@@ -4,7 +4,12 @@
 import type { Coord } from './index';
 
 export type UrgenciaSolicitud = 'normal' | 'urgente' | 'critica';
-export type EstadoSolicitud = 'pendiente' | 'asignado' | 'desabastecido' | 'despachado' | 'atendido';
+export type EstadoSolicitud =
+    | 'pendiente'
+    | 'asignado'
+    | 'desabastecido'
+    | 'despachado'
+    | 'atendido';
 
 export interface SolicitudMaterial {
     id: string;
@@ -26,7 +31,13 @@ export interface SolicitudMaterial {
     despachoId?: string;
 }
 
-export type EstadoRequerimiento = 'borrador' | 'dentro_presupuesto' | 'requiere_aprobacion' | 'aprobado' | 'en_cotizacion' | 'atendido';
+export type EstadoRequerimiento =
+    | 'borrador'
+    | 'dentro_presupuesto'
+    | 'requiere_aprobacion'
+    | 'aprobado'
+    | 'en_cotizacion'
+    | 'atendido';
 
 export interface RequerimientoItem {
     materialId: string;
@@ -73,7 +84,13 @@ export interface CotizacionProveedor {
     observaciones?: string;
 }
 
-export type EstadoOrdenCompra = 'emitida' | 'confirmada_proveedor' | 'en_transporte' | 'recepcionada_parcial' | 'recepcionada_total' | 'cancelada';
+export type EstadoOrdenCompra =
+    | 'emitida'
+    | 'confirmada_proveedor'
+    | 'en_transporte'
+    | 'recepcionada_parcial'
+    | 'recepcionada_total'
+    | 'cancelada';
 
 export interface OrdenCompra {
     id: string;
@@ -148,7 +165,14 @@ export interface RecepcionCompra {
     observaciones?: string;
 }
 
-export type EstadoTransferencia = 'borrador' | 'solicitada' | 'autorizada_logistica' | 'rechazada' | 'en_transito' | 'recibida_conforme' | 'recibida_con_incidencia';
+export type EstadoTransferencia =
+    | 'borrador'
+    | 'solicitada'
+    | 'autorizada_logistica'
+    | 'rechazada'
+    | 'en_transito'
+    | 'recibida_conforme'
+    | 'recibida_con_incidencia';
 
 export interface IncidenciaTransferencia {
     materialId: string;
@@ -200,7 +224,12 @@ export interface RegistroMerma {
     estadoInvestigacion?: 'pendiente' | 'en_proceso' | 'cerrada';
 }
 
-export type EstadoDevolucion = 'registrada' | 'en_reclamo_proveedor' | 'nota_credito_emitida' | 'reposicion_en_camino' | 'cerrada';
+export type EstadoDevolucion =
+    | 'registrada'
+    | 'en_reclamo_proveedor'
+    | 'nota_credito_emitida'
+    | 'reposicion_en_camino'
+    | 'cerrada';
 
 export interface DevolucionProveedor {
     id: string;

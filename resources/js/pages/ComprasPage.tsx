@@ -24,13 +24,15 @@ const ACCESOS: Acceso[] = [
     {
         href: '/compras/requerimientos',
         titulo: 'Requerimientos de Compra',
-        descripcion: 'Solicitudes de materiales por obra con flujo de aprobación.',
+        descripcion:
+            'Solicitudes de materiales por obra con flujo de aprobación.',
         icon: IconShoppingCart,
     },
     {
         href: '/compras/cotizaciones',
         titulo: 'Cotizaciones y Cuadro Comparativo',
-        descripcion: 'Registro de ofertas de proveedores y selección de la ganadora.',
+        descripcion:
+            'Registro de ofertas de proveedores y selección de la ganadora.',
         icon: IconTrendingUp,
     },
     {
@@ -71,15 +73,23 @@ export default function ComprasPage() {
                 {ACCESOS.map((acceso) => {
                     const Icon = acceso.icon;
                     return (
-                        <Link key={acceso.href} href={acceso.href} className="group">
-                            <Card className="h-full p-5 transition-all group-hover:border-brand-300 group-hover:shadow-card">
+                        <Link
+                            key={acceso.href}
+                            href={acceso.href}
+                            className="group"
+                        >
+                            <Card className="group-hover:border-brand-300 group-hover:shadow-card h-full p-5 transition-all">
                                 <div className="flex items-start gap-3">
-                                    <span className="rounded-lg bg-brand-50 p-2.5 text-brand-600">
+                                    <span className="bg-brand-50 text-brand-600 rounded-lg p-2.5">
                                         <Icon size={20} />
                                     </span>
                                     <div>
-                                        <p className="font-bold text-ink">{acceso.titulo}</p>
-                                        <p className="mt-1 text-xs text-muted">{acceso.descripcion}</p>
+                                        <p className="text-ink font-bold">
+                                            {acceso.titulo}
+                                        </p>
+                                        <p className="text-muted mt-1 text-xs">
+                                            {acceso.descripcion}
+                                        </p>
                                     </div>
                                 </div>
                             </Card>

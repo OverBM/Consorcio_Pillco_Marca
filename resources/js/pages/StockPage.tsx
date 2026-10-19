@@ -57,7 +57,10 @@ const FILTROS_ESTADO: { value: FiltroEstado; label: string }[] = [
     { value: 'reservado', label: 'Con reservas' },
 ];
 
-const ESTADO_META: Record<string, { label: string; tone: 'ok' | 'warn' | 'danger' | 'neutral' }> = {
+const ESTADO_META: Record<
+    string,
+    { label: string; tone: 'ok' | 'warn' | 'danger' | 'neutral' }
+> = {
     optimo: { label: 'Óptimo', tone: 'ok' },
     bajo: { label: 'Stock bajo', tone: 'warn' },
     critico: { label: 'Crítico', tone: 'danger' },
@@ -76,7 +79,10 @@ interface AlmacenResumen {
     nombre: string;
 }
 
-export default function StockPage({ stockDb = [], almacenesDb = [] }: StockPageProps) {
+export default function StockPage({
+    stockDb = [],
+    almacenesDb = [],
+}: StockPageProps) {
     const [busqueda, setBusqueda] = useState('');
     const [almFiltro, setAlmFiltro] = useState('todos');
     const [estadoFiltro, setEstadoFiltro] = useState<FiltroEstado>('todos');
@@ -93,7 +99,10 @@ export default function StockPage({ stockDb = [], almacenesDb = [] }: StockPageP
         }
         for (const r of stockDb) {
             if (!mapa.has(r.almacenId)) {
-                mapa.set(r.almacenId, { id: r.almacenId, nombre: r.almacenNombre });
+                mapa.set(r.almacenId, {
+                    id: r.almacenId,
+                    nombre: r.almacenNombre,
+                });
             }
         }
         return Array.from(mapa.values());
@@ -115,10 +124,18 @@ export default function StockPage({ stockDb = [], almacenesDb = [] }: StockPageP
         return Array.from(mapa.values());
     }, [stockDb]);
 
-    const celda = (almacenId: string, materialId: string): StockDbRow | undefined =>
-        stockDb.find((r) => r.almacenId === almacenId && r.materialId === materialId);
+    const celda = (
+        almacenId: string,
+        materialId: string,
+    ): StockDbRow | undefined =>
+        stockDb.find(
+            (r) => r.almacenId === almacenId && r.materialId === materialId,
+        );
 
-    const almacenesVisibles = almFiltro === 'todos' ? almacenes : almacenes.filter((a) => a.id === almFiltro);
+    const almacenesVisibles =
+        almFiltro === 'todos'
+            ? almacenes
+            : almacenes.filter((a) => a.id === almFiltro);
 
     const materialesFiltrados = useMemo(
         () =>
@@ -134,8 +151,10 @@ export default function StockPage({ stockDb = [], almacenesDb = [] }: StockPageP
                 return almacenesVisibles.some((a) => {
                     const c = celda(a.id, m.id);
                     if (!c) return false;
-                    if (estadoFiltro === 'reservado') return c.cantidadReservada > 0;
-                    if (estadoFiltro === 'critico') return c.estado === 'critico' || c.estado === 'bajo';
+                    if (estadoFiltro === 'reservado')
+                        return c.cantidadReservada > 0;
+                    if (estadoFiltro === 'critico')
+                        return c.estado === 'critico' || c.estado === 'bajo';
                     return c.estado === estadoFiltro;
                 });
             }),
@@ -145,7 +164,12 @@ export default function StockPage({ stockDb = [], almacenesDb = [] }: StockPageP
 
     const exportar = () => {
         const rows = materialesFiltrados.map((m) => {
-            const obj: Record<string, unknown> = { Material: m.nombre, Código: m.codigo, Unidad: m.unidad, 'Stock mín.': m.stockMinimo };
+            const obj: Record<string, unknown> = {
+                Material: m.nombre,
+                Código: m.codigo,
+                Unidad: m.unidad,
+                'Stock mín.': m.stockMinimo,
+            };
             for (const a of almacenesVisibles) {
                 obj[a.nombre] = celda(a.id, m.id)?.cantidad ?? 0;
             }
@@ -156,15 +180,21 @@ export default function StockPage({ stockDb = [], almacenesDb = [] }: StockPageP
     };
 
     const materialDetalle = materiales.find((m) => m.id === detalleId) ?? null;
-    const celdasDetalle = materialDetalle ? stockDb.filter((r) => r.materialId === materialDetalle.id) : [];
+    const celdasDetalle = materialDetalle
+        ? stockDb.filter((r) => r.materialId === materialDetalle.id)
+        : [];
 
     const verKardex = (almacenId: string) => {
         if (!materialDetalle) return;
         setKardexAlmacen(almacenId);
         setKardex([]);
-        void kardexHttp.get(`/api/v1/stock/almacenes/${almacenId}/kardex?material_id=${materialDetalle.id}`, {
-            onSuccess: (res) => setKardex((res as { data?: KardexMov[] })?.data ?? []),
-        });
+        void kardexHttp.get(
+            `/api/v1/stock/almacenes/${almacenId}/kardex?material_id=${materialDetalle.id}`,
+            {
+                onSuccess: (res) =>
+                    setKardex((res as { data?: KardexMov[] })?.data ?? []),
+            },
+        );
     };
 
     return (
@@ -173,7 +203,11 @@ export default function StockPage({ stockDb = [], almacenesDb = [] }: StockPageP
                 title="Matriz de Stock"
                 subtitle="Consulta integral de inventarios multi-almacén y kardex por material"
                 actions={
-                    <button className="btn-secondary" onClick={exportar} disabled={materialesFiltrados.length === 0}>
+                    <button
+                        className="btn-secondary"
+                        onClick={exportar}
+                        disabled={materialesFiltrados.length === 0}
+                    >
                         <IconDownload size={15} />
                         Exportar Matriz CSV
                     </button>
@@ -182,17 +216,23 @@ export default function StockPage({ stockDb = [], almacenesDb = [] }: StockPageP
 
             <Card className="p-4">
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    <div className="flex items-center gap-2 rounded-field border border-line bg-canvas px-3 py-2 text-muted">
+                    <div className="rounded-field border-line bg-canvas text-muted flex items-center gap-2 border px-3 py-2">
                         <IconSearch size={16} />
                         <input
                             value={busqueda}
                             onChange={(e) => setBusqueda(e.target.value)}
                             placeholder="Buscar código o nombre…"
-                            className="w-full bg-transparent text-xs text-ink outline-none placeholder:text-muted/70"
+                            className="text-ink placeholder:text-muted/70 w-full bg-transparent text-xs outline-none"
                         />
                     </div>
-                    <Select value={almFiltro} onChange={(e) => setAlmFiltro(e.target.value)} aria-label="Filtrar por almacén">
-                        <option value="todos">Todos los almacenes ({almacenes.length})</option>
+                    <Select
+                        value={almFiltro}
+                        onChange={(e) => setAlmFiltro(e.target.value)}
+                        aria-label="Filtrar por almacén"
+                    >
+                        <option value="todos">
+                            Todos los almacenes ({almacenes.length})
+                        </option>
                         {almacenes.map((a) => (
                             <option key={a.id} value={a.id}>
                                 {a.nombre}
@@ -201,7 +241,9 @@ export default function StockPage({ stockDb = [], almacenesDb = [] }: StockPageP
                     </Select>
                     <Select
                         value={estadoFiltro}
-                        onChange={(e) => setEstadoFiltro(e.target.value as FiltroEstado)}
+                        onChange={(e) =>
+                            setEstadoFiltro(e.target.value as FiltroEstado)
+                        }
                         aria-label="Filtrar por estado"
                     >
                         {FILTROS_ESTADO.map((f) => (
@@ -217,14 +259,14 @@ export default function StockPage({ stockDb = [], almacenesDb = [] }: StockPageP
                 <div className="overflow-x-auto">
                     <table className="w-full border-collapse text-sm">
                         <thead>
-                            <tr className="border-b border-line bg-soft/40">
-                                <th className="whitespace-nowrap px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-wide text-muted">
+                            <tr className="border-line bg-soft/40 border-b">
+                                <th className="text-muted px-3 py-2.5 text-left text-[11px] font-bold tracking-wide whitespace-nowrap uppercase">
                                     Material
                                 </th>
                                 {almacenesVisibles.map((a) => (
                                     <th
                                         key={a.id}
-                                        className="whitespace-nowrap px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-wide text-muted"
+                                        className="text-muted px-3 py-2.5 text-right text-[11px] font-bold tracking-wide whitespace-nowrap uppercase"
                                     >
                                         {a.nombre}
                                     </th>
@@ -235,7 +277,10 @@ export default function StockPage({ stockDb = [], almacenesDb = [] }: StockPageP
                             {materialesFiltrados.length === 0 && (
                                 <tr>
                                     <td colSpan={almacenesVisibles.length + 1}>
-                                        <EmptyState title="Sin resultados" hint="Ajusta los filtros o término de búsqueda." />
+                                        <EmptyState
+                                            title="Sin resultados"
+                                            hint="Ajusta los filtros o término de búsqueda."
+                                        />
                                     </td>
                                 </tr>
                             )}
@@ -247,26 +292,46 @@ export default function StockPage({ stockDb = [], almacenesDb = [] }: StockPageP
                                         setKardex([]);
                                         setKardexAlmacen(null);
                                     }}
-                                    className="cursor-pointer border-b border-line/70 transition-colors last:border-0 hover:bg-brand-50/40"
+                                    className="border-line/70 hover:bg-brand-50/40 cursor-pointer border-b transition-colors last:border-0"
                                 >
                                     <td className="px-3 py-2.5">
-                                        <p className="font-semibold text-ink">{m.nombre}</p>
-                                        <p className="text-xs text-muted">
-                                            {m.codigo} · {m.unidad} · Mínimo: {formatNum(m.stockMinimo)}
+                                        <p className="text-ink font-semibold">
+                                            {m.nombre}
+                                        </p>
+                                        <p className="text-muted text-xs">
+                                            {m.codigo} · {m.unidad} · Mínimo:{' '}
+                                            {formatNum(m.stockMinimo)}
                                         </p>
                                     </td>
                                     {almacenesVisibles.map((a) => {
                                         const c = celda(a.id, m.id);
                                         const cantidad = c?.cantidad ?? 0;
-                                        const meta = ESTADO_META[c?.estado ?? 'critico'];
+                                        const meta =
+                                            ESTADO_META[c?.estado ?? 'critico'];
                                         return (
-                                            <td key={a.id} className="px-3 py-2.5 text-right align-top">
-                                                <p className="num text-sm font-bold text-ink">{formatNum(cantidad)}</p>
-                                                <p className="text-[11px] text-muted">{m.unidad}</p>
+                                            <td
+                                                key={a.id}
+                                                className="px-3 py-2.5 text-right align-top"
+                                            >
+                                                <p className="num text-ink text-sm font-bold">
+                                                    {formatNum(cantidad)}
+                                                </p>
+                                                <p className="text-muted text-[11px]">
+                                                    {m.unidad}
+                                                </p>
                                                 <div className="mt-1 flex flex-col items-end gap-0.5">
-                                                    <Badge tone={meta.tone}>{meta.label}</Badge>
-                                                    {(c?.cantidadReservada ?? 0) > 0 && (
-                                                        <Badge tone="neutral">Reserv.: {formatNum(c?.cantidadReservada ?? 0)}</Badge>
+                                                    <Badge tone={meta.tone}>
+                                                        {meta.label}
+                                                    </Badge>
+                                                    {(c?.cantidadReservada ??
+                                                        0) > 0 && (
+                                                        <Badge tone="neutral">
+                                                            Reserv.:{' '}
+                                                            {formatNum(
+                                                                c?.cantidadReservada ??
+                                                                    0,
+                                                            )}
+                                                        </Badge>
                                                     )}
                                                 </div>
                                             </td>
@@ -279,44 +344,88 @@ export default function StockPage({ stockDb = [], almacenesDb = [] }: StockPageP
                 </div>
             </Card>
 
-            <Modal open={!!materialDetalle} onClose={() => setDetalleId(null)} title={materialDetalle?.nombre ?? ''} wide>
+            <Modal
+                open={!!materialDetalle}
+                onClose={() => setDetalleId(null)}
+                title={materialDetalle?.nombre ?? ''}
+                wide
+            >
                 {materialDetalle && (
                     <div className="space-y-6">
                         <div className="flex flex-wrap items-center gap-3 text-sm">
-                            <Badge tone="neutral">{materialDetalle.codigo}</Badge>
+                            <Badge tone="neutral">
+                                {materialDetalle.codigo}
+                            </Badge>
                             <span className="text-muted">
-                                Unidad: <strong className="text-ink">{materialDetalle.unidad}</strong>
+                                Unidad:{' '}
+                                <strong className="text-ink">
+                                    {materialDetalle.unidad}
+                                </strong>
                             </span>
                             <span className="text-muted">
-                                Mínimo de reposición: <strong className="text-ink">{formatNum(materialDetalle.stockMinimo)} {materialDetalle.unidad}</strong>
+                                Mínimo de reposición:{' '}
+                                <strong className="text-ink">
+                                    {formatNum(materialDetalle.stockMinimo)}{' '}
+                                    {materialDetalle.unidad}
+                                </strong>
                             </span>
                         </div>
 
                         <div>
-                            <h4 className="mb-2 text-sm font-bold text-ink">Disponibilidad por almacén</h4>
+                            <h4 className="text-ink mb-2 text-sm font-bold">
+                                Disponibilidad por almacén
+                            </h4>
                             {celdasDetalle.length === 0 ? (
-                                <p className="text-sm text-muted">Sin existencias registradas para este material.</p>
+                                <p className="text-muted text-sm">
+                                    Sin existencias registradas para este
+                                    material.
+                                </p>
                             ) : (
                                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                                     {celdasDetalle.map((c) => {
-                                        const meta = ESTADO_META[c.estado] ?? { label: c.estado, tone: 'neutral' as const };
+                                        const meta = ESTADO_META[c.estado] ?? {
+                                            label: c.estado,
+                                            tone: 'neutral' as const,
+                                        };
                                         return (
-                                            <div key={c.id} className="flex flex-col justify-between rounded-xl border border-line bg-surface p-3 shadow-sm">
+                                            <div
+                                                key={c.id}
+                                                className="border-line bg-surface flex flex-col justify-between rounded-xl border p-3 shadow-sm"
+                                            >
                                                 <div className="flex items-center justify-between gap-2">
-                                                    <p className="text-xs font-bold text-ink">{c.almacenNombre}</p>
-                                                    <Badge tone={meta.tone}>{meta.label}</Badge>
+                                                    <p className="text-ink text-xs font-bold">
+                                                        {c.almacenNombre}
+                                                    </p>
+                                                    <Badge tone={meta.tone}>
+                                                        {meta.label}
+                                                    </Badge>
                                                 </div>
-                                                <p className="num mt-1 text-lg font-bold text-ink">
-                                                    {formatNum(c.cantidad)} <span className="text-xs font-normal text-muted">{c.unidad}</span>
+                                                <p className="num text-ink mt-1 text-lg font-bold">
+                                                    {formatNum(c.cantidad)}{' '}
+                                                    <span className="text-muted text-xs font-normal">
+                                                        {c.unidad}
+                                                    </span>
                                                 </p>
-                                                <div className="mt-1 space-y-0.5 text-[11px] text-muted">
-                                                    <p>Disponible: {formatCantidad(c.disponible)}</p>
-                                                    <p>Reservado: {formatCantidad(c.cantidadReservada)}</p>
+                                                <div className="text-muted mt-1 space-y-0.5 text-[11px]">
+                                                    <p>
+                                                        Disponible:{' '}
+                                                        {formatCantidad(
+                                                            c.disponible,
+                                                        )}
+                                                    </p>
+                                                    <p>
+                                                        Reservado:{' '}
+                                                        {formatCantidad(
+                                                            c.cantidadReservada,
+                                                        )}
+                                                    </p>
                                                 </div>
                                                 <button
                                                     type="button"
-                                                    onClick={() => verKardex(c.almacenId)}
-                                                    className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-bold text-brand-600 hover:underline"
+                                                    onClick={() =>
+                                                        verKardex(c.almacenId)
+                                                    }
+                                                    className="text-brand-600 mt-2 inline-flex items-center gap-1.5 text-[11px] font-bold hover:underline"
                                                 >
                                                     <IconRepeat size={12} />
                                                     Ver kardex
@@ -329,34 +438,97 @@ export default function StockPage({ stockDb = [], almacenesDb = [] }: StockPageP
                         </div>
 
                         <div>
-                            <h4 className="mb-2 text-sm font-bold text-ink">
-                                Kardex {kardexAlmacen ? `— ${almacenes.find((a) => a.id === kardexAlmacen)?.nombre ?? 'almacén'}` : ''}
+                            <h4 className="text-ink mb-2 text-sm font-bold">
+                                Kardex{' '}
+                                {kardexAlmacen
+                                    ? `— ${almacenes.find((a) => a.id === kardexAlmacen)?.nombre ?? 'almacén'}`
+                                    : ''}
                             </h4>
                             {!kardexAlmacen ? (
-                                <p className="text-sm text-muted">Selecciona un almacén para consultar sus movimientos.</p>
+                                <p className="text-muted text-sm">
+                                    Selecciona un almacén para consultar sus
+                                    movimientos.
+                                </p>
                             ) : kardexHttp.processing ? (
-                                <p className="text-sm text-muted">Cargando movimientos…</p>
+                                <p className="text-muted text-sm">
+                                    Cargando movimientos…
+                                </p>
                             ) : kardex.length === 0 ? (
-                                <p className="text-sm text-muted">Sin movimientos registrados en este almacén.</p>
+                                <p className="text-muted text-sm">
+                                    Sin movimientos registrados en este almacén.
+                                </p>
                             ) : (
                                 <DataTable
                                     emptyLabel="Sin movimientos."
                                     columns={[
-                                        { key: 'fecha', header: 'Fecha', cell: (r) => formatFs(r.created_at) },
+                                        {
+                                            key: 'fecha',
+                                            header: 'Fecha',
+                                            cell: (r) => formatFs(r.created_at),
+                                        },
                                         {
                                             key: 'tipo',
                                             header: 'Tipo',
                                             cell: (r) => (
-                                                <Badge tone={r.tipo_movimiento.startsWith('ingreso') ? 'ok' : 'warn'}>{r.tipo_movimiento}</Badge>
+                                                <Badge
+                                                    tone={
+                                                        r.tipo_movimiento.startsWith(
+                                                            'ingreso',
+                                                        )
+                                                            ? 'ok'
+                                                            : 'warn'
+                                                    }
+                                                >
+                                                    {r.tipo_movimiento}
+                                                </Badge>
                                             ),
                                         },
-                                        { key: 'cantidad', header: 'Cantidad', align: 'right', mono: true, cell: (r) => formatNum(Number(r.cantidad)) },
-                                        { key: 'saldo', header: 'Saldo', align: 'right', mono: true, cell: (r) => formatNum(Number(r.saldo_resultante)) },
-                                        { key: 'doc', header: 'Documento', cell: (r) => (r.documento_tipo ? `${r.documento_tipo} #${r.documento_id ?? ''}` : '—') },
-                                        { key: 'usuario', header: 'Responsable', cell: (r) => r.usuario?.nombre ?? '—' },
-                                        { key: 'obs', header: 'Observación', cell: (r) => <span className="block max-w-48 truncate text-xs text-muted">{r.observacion ?? '—'}</span> },
+                                        {
+                                            key: 'cantidad',
+                                            header: 'Cantidad',
+                                            align: 'right',
+                                            mono: true,
+                                            cell: (r) =>
+                                                formatNum(Number(r.cantidad)),
+                                        },
+                                        {
+                                            key: 'saldo',
+                                            header: 'Saldo',
+                                            align: 'right',
+                                            mono: true,
+                                            cell: (r) =>
+                                                formatNum(
+                                                    Number(r.saldo_resultante),
+                                                ),
+                                        },
+                                        {
+                                            key: 'doc',
+                                            header: 'Documento',
+                                            cell: (r) =>
+                                                r.documento_tipo
+                                                    ? `${r.documento_tipo} #${r.documento_id ?? ''}`
+                                                    : '—',
+                                        },
+                                        {
+                                            key: 'usuario',
+                                            header: 'Responsable',
+                                            cell: (r) =>
+                                                r.usuario?.nombre ?? '—',
+                                        },
+                                        {
+                                            key: 'obs',
+                                            header: 'Observación',
+                                            cell: (r) => (
+                                                <span className="text-muted block max-w-48 truncate text-xs">
+                                                    {r.observacion ?? '—'}
+                                                </span>
+                                            ),
+                                        },
                                     ]}
-                                    rows={kardex.map((r) => ({ ...r, id: String(r.id) }))}
+                                    rows={kardex.map((r) => ({
+                                        ...r,
+                                        id: String(r.id),
+                                    }))}
                                 />
                             )}
                         </div>

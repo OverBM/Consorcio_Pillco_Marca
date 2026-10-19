@@ -11,8 +11,19 @@ import { Card, Badge, Button, Modal } from '../components/ui';
 import { TextArea } from '../components/form';
 import { EmptyState } from '../components/EmptyState';
 import { useNotifications } from '../components/notifications/NotificationProvider';
-import { IconAlert, IconCheck, IconCheckCircle, IconClock, IconX } from '../components/icons';
-import { FASES_CICLO_VIDA, faseAnterior, nombreFase, tonoEstadoFase } from '../utils/cicloVida';
+import {
+    IconAlert,
+    IconCheck,
+    IconCheckCircle,
+    IconClock,
+    IconX,
+} from '../components/icons';
+import {
+    FASES_CICLO_VIDA,
+    faseAnterior,
+    nombreFase,
+    tonoEstadoFase,
+} from '../utils/cicloVida';
 
 interface ObraDb {
     id: number;
@@ -93,7 +104,10 @@ export default function CicloVidaPage({
         }
     }, [obrasDb, obraId]);
 
-    const faseHttp = useHttp<typeof FORM_VACIO>({ ...FORM_VACIO, justificaciones: {} });
+    const faseHttp = useHttp<typeof FORM_VACIO>({
+        ...FORM_VACIO,
+        justificaciones: {},
+    });
 
     const fasesPorCodigo = useMemo(() => {
         const map = new Map<string, ObraFaseDb>();
@@ -103,13 +117,20 @@ export default function CicloVidaPage({
         return map;
     }, [fasesDb, obraId]);
 
-    const evaluacionesObra = useMemo(() => evaluacionesDb[obraId] ?? {}, [evaluacionesDb, obraId]);
+    const evaluacionesObra = useMemo(
+        () => evaluacionesDb[obraId] ?? {},
+        [evaluacionesDb, obraId],
+    );
 
-    const criteriosDeFase = (fase: string) => criteriosDb.filter((c) => c.fase === fase && c.activo);
-    const requisitosDeFase = (fase: string) => requisitosDb.filter((r) => r.fase === fase && r.activo);
+    const criteriosDeFase = (fase: string) =>
+        criteriosDb.filter((c) => c.fase === fase && c.activo);
+    const requisitosDeFase = (fase: string) =>
+        requisitosDb.filter((r) => r.fase === fase && r.activo);
 
     const obligatoriosIncumplidos = (fase: string) =>
-        (evaluacionesObra[fase] ?? []).filter((e) => e.obligatorio && !e.cumple);
+        (evaluacionesObra[fase] ?? []).filter(
+            (e) => e.obligatorio && !e.cumple,
+        );
 
     const fasePreviaAprobada = (fase: string) => {
         const previa = faseAnterior(fase);
@@ -117,11 +138,21 @@ export default function CicloVidaPage({
         return fasesPorCodigo.get(previa)?.estado === 'aprobada';
     };
 
-    const puedeAprobar = (fase: string) => fasePreviaAprobada(fase) && obligatoriosIncumplidos(fase).length === 0;
+    const puedeAprobar = (fase: string) =>
+        fasePreviaAprobada(fase) && obligatoriosIncumplidos(fase).length === 0;
 
-    const enviarFase = (fase: string, estado: 'en_proceso' | 'aprobada', justificaciones: Record<string, string> = {}) => {
+    const enviarFase = (
+        fase: string,
+        estado: 'en_proceso' | 'aprobada',
+        justificaciones: Record<string, string> = {},
+    ) => {
         setFaseActiva(fase);
-        faseHttp.transform(() => ({ fase, estado, observaciones: '', justificaciones }));
+        faseHttp.transform(() => ({
+            fase,
+            estado,
+            observaciones: '',
+            justificaciones,
+        }));
         void faseHttp.post(`/api/v1/proyectos/${obraId}/fases`, {
             onSuccess: () => {
                 notify.success('Fase del proyecto actualizada.');
@@ -129,14 +160,19 @@ export default function CicloVidaPage({
                 refrescarProps('fasesDb', 'evaluacionesDb');
             },
             onError: (errors: Record<string, string>) => {
-                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo actualizar la fase.');
+                notify.error(
+                    Object.values(errors).flat().join(' ') ||
+                        'No se pudo actualizar la fase.',
+                );
             },
             onFinish: () => setFaseActiva(null),
         });
     };
 
     const solicitarAprobacion = (fase: string) => {
-        const manuales = obligatoriosIncumplidos(fase).filter((e) => e.tipo === 'manual_justificado');
+        const manuales = obligatoriosIncumplidos(fase).filter(
+            (e) => e.tipo === 'manual_justificado',
+        );
         if (manuales.length > 0) {
             faseHttp.setData('justificaciones', {});
             setJustificando(fase);
@@ -152,7 +188,11 @@ export default function CicloVidaPage({
         enviarFase(justificando, 'aprobada', faseHttp.data.justificaciones);
     };
 
-    const faseJustificando = justificando ? obligatoriosIncumplidos(justificando).filter((e) => e.tipo === 'manual_justificado') : [];
+    const faseJustificando = justificando
+        ? obligatoriosIncumplidos(justificando).filter(
+              (e) => e.tipo === 'manual_justificado',
+          )
+        : [];
 
     return (
         <div className="space-y-6">
@@ -161,12 +201,14 @@ export default function CicloVidaPage({
                 subtitle="Seguimiento secuencial por fases estandarizadas con requisitos y criterios de aprobación verificables"
             />
 
-            <Card className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <span className="text-xs font-mono uppercase text-muted">Obra de Análisis:</span>
+            <Card className="flex flex-col items-start justify-between gap-3 p-4 sm:flex-row sm:items-center">
+                <span className="text-muted font-mono text-xs uppercase">
+                    Obra de Análisis:
+                </span>
                 <select
                     value={obraId}
                     onChange={(e) => setObraId(e.target.value)}
-                    className="rounded-field border border-line bg-canvas px-3 py-1.5 text-xs text-ink outline-none"
+                    className="rounded-field border-line bg-canvas text-ink border px-3 py-1.5 text-xs outline-none"
                 >
                     {obrasDb.map((o) => (
                         <option key={o.id} value={String(o.id)}>
@@ -177,7 +219,10 @@ export default function CicloVidaPage({
             </Card>
 
             {obrasDb.length === 0 ? (
-                <EmptyState title="Sin obras registradas" hint="Registra una obra para gestionar su ciclo de vida." />
+                <EmptyState
+                    title="Sin obras registradas"
+                    hint="Registra una obra para gestionar su ciclo de vida."
+                />
             ) : (
                 <div className="grid gap-4 lg:grid-cols-5">
                     {FASES_CICLO_VIDA.map((fase) => {
@@ -186,35 +231,58 @@ export default function CicloVidaPage({
                         const busy = faseActiva === fase.codigo;
                         const criterios = criteriosDeFase(fase.codigo);
                         const requisitos = requisitosDeFase(fase.codigo);
-                        const evaluaciones = evaluacionesObra[fase.codigo] ?? [];
+                        const evaluaciones =
+                            evaluacionesObra[fase.codigo] ?? [];
                         const previaOk = fasePreviaAprobada(fase.codigo);
                         const aprobable = puedeAprobar(fase.codigo);
                         const aprobada = estado === 'aprobada';
 
                         return (
-                            <Card key={fase.codigo} className="p-4 flex flex-col justify-between gap-4">
+                            <Card
+                                key={fase.codigo}
+                                className="flex flex-col justify-between gap-4 p-4"
+                            >
                                 <div className="space-y-3">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-xs font-mono font-bold text-muted">Fase 0{fase.orden}</span>
-                                        <Badge tone={tonoEstadoFase(estado)}>{estado.replace('_', ' ')}</Badge>
+                                        <span className="text-muted font-mono text-xs font-bold">
+                                            Fase 0{fase.orden}
+                                        </span>
+                                        <Badge tone={tonoEstadoFase(estado)}>
+                                            {estado.replace('_', ' ')}
+                                        </Badge>
                                     </div>
                                     <div>
-                                        <h4 className="text-sm font-bold text-ink">{fase.nombre}</h4>
-                                        <p className="text-[11px] text-muted">{fase.responsable}</p>
+                                        <h4 className="text-ink text-sm font-bold">
+                                            {fase.nombre}
+                                        </h4>
+                                        <p className="text-muted text-[11px]">
+                                            {fase.responsable}
+                                        </p>
                                         {registro?.aprobada_en && (
-                                            <p className="text-[10px] font-mono text-brand-600">
-                                                Aprobada: {new Date(registro.aprobada_en).toLocaleDateString('es-PE')}
+                                            <p className="text-brand-600 font-mono text-[10px]">
+                                                Aprobada:{' '}
+                                                {new Date(
+                                                    registro.aprobada_en,
+                                                ).toLocaleDateString('es-PE')}
                                             </p>
                                         )}
                                     </div>
 
                                     {requisitos.length > 0 && (
                                         <div className="space-y-1">
-                                            <p className="text-[10px] font-mono uppercase text-muted">Requisitos</p>
+                                            <p className="text-muted font-mono text-[10px] uppercase">
+                                                Requisitos
+                                            </p>
                                             <ul className="space-y-1">
                                                 {requisitos.map((r) => (
-                                                    <li key={r.id} className="flex items-start gap-1.5 text-[11px] text-ink">
-                                                        <IconCheck size={12} className="mt-0.5 shrink-0 text-brand-600" />
+                                                    <li
+                                                        key={r.id}
+                                                        className="text-ink flex items-start gap-1.5 text-[11px]"
+                                                    >
+                                                        <IconCheck
+                                                            size={12}
+                                                            className="text-brand-600 mt-0.5 shrink-0"
+                                                        />
                                                         <span>{r.nombre}</span>
                                                     </li>
                                                 ))}
@@ -224,25 +292,58 @@ export default function CicloVidaPage({
 
                                     {criterios.length > 0 && (
                                         <div className="space-y-1">
-                                            <p className="text-[10px] font-mono uppercase text-muted">Criterios de aprobación</p>
+                                            <p className="text-muted font-mono text-[10px] uppercase">
+                                                Criterios de aprobación
+                                            </p>
                                             <ul className="space-y-1.5">
                                                 {criterios.map((c) => {
-                                                    const ev = evaluaciones.find((e) => e.criterio_id === c.id);
-                                                    const cumple = ev?.cumple ?? false;
+                                                    const ev =
+                                                        evaluaciones.find(
+                                                            (e) =>
+                                                                e.criterio_id ===
+                                                                c.id,
+                                                        );
+                                                    const cumple =
+                                                        ev?.cumple ?? false;
                                                     return (
-                                                        <li key={c.id} className="rounded-md border border-line bg-soft/40 p-2">
+                                                        <li
+                                                            key={c.id}
+                                                            className="border-line bg-soft/40 rounded-md border p-2"
+                                                        >
                                                             <div className="flex items-start gap-1.5">
                                                                 {cumple ? (
-                                                                    <IconCheck size={12} className="mt-0.5 shrink-0 text-ok" />
+                                                                    <IconCheck
+                                                                        size={
+                                                                            12
+                                                                        }
+                                                                        className="text-ok mt-0.5 shrink-0"
+                                                                    />
                                                                 ) : (
-                                                                    <IconX size={12} className="mt-0.5 shrink-0 text-danger" />
+                                                                    <IconX
+                                                                        size={
+                                                                            12
+                                                                        }
+                                                                        className="text-danger mt-0.5 shrink-0"
+                                                                    />
                                                                 )}
                                                                 <div>
-                                                                    <p className="text-[11px] font-semibold text-ink">
-                                                                        {c.nombre}
-                                                                        {c.obligatorio && <span className="ml-1 text-danger">*</span>}
+                                                                    <p className="text-ink text-[11px] font-semibold">
+                                                                        {
+                                                                            c.nombre
+                                                                        }
+                                                                        {c.obligatorio && (
+                                                                            <span className="text-danger ml-1">
+                                                                                *
+                                                                            </span>
+                                                                        )}
                                                                     </p>
-                                                                    {ev && <p className="text-[10px] text-muted">{ev.detalle}</p>}
+                                                                    {ev && (
+                                                                        <p className="text-muted text-[10px]">
+                                                                            {
+                                                                                ev.detalle
+                                                                            }
+                                                                        </p>
+                                                                    )}
                                                                 </div>
                                                             </div>
                                                         </li>
@@ -253,8 +354,13 @@ export default function CicloVidaPage({
                                     )}
 
                                     {!aprobada && !previaOk && (
-                                        <p className="flex items-center gap-1.5 text-[10px] font-semibold text-warn">
-                                            <IconAlert size={12} /> Requiere aprobar {nombreFase(faseAnterior(fase.codigo) ?? '')} primero.
+                                        <p className="text-warn flex items-center gap-1.5 text-[10px] font-semibold">
+                                            <IconAlert size={12} /> Requiere
+                                            aprobar{' '}
+                                            {nombreFase(
+                                                faseAnterior(fase.codigo) ?? '',
+                                            )}{' '}
+                                            primero.
                                         </p>
                                     )}
                                 </div>
@@ -265,7 +371,12 @@ export default function CicloVidaPage({
                                         variant="secondary"
                                         className="flex-1"
                                         disabled={busy || aprobada}
-                                        onClick={() => enviarFase(fase.codigo, 'en_proceso')}
+                                        onClick={() =>
+                                            enviarFase(
+                                                fase.codigo,
+                                                'en_proceso',
+                                            )
+                                        }
                                     >
                                         <IconClock size={13} /> Iniciar
                                     </Button>
@@ -273,9 +384,17 @@ export default function CicloVidaPage({
                                         size="sm"
                                         variant="mint"
                                         className="flex-1"
-                                        disabled={busy || aprobada || !aprobable}
-                                        title={!aprobable ? 'Cumple los requisitos y criterios para aprobar.' : undefined}
-                                        onClick={() => solicitarAprobacion(fase.codigo)}
+                                        disabled={
+                                            busy || aprobada || !aprobable
+                                        }
+                                        title={
+                                            !aprobable
+                                                ? 'Cumple los requisitos y criterios para aprobar.'
+                                                : undefined
+                                        }
+                                        onClick={() =>
+                                            solicitarAprobacion(fase.codigo)
+                                        }
                                     >
                                         <IconCheckCircle size={13} /> Aprobar
                                     </Button>
@@ -286,18 +405,31 @@ export default function CicloVidaPage({
                 </div>
             )}
 
-            <Modal open={justificando !== null} onClose={() => setJustificando(null)} title="Justificación de aprobación">
+            <Modal
+                open={justificando !== null}
+                onClose={() => setJustificando(null)}
+                title="Justificación de aprobación"
+            >
                 <div className="space-y-4">
-                    <p className="text-sm text-muted">
-                        Los siguientes criterios requieren una justificación manual antes de aprobar la fase{' '}
-                        <strong className="text-ink">{nombreFase(justificando ?? '')}</strong>.
+                    <p className="text-muted text-sm">
+                        Los siguientes criterios requieren una justificación
+                        manual antes de aprobar la fase{' '}
+                        <strong className="text-ink">
+                            {nombreFase(justificando ?? '')}
+                        </strong>
+                        .
                     </p>
                     {faseJustificando.map((c) => (
                         <div key={c.criterio_id} className="space-y-1">
-                            <label className="text-xs font-semibold text-ink">{c.nombre}</label>
+                            <label className="text-ink text-xs font-semibold">
+                                {c.nombre}
+                            </label>
                             <TextArea
                                 rows={3}
-                                value={faseHttp.data.justificaciones[c.codigo] ?? ''}
+                                value={
+                                    faseHttp.data.justificaciones[c.codigo] ??
+                                    ''
+                                }
                                 onChange={(e) =>
                                     faseHttp.setData('justificaciones', {
                                         ...faseHttp.data.justificaciones,
@@ -309,10 +441,19 @@ export default function CicloVidaPage({
                         </div>
                     ))}
                     <div className="flex justify-end gap-2 pt-2">
-                        <Button variant="secondary" type="button" onClick={() => setJustificando(null)}>
+                        <Button
+                            variant="secondary"
+                            type="button"
+                            onClick={() => setJustificando(null)}
+                        >
                             Cancelar
                         </Button>
-                        <Button variant="mint" type="button" onClick={confirmarJustificacion} disabled={faseHttp.processing}>
+                        <Button
+                            variant="mint"
+                            type="button"
+                            onClick={confirmarJustificacion}
+                            disabled={faseHttp.processing}
+                        >
                             <IconCheckCircle size={14} /> Aprobar fase
                         </Button>
                     </div>

@@ -8,6 +8,22 @@ export type ValidationSchema<T extends Record<string, unknown>> = {
     [K in keyof T]?: Validator[];
 };
 
+function aTexto(value: unknown): string {
+    if (value === null || value === undefined) {
+        return '';
+    }
+
+    if (
+        typeof value === 'number' ||
+        typeof value === 'boolean' ||
+        typeof value === 'bigint'
+    ) {
+        return String(value);
+    }
+
+    return typeof value === 'string' ? value : JSON.stringify(value);
+}
+
 export const validators = {
     required:
         (message = 'Este campo es obligatorio'): Validator =>
@@ -62,7 +78,9 @@ export const validators = {
             if (value === null || value === undefined || value === '') {
                 return undefined;
             }
-            return /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/.test(String(value)) ? undefined : message;
+            return /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/.test(aTexto(value))
+                ? undefined
+                : message;
         },
 
     pattern:
@@ -71,11 +89,14 @@ export const validators = {
             if (value === null || value === undefined || value === '') {
                 return undefined;
             }
-            return regex.test(String(value)) ? undefined : message;
+            return regex.test(aTexto(value)) ? undefined : message;
         },
 };
 
-export function runRules(value: unknown, rules: Validator[] = []): string | undefined {
+export function runRules(
+    value: unknown,
+    rules: Validator[] = [],
+): string | undefined {
     for (const rule of rules) {
         const error = rule(value);
 
@@ -127,10 +148,17 @@ export function fromApiError(error: unknown): FieldErrors {
         return errors;
     }
 
-    return { _form: error instanceof Error ? error.message : 'Ocurrió un error inesperado.' };
+    return {
+        _form:
+            error instanceof Error
+                ? error.message
+                : 'Ocurrió un error inesperado.',
+    };
 }
 
-export function combineErrors(...sources: Array<FieldErrors | undefined | null>): FieldErrors {
+export function combineErrors(
+    ...sources: Array<FieldErrors | undefined | null>
+): FieldErrors {
     return Object.assign({}, ...sources.filter(Boolean));
 }
 
@@ -138,7 +166,10 @@ export function hasErrors(errors: FieldErrors): boolean {
     return Object.keys(errors).length > 0;
 }
 
-export function clearFieldError(errors: FieldErrors, field: string): FieldErrors {
+export function clearFieldError(
+    errors: FieldErrors,
+    field: string,
+): FieldErrors {
     if (!(field in errors)) {
         return errors;
     }

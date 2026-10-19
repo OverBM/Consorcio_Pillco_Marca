@@ -7,9 +7,17 @@ import { Deferred, Link, router, usePage } from '@inertiajs/react';
 import contexto from '@/routes/contexto';
 import { PageHeader } from '../components/PageHeader';
 import { KpiCard } from '../components/KpiCard';
-import { Skeleton, SkeletonKpiGrid, SkeletonText } from '../components/Skeleton';
+import {
+    Skeleton,
+    SkeletonKpiGrid,
+    SkeletonText,
+} from '../components/Skeleton';
 import { AlertaBanner } from '../components/AlertaBanner';
-import { MapaLeaflet, type RutaMapa, type SugerenciaMapa } from '../components/MapaLeaflet';
+import {
+    MapaLeaflet,
+    type RutaMapa,
+    type SugerenciaMapa,
+} from '../components/MapaLeaflet';
 import { GeoDetalle } from '../components/GeoDetalle';
 import { BarChart7d, ChartLegend } from '../components/charts';
 import { Card, Badge } from '../components/ui';
@@ -92,7 +100,12 @@ interface PanelProps {
     indicadores: PanelIndicadores;
     sobrantes: SobranteDb[];
     rutas: RutaMapa[];
-    movimientos7d: { fecha: string; etiqueta: string; ingreso: number; salida: number }[];
+    movimientos7d: {
+        fecha: string;
+        etiqueta: string;
+        ingreso: number;
+        salida: number;
+    }[];
     obraActivaId: number | null;
 }
 
@@ -116,7 +129,9 @@ export default function PanelGeneral() {
         incidencias: 0,
         mermas: 0,
     };
-    const obraActiva = obras.find((o) => String(o.id) === String(props.obraActivaId)) ?? obras[0];
+    const obraActiva =
+        obras.find((o) => String(o.id) === String(props.obraActivaId)) ??
+        obras[0];
 
     const selectObra = useCallback((obraId: string) => {
         router.post(
@@ -128,12 +143,17 @@ export default function PanelGeneral() {
 
     const [seleccionObraId, setSeleccionObraId] = useState<string | null>(null);
     const [alertaHoverId, setAlertaHoverId] = useState<string | null>(null);
-    const [frentesComparados, setFrentesComparados] = useState<string[]>(obraActiva ? [obraActiva.id] : []);
-    const [prediccionDinamica, setPrediccionDinamica] = useState<PrediccionDinamica | null>(null);
+    const [frentesComparados, setFrentesComparados] = useState<string[]>(
+        obraActiva ? [obraActiva.id] : [],
+    );
+    const [prediccionDinamica, setPrediccionDinamica] =
+        useState<PrediccionDinamica | null>(null);
 
     const almCentral = useMemo(() => {
         if (props.almacenCentralId) {
-            const configurado = almacenes.find((a) => a.id === props.almacenCentralId);
+            const configurado = almacenes.find(
+                (a) => a.id === props.almacenCentralId,
+            );
             if (configurado) return configurado;
         }
         return almacenes[0];
@@ -142,10 +162,13 @@ export default function PanelGeneral() {
     // Función para calcular redistribución sugerida (Cemento Andino Tipo V como caso central)
     const calcularRedistribucionParaObra = (obraId: string, almId?: string) => {
         const obraOrig = obras.find((o) => o.id === obraId);
-        const almOrig = almId ? almacenes.find((a) => a.id === almId) : almacenes.find((a) => a.obraId === obraId);
+        const almOrig = almId
+            ? almacenes.find((a) => a.id === almId)
+            : almacenes.find((a) => a.obraId === obraId);
         if (!obraOrig || !almOrig) return;
 
-        const matCemento = materiales.find((m) => m.id === 'mat-cemento-1') ?? materiales[0];
+        const matCemento =
+            materiales.find((m) => m.id === 'mat-cemento-1') ?? materiales[0];
         const stockOrig = stock.stock[almOrig.id]?.[matCemento.id] ?? 0;
 
         const candidatas = almacenes
@@ -169,7 +192,9 @@ export default function PanelGeneral() {
         if (!mejorCandidata || !mejorCandidata.obra) return;
 
         const cantidadSugerida = Math.min(stockOrig, 600);
-        const ahorroSoles = Math.round(mejorCandidata.km * 45 + cantidadSugerida * 1.2);
+        const ahorroSoles = Math.round(
+            mejorCandidata.km * 45 + cantidadSugerida * 1.2,
+        );
 
         setPrediccionDinamica({
             obraOrigenId: obraOrig.id,
@@ -194,23 +219,42 @@ export default function PanelGeneral() {
             const id = e.detail?.obraId;
             if (id) {
                 setSeleccionObraId(id);
-                setFrentesComparados((prev) => (prev.includes(id) ? prev : [...prev, id]));
+                setFrentesComparados((prev) =>
+                    prev.includes(id) ? prev : [...prev, id],
+                );
                 selectObra(id);
             }
         };
 
-        const handleCalcularRedistribucion = (e: CustomEvent<{ obraId: string; almacenId: string }>) => {
+        const handleCalcularRedistribucion = (
+            e: CustomEvent<{ obraId: string; almacenId: string }>,
+        ) => {
             if (e.detail?.obraId) {
-                calcularRedistribucionParaObra(e.detail.obraId, e.detail.almacenId);
+                calcularRedistribucionParaObra(
+                    e.detail.obraId,
+                    e.detail.almacenId,
+                );
             }
         };
 
-        window.addEventListener('cpm:set-obra-activa', handleSetObraActiva as EventListener);
-        window.addEventListener('cpm:calcular-redistribucion', handleCalcularRedistribucion as EventListener);
+        window.addEventListener(
+            'cpm:set-obra-activa',
+            handleSetObraActiva as EventListener,
+        );
+        window.addEventListener(
+            'cpm:calcular-redistribucion',
+            handleCalcularRedistribucion as EventListener,
+        );
 
         return () => {
-            window.removeEventListener('cpm:set-obra-activa', handleSetObraActiva as EventListener);
-            window.removeEventListener('cpm:calcular-redistribucion', handleCalcularRedistribucion as EventListener);
+            window.removeEventListener(
+                'cpm:set-obra-activa',
+                handleSetObraActiva as EventListener,
+            );
+            window.removeEventListener(
+                'cpm:calcular-redistribucion',
+                handleCalcularRedistribucion as EventListener,
+            );
         };
     }, [obras, almacenes, materiales, stock, selectObra]);
 
@@ -225,7 +269,10 @@ export default function PanelGeneral() {
 
     const sugerencias: SugerenciaMapa[] = useMemo(() => {
         const base = sobrantes.flatMap((s) =>
-            (s.receptoras ?? []).map((r) => ({ origenId: s.almacenId ?? '', destinoId: r.almacenId })),
+            (s.receptoras ?? []).map((r) => ({
+                origenId: s.almacenId ?? '',
+                destinoId: r.almacenId,
+            })),
         );
         if (prediccionDinamica) {
             base.push({
@@ -236,9 +283,14 @@ export default function PanelGeneral() {
         return base;
     }, [sobrantes, prediccionDinamica]);
 
-    const alertaHover = useMemo(() => sobrantes.find((s) => s.id === alertaHoverId), [sobrantes, alertaHoverId]);
+    const alertaHover = useMemo(
+        () => sobrantes.find((s) => s.id === alertaHoverId),
+        [sobrantes, alertaHoverId],
+    );
     const almSeleccionado = almacenes.find((a) => a.obraId === seleccionObraId);
-    const obrasNoComparadas = obras.filter((o) => !frentesComparados.includes(o.id));
+    const obrasNoComparadas = obras.filter(
+        (o) => !frentesComparados.includes(o.id),
+    );
 
     const agregarAFrentesComparados = (obraId: string) => {
         if (!frentesComparados.includes(obraId)) {
@@ -317,54 +369,71 @@ export default function PanelGeneral() {
             </Deferred>
 
             {/* Alertas de sobrante por cierre de obra */}
-            <section id="seccion-sobrantes" className="space-y-3 scroll-mt-20">
+            <section id="seccion-sobrantes" className="scroll-mt-20 space-y-3">
                 <div className="flex items-center justify-between">
-                    <h3 className="section-title">Redistribución de excedentes por cierre de obra</h3>
-                    <span className="text-xs text-muted">Pasa el cursor sobre la alerta para resaltar la ruta</span>
+                    <h3 className="section-title">
+                        Redistribución de excedentes por cierre de obra
+                    </h3>
+                    <span className="text-muted text-xs">
+                        Pasa el cursor sobre la alerta para resaltar la ruta
+                    </span>
                 </div>
-                <Deferred data="sobrantes" fallback={<Card><SkeletonText lines={3} /></Card>}>
-                {sobrantes.length === 0 ? (
-                    <Card>
-                        <EmptyState
-                            title="Sin excedentes por redistribuir"
-                            hint="Todas las obras cerradas han sido regularizadas en el inventario."
-                        />
-                    </Card>
-                ) : (
-                    sobrantes.map((alerta) => (
-                        <div
-                            key={alerta.id}
-                            onMouseEnter={() => setAlertaHoverId(alerta.id)}
-                            onMouseLeave={() => setAlertaHoverId(null)}
-                            className="transition-transform duration-150 hover:scale-[1.005]"
-                        >
-                            <AlertaBanner
-                                kind="sobrante"
-                                title={`${alerta.materialId ? materiales.find((m) => m.id === alerta.materialId)?.nombre ?? 'Material' : 'Material'}: ${formatNum(alerta.cantidad ?? 0)} bolsas`}
-                                mensaje={
-                                    <span>
-                                        {alerta.mensaje} Receptoras sugeridas por cercanía:{' '}
-                                        {(alerta.receptoras ?? []).map((r, i) => (
-                                            <span key={r.almacenId}>
-                                                {i > 0 && ', '}
-                                                <strong>{r.nombreObra}</strong> ({formatKm(r.km)})
-                                            </span>
-                                        ))}
-                                    </span>
-                                }
-                                actions={
-                                    <Link
-                                        href={`/transferencias?crear=sobrante&materialId=${alerta.materialId}&origen=${alerta.almacenId}&destino=${alerta.receptoras?.[0]?.almacenId}`}
-                                        className="btn-primary"
-                                    >
-                                        <IconArrowUpRight size={15} />
-                                        Generar orden de transferencia
-                                    </Link>
-                                }
+                <Deferred
+                    data="sobrantes"
+                    fallback={
+                        <Card>
+                            <SkeletonText lines={3} />
+                        </Card>
+                    }
+                >
+                    {sobrantes.length === 0 ? (
+                        <Card>
+                            <EmptyState
+                                title="Sin excedentes por redistribuir"
+                                hint="Todas las obras cerradas han sido regularizadas en el inventario."
                             />
-                        </div>
-                    ))
-                )}
+                        </Card>
+                    ) : (
+                        sobrantes.map((alerta) => (
+                            <div
+                                key={alerta.id}
+                                onMouseEnter={() => setAlertaHoverId(alerta.id)}
+                                onMouseLeave={() => setAlertaHoverId(null)}
+                                className="transition-transform duration-150 hover:scale-[1.005]"
+                            >
+                                <AlertaBanner
+                                    kind="sobrante"
+                                    title={`${alerta.materialId ? (materiales.find((m) => m.id === alerta.materialId)?.nombre ?? 'Material') : 'Material'}: ${formatNum(alerta.cantidad ?? 0)} bolsas`}
+                                    mensaje={
+                                        <span>
+                                            {alerta.mensaje} Receptoras
+                                            sugeridas por cercanía:{' '}
+                                            {(alerta.receptoras ?? []).map(
+                                                (r, i) => (
+                                                    <span key={r.almacenId}>
+                                                        {i > 0 && ', '}
+                                                        <strong>
+                                                            {r.nombreObra}
+                                                        </strong>{' '}
+                                                        ({formatKm(r.km)})
+                                                    </span>
+                                                ),
+                                            )}
+                                        </span>
+                                    }
+                                    actions={
+                                        <Link
+                                            href={`/transferencias?crear=sobrante&materialId=${alerta.materialId}&origen=${alerta.almacenId}&destino=${alerta.receptoras?.[0]?.almacenId}`}
+                                            className="btn-primary"
+                                        >
+                                            <IconArrowUpRight size={15} />
+                                            Generar orden de transferencia
+                                        </Link>
+                                    }
+                                />
+                            </div>
+                        ))
+                    )}
                 </Deferred>
             </section>
 
@@ -381,9 +450,15 @@ export default function PanelGeneral() {
                     rutas={rutas}
                     sugerencias={sugerencias}
                     seleccionadaId={seleccionObraId ?? undefined}
-                    resaltarAlertaOrigenId={prediccionDinamica ? prediccionDinamica.almacenOrigenId : alertaHover?.almacenId}
+                    resaltarAlertaOrigenId={
+                        prediccionDinamica
+                            ? prediccionDinamica.almacenOrigenId
+                            : alertaHover?.almacenId
+                    }
                     resaltarAlertaDestinoId={
-                        prediccionDinamica ? prediccionDinamica.almacenDestinoId : alertaHover?.receptoras?.[0]?.almacenId
+                        prediccionDinamica
+                            ? prediccionDinamica.almacenDestinoId
+                            : alertaHover?.receptoras?.[0]?.almacenId
                     }
                     onPinClick={(obraId) => {
                         setSeleccionObraId(obraId);
@@ -395,28 +470,49 @@ export default function PanelGeneral() {
                     <div className="mt-4 rounded-xl border border-violet-200 bg-violet-50/80 p-4 shadow-sm">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div className="flex items-start gap-3">
-                                <span className="grid h-8 w-8 place-items-center rounded-lg bg-violet-600 text-white shrink-0 mt-0.5">
+                                <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-violet-600 text-white">
                                     <IconSparkles size={18} />
                                 </span>
                                 <div>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-xs font-bold uppercase tracking-wider text-violet-700">
+                                        <span className="text-xs font-bold tracking-wider text-violet-700 uppercase">
                                             Redistribución sugerida por cercanía
                                         </span>
-                                        <Badge tone="violet">{formatKm(prediccionDinamica.km)}</Badge>
+                                        <Badge tone="violet">
+                                            {formatKm(prediccionDinamica.km)}
+                                        </Badge>
                                     </div>
-                                    <p className="mt-1 text-sm font-semibold text-ink">
-                                        Trasladar {formatNum(prediccionDinamica.cantidad)} {prediccionDinamica.unidad} de{' '}
-                                        <span className="text-violet-700">{prediccionDinamica.nombreMaterial}</span> desde{' '}
-                                        <strong>{prediccionDinamica.nombreOrigen}</strong> hacia{' '}
-                                        <strong>{prediccionDinamica.nombreDestino}</strong>.
+                                    <p className="text-ink mt-1 text-sm font-semibold">
+                                        Trasladar{' '}
+                                        {formatNum(prediccionDinamica.cantidad)}{' '}
+                                        {prediccionDinamica.unidad} de{' '}
+                                        <span className="text-violet-700">
+                                            {prediccionDinamica.nombreMaterial}
+                                        </span>{' '}
+                                        desde{' '}
+                                        <strong>
+                                            {prediccionDinamica.nombreOrigen}
+                                        </strong>{' '}
+                                        hacia{' '}
+                                        <strong>
+                                            {prediccionDinamica.nombreDestino}
+                                        </strong>
+                                        .
                                     </p>
-                                    <p className="text-xs text-muted mt-0.5">
-                                        Ahorro estimado en fletes y compras de urgencia: <strong className="text-ink">S/ {formatNum(prediccionDinamica.ahorroSoles)}</strong>.
+                                    <p className="text-muted mt-0.5 text-xs">
+                                        Ahorro estimado en fletes y compras de
+                                        urgencia:{' '}
+                                        <strong className="text-ink">
+                                            S/{' '}
+                                            {formatNum(
+                                                prediccionDinamica.ahorroSoles,
+                                            )}
+                                        </strong>
+                                        .
                                     </p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-2 shrink-0">
+                            <div className="flex shrink-0 items-center gap-2">
                                 <Link
                                     href={`/transferencias?crear=sobrante&materialId=${prediccionDinamica.materialId}&origen=${prediccionDinamica.almacenOrigenId}&destino=${prediccionDinamica.almacenDestinoId}`}
                                     className="btn-primary text-xs"
@@ -427,7 +523,7 @@ export default function PanelGeneral() {
                                 <button
                                     type="button"
                                     onClick={() => setPrediccionDinamica(null)}
-                                    className="btn-secondary text-xs !p-2"
+                                    className="btn-secondary !p-2 text-xs"
                                     title="Descartar predicción"
                                 >
                                     <IconX size={14} />
@@ -438,7 +534,7 @@ export default function PanelGeneral() {
                 )}
 
                 {almSeleccionado && (
-                    <div className="mt-4 pt-4 border-t border-line">
+                    <div className="border-line mt-4 border-t pt-4">
                         <GeoDetalle
                             alm={almSeleccionado}
                             obras={obras}
@@ -458,12 +554,16 @@ export default function PanelGeneral() {
                 action={
                     obrasNoComparadas.length > 0 ? (
                         <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted hidden sm:inline">Agregar:</span>
+                            <span className="text-muted hidden text-xs sm:inline">
+                                Agregar:
+                            </span>
                             <select
-                                className="rounded-lg border border-line bg-surface px-2.5 py-1 text-xs font-semibold text-ink shadow-sm outline-none cursor-pointer hover:border-brand-400"
+                                className="border-line bg-surface text-ink hover:border-brand-400 cursor-pointer rounded-lg border px-2.5 py-1 text-xs font-semibold shadow-sm outline-none"
                                 onChange={(e) => {
                                     if (e.target.value) {
-                                        agregarAFrentesComparados(e.target.value);
+                                        agregarAFrentesComparados(
+                                            e.target.value,
+                                        );
                                         e.target.value = '';
                                     }
                                 }}
@@ -491,14 +591,26 @@ export default function PanelGeneral() {
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                         {frentesComparados.map((obraId) => {
                             const obra = obras.find((o) => o.id === obraId);
-                            const alm = almacenes.find((a) => a.obraId === obraId);
+                            const alm = almacenes.find(
+                                (a) => a.obraId === obraId,
+                            );
                             if (!obra || !alm) return null;
 
                             const isSelectedOnMap = seleccionObraId === obra.id;
                             const isMainActive = obraActiva?.id === obra.id;
-                            const estado = estadoDeAlmacen(alm, obra.estado, stock, materiales);
+                            const estado = estadoDeAlmacen(
+                                alm,
+                                obra.estado,
+                                stock,
+                                materiales,
+                            );
                             const meta = ESTADO_META[estado];
-                            const kmCentral = almCentral ? haversineDistanceKm(alm.coords, almCentral.coords) : 0;
+                            const kmCentral = almCentral
+                                ? haversineDistanceKm(
+                                      alm.coords,
+                                      almCentral.coords,
+                                  )
+                                : 0;
                             const stockAlm = stock.stock[alm.id] ?? {};
 
                             let countOptimo = 0;
@@ -517,7 +629,7 @@ export default function PanelGeneral() {
                                     key={obra.id}
                                     className={`relative flex flex-col justify-between rounded-xl border p-4 transition-all ${
                                         isSelectedOnMap
-                                            ? 'border-brand-400 bg-brand-50/30 shadow-md ring-2 ring-brand-200'
+                                            ? 'border-brand-400 bg-brand-50/30 ring-brand-200 shadow-md ring-2'
                                             : 'border-line bg-surface hover:border-brand-200'
                                     }`}
                                 >
@@ -525,17 +637,24 @@ export default function PanelGeneral() {
                                         <div className="flex items-start justify-between gap-2">
                                             <div>
                                                 <div className="flex items-center gap-1.5">
-                                                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted">
+                                                    <span className="text-muted text-[10px] font-bold tracking-wider uppercase">
                                                         {obra.distrito}
                                                     </span>
                                                     {isMainActive && (
-                                                        <Badge tone="ok" className="text-[10px]">
+                                                        <Badge
+                                                            tone="ok"
+                                                            className="text-[10px]"
+                                                        >
                                                             Frente Activo
                                                         </Badge>
                                                     )}
                                                 </div>
-                                                <h4 className="font-bold text-ink text-sm mt-0.5">{obra.nombre}</h4>
-                                                <p className="text-xs text-muted">{alm.nombre}</p>
+                                                <h4 className="text-ink mt-0.5 text-sm font-bold">
+                                                    {obra.nombre}
+                                                </h4>
+                                                <p className="text-muted text-xs">
+                                                    {alm.nombre}
+                                                </p>
                                             </div>
                                             <div className="flex items-center gap-1">
                                                 <Badge
@@ -543,21 +662,28 @@ export default function PanelGeneral() {
                                                         estado === 'optimo'
                                                             ? 'ok'
                                                             : estado === 'bajo'
-                                                            ? 'warn'
-                                                            : estado === 'critico'
-                                                            ? 'danger'
-                                                            : estado === 'sobrante'
-                                                            ? 'violet'
-                                                            : 'neutral'
+                                                              ? 'warn'
+                                                              : estado ===
+                                                                  'critico'
+                                                                ? 'danger'
+                                                                : estado ===
+                                                                    'sobrante'
+                                                                  ? 'violet'
+                                                                  : 'neutral'
                                                     }
                                                 >
                                                     {meta.label}
                                                 </Badge>
-                                                {frentesComparados.length > 1 && (
+                                                {frentesComparados.length >
+                                                    1 && (
                                                     <button
                                                         type="button"
-                                                        onClick={() => quitarDeFrentesComparados(obra.id)}
-                                                        className="rounded-lg p-1 text-muted hover:bg-soft hover:text-ink transition-colors"
+                                                        onClick={() =>
+                                                            quitarDeFrentesComparados(
+                                                                obra.id,
+                                                            )
+                                                        }
+                                                        className="text-muted hover:bg-soft hover:text-ink rounded-lg p-1 transition-colors"
                                                         title="Quitar de comparación"
                                                     >
                                                         <IconTrash size={14} />
@@ -566,56 +692,90 @@ export default function PanelGeneral() {
                                             </div>
                                         </div>
 
-                                        <div className="mt-3 grid grid-cols-2 gap-2 rounded-lg bg-soft/60 p-2.5 text-xs">
+                                        <div className="bg-soft/60 mt-3 grid grid-cols-2 gap-2 rounded-lg p-2.5 text-xs">
                                             <div>
-                                                <span className="text-muted block text-[10px]">AVANCE FÍSICO</span>
-                                                <span className="font-bold text-brand-600 text-sm">{obra.pctAvance}%</span>
+                                                <span className="text-muted block text-[10px]">
+                                                    AVANCE FÍSICO
+                                                </span>
+                                                <span className="text-brand-600 text-sm font-bold">
+                                                    {obra.pctAvance}%
+                                                </span>
                                             </div>
                                             <div>
-                                                <span className="text-muted block text-[10px]">DIST. A CENTRAL</span>
-                                                <span className="font-bold text-ink text-sm">
-                                                    {almCentral && alm.id === almCentral.id ? '0 km (Sede)' : formatKm(kmCentral)}
+                                                <span className="text-muted block text-[10px]">
+                                                    DIST. A CENTRAL
+                                                </span>
+                                                <span className="text-ink text-sm font-bold">
+                                                    {almCentral &&
+                                                    alm.id === almCentral.id
+                                                        ? '0 km (Sede)'
+                                                        : formatKm(kmCentral)}
                                                 </span>
                                             </div>
                                         </div>
 
-                                        <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-soft">
+                                        <div className="bg-soft mt-2 h-1.5 w-full overflow-hidden rounded-full">
                                             <div
-                                                className="h-full rounded-full bg-brand-500 transition-all duration-300"
-                                                style={{ width: `${obra.pctAvance}%` }}
+                                                className="bg-brand-500 h-full rounded-full transition-all duration-300"
+                                                style={{
+                                                    width: `${obra.pctAvance}%`,
+                                                }}
                                             />
                                         </div>
 
                                         <div className="mt-3">
-                                            <div className="flex items-center justify-between text-[11px] mb-1">
-                                                <span className="font-semibold text-muted">Stock de Materiales:</span>
+                                            <div className="mb-1 flex items-center justify-between text-[11px]">
+                                                <span className="text-muted font-semibold">
+                                                    Stock de Materiales:
+                                                </span>
                                                 <span className="text-muted">
-                                                    <strong className="text-emerald-700">{countOptimo}</strong> ok ·{' '}
-                                                    <strong className="text-amber-700">{countBajo}</strong> bajo ·{' '}
-                                                    <strong className="text-rose-700">{countCritico}</strong> crít.
+                                                    <strong className="text-emerald-700">
+                                                        {countOptimo}
+                                                    </strong>{' '}
+                                                    ok ·{' '}
+                                                    <strong className="text-amber-700">
+                                                        {countBajo}
+                                                    </strong>{' '}
+                                                    bajo ·{' '}
+                                                    <strong className="text-rose-700">
+                                                        {countCritico}
+                                                    </strong>{' '}
+                                                    crít.
                                                 </span>
                                             </div>
-                                            <div className="space-y-1 border-t border-line/60 pt-1.5">
-                                                {materiales.slice(0, 3).map((mat) => {
-                                                    const cant = stockAlm[mat.id] ?? 0;
-                                                    return (
-                                                        <div key={mat.id} className="flex items-center justify-between text-xs">
-                                                            <span className="text-muted truncate max-w-[130px]">{mat.nombre}</span>
-                                                            <span className="font-mono font-semibold text-ink">
-                                                                {formatCantidad(cant)} {mat.unidad}
-                                                            </span>
-                                                        </div>
-                                                    );
-                                                })}
+                                            <div className="border-line/60 space-y-1 border-t pt-1.5">
+                                                {materiales
+                                                    .slice(0, 3)
+                                                    .map((mat) => {
+                                                        const cant =
+                                                            stockAlm[mat.id] ??
+                                                            0;
+                                                        return (
+                                                            <div
+                                                                key={mat.id}
+                                                                className="flex items-center justify-between text-xs"
+                                                            >
+                                                                <span className="text-muted max-w-[130px] truncate">
+                                                                    {mat.nombre}
+                                                                </span>
+                                                                <span className="text-ink font-mono font-semibold">
+                                                                    {formatCantidad(
+                                                                        cant,
+                                                                    )}{' '}
+                                                                    {mat.unidad}
+                                                                </span>
+                                                            </div>
+                                                        );
+                                                    })}
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="mt-4 pt-3 border-t border-line flex flex-col gap-1.5">
+                                    <div className="border-line mt-4 flex flex-col gap-1.5 border-t pt-3">
                                         <div className="grid grid-cols-2 gap-1.5">
                                             <Link
                                                 href={`/stock?almacen=${alm.id}&obra=${obra.id}`}
-                                                className="btn-secondary !px-2.5 !py-1.5 text-xs text-center justify-center"
+                                                className="btn-secondary justify-center !px-2.5 !py-1.5 text-center text-xs"
                                             >
                                                 <IconBoxes size={13} />
                                                 Ver en Matriz
@@ -626,18 +786,27 @@ export default function PanelGeneral() {
                                                     setSeleccionObraId(obra.id);
                                                     selectObra(obra.id);
                                                 }}
-                                                className={`btn-secondary !px-2.5 !py-1.5 text-xs text-center justify-center ${
-                                                    isMainActive ? '!border-emerald-300 !bg-emerald-50 !text-emerald-800' : ''
+                                                className={`btn-secondary justify-center !px-2.5 !py-1.5 text-center text-xs ${
+                                                    isMainActive
+                                                        ? '!border-emerald-300 !bg-emerald-50 !text-emerald-800'
+                                                        : ''
                                                 }`}
                                             >
                                                 <IconCheck size={13} />
-                                                {isMainActive ? 'Activa principal' : 'Fijar activa'}
+                                                {isMainActive
+                                                    ? 'Activa principal'
+                                                    : 'Fijar activa'}
                                             </button>
                                         </div>
                                         <button
                                             type="button"
-                                            onClick={() => calcularRedistribucionParaObra(obra.id, alm.id)}
-                                            className="btn-primary !px-2.5 !py-1.5 text-xs text-center justify-center !bg-violet-600 hover:!bg-violet-700"
+                                            onClick={() =>
+                                                calcularRedistribucionParaObra(
+                                                    obra.id,
+                                                    alm.id,
+                                                )
+                                            }
+                                            className="btn-primary justify-center !bg-violet-600 !px-2.5 !py-1.5 text-center text-xs hover:!bg-violet-700"
                                         >
                                             <IconSparkles size={13} />
                                             Calcular redistribución
@@ -652,33 +821,90 @@ export default function PanelGeneral() {
 
             {/* Accesos rápidos a los 8 módulos del sistema */}
             <div className="grid gap-6 lg:grid-cols-3">
-                <Card title="Movimientos de almacén — últimos 7 días" subtitle="Ingresos y salidas agregadas en la red">
-                    <Deferred data="movimientos7d" fallback={<Skeleton className="h-56 w-full" />}>
-                    <BarChart7d data={movimientos7d} />
-                    <div className="mt-4">
-                        <ChartLegend
-                            items={[
-                                { label: 'Ingresos a almacén', className: 'bg-brand-500' },
-                                { label: 'Despachos / Salidas', className: 'bg-ok-soft' },
-                            ]}
-                        />
-                    </div>
+                <Card
+                    title="Movimientos de almacén — últimos 7 días"
+                    subtitle="Ingresos y salidas agregadas en la red"
+                >
+                    <Deferred
+                        data="movimientos7d"
+                        fallback={<Skeleton className="h-56 w-full" />}
+                    >
+                        <BarChart7d data={movimientos7d} />
+                        <div className="mt-4">
+                            <ChartLegend
+                                items={[
+                                    {
+                                        label: 'Ingresos a almacén',
+                                        className: 'bg-brand-500',
+                                    },
+                                    {
+                                        label: 'Despachos / Salidas',
+                                        className: 'bg-ok-soft',
+                                    },
+                                ]}
+                            />
+                        </div>
                     </Deferred>
                 </Card>
 
-                <Card className="lg:col-span-2" title="Módulos de Almacén y Logística" subtitle="Accesos directos a los flujos operativos">
+                <Card
+                    className="lg:col-span-2"
+                    title="Módulos de Almacén y Logística"
+                    subtitle="Accesos directos a los flujos operativos"
+                >
                     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                        <QuickLink to="/stock" icon={<IconBoxes size={18} />} label="Matriz de Stock" desc="Saldos multi-almacén" />
-                        <QuickLink to="/solicitudes" icon={<IconClipboardList size={18} />} label="Solicitudes" desc="Pedidos GPS de frente" />
-                        <QuickLink to="/compras" icon={<IconShoppingCart size={18} />} label="Compras" desc="Requerimientos y OC" />
-                        <QuickLink to="/recepcion" icon={<IconInbox size={18} />} label="Recepción" desc="Ingreso contra OC" />
-                        <QuickLink to="/despachos" icon={<IconTruck size={18} />} label="Despachos" desc="Guías y rutas" />
-                        <QuickLink to="/transferencias" icon={<IconRepeat size={18} />} label="Transferencias" desc="Movimientos inter-obra" />
-                        <QuickLink to="/mermas" icon={<IconAlertTriangle size={18} />} label="Mermas" desc="Pérdidas y devoluciones" />
-                        <div className="flex flex-col justify-between rounded-xl border border-brand-200 bg-brand-50/50 p-3 text-xs">
-                            <span className="font-bold text-brand-900">Enfoque PMI / PMU</span>
-                            <p className="text-[11px] text-brand-700">Trazabilidad operativa multi-obra</p>
-                            <span className="font-semibold text-brand-800 mt-1">Huancayo · Junín</span>
+                        <QuickLink
+                            to="/stock"
+                            icon={<IconBoxes size={18} />}
+                            label="Matriz de Stock"
+                            desc="Saldos multi-almacén"
+                        />
+                        <QuickLink
+                            to="/solicitudes"
+                            icon={<IconClipboardList size={18} />}
+                            label="Solicitudes"
+                            desc="Pedidos GPS de frente"
+                        />
+                        <QuickLink
+                            to="/compras"
+                            icon={<IconShoppingCart size={18} />}
+                            label="Compras"
+                            desc="Requerimientos y OC"
+                        />
+                        <QuickLink
+                            to="/recepcion"
+                            icon={<IconInbox size={18} />}
+                            label="Recepción"
+                            desc="Ingreso contra OC"
+                        />
+                        <QuickLink
+                            to="/despachos"
+                            icon={<IconTruck size={18} />}
+                            label="Despachos"
+                            desc="Guías y rutas"
+                        />
+                        <QuickLink
+                            to="/transferencias"
+                            icon={<IconRepeat size={18} />}
+                            label="Transferencias"
+                            desc="Movimientos inter-obra"
+                        />
+                        <QuickLink
+                            to="/mermas"
+                            icon={<IconAlertTriangle size={18} />}
+                            label="Mermas"
+                            desc="Pérdidas y devoluciones"
+                        />
+                        <div className="border-brand-200 bg-brand-50/50 flex flex-col justify-between rounded-xl border p-3 text-xs">
+                            <span className="text-brand-900 font-bold">
+                                Enfoque PMI / PMU
+                            </span>
+                            <p className="text-brand-700 text-[11px]">
+                                Trazabilidad operativa multi-obra
+                            </p>
+                            <span className="text-brand-800 mt-1 font-semibold">
+                                Huancayo · Junín
+                            </span>
                         </div>
                     </div>
                 </Card>
@@ -687,17 +913,27 @@ export default function PanelGeneral() {
     );
 }
 
-function QuickLink({ to, icon, label, desc }: { to: string; icon: React.ReactNode; label: string; desc: string }) {
+function QuickLink({
+    to,
+    icon,
+    label,
+    desc,
+}: {
+    to: string;
+    icon: React.ReactNode;
+    label: string;
+    desc: string;
+}) {
     return (
         <Link
             href={to}
-            className="group flex flex-col gap-1.5 rounded-xl border border-line bg-surface p-3 text-ink shadow-card transition-all hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-pop"
+            className="group border-line bg-surface text-ink shadow-card hover:border-brand-300 hover:shadow-pop flex flex-col gap-1.5 rounded-xl border p-3 transition-all hover:-translate-y-0.5"
         >
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand-50 text-brand-600 transition-colors group-hover:bg-brand-500 group-hover:text-white">
+            <span className="bg-brand-50 text-brand-600 group-hover:bg-brand-500 grid h-8 w-8 place-items-center rounded-lg transition-colors group-hover:text-white">
                 {icon}
             </span>
-            <span className="text-xs font-bold truncate">{label}</span>
-            <span className="text-[10px] text-muted truncate">{desc}</span>
+            <span className="truncate text-xs font-bold">{label}</span>
+            <span className="text-muted truncate text-[10px]">{desc}</span>
         </Link>
     );
 }

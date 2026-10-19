@@ -131,14 +131,14 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
 
     return (
         <aside
-            className={`min-h-screen bg-[#000000] text-white flex flex-col p-4 border-r border-[#222222] flex-shrink-0 select-none transition-[width,transform] duration-200 ${
+            className={`flex min-h-screen flex-shrink-0 flex-col border-r border-[#222222] bg-[#000000] p-4 text-white transition-[width,transform] duration-200 select-none ${
                 collapsed ? 'w-20' : 'w-64'
             } ${className}`}
         >
             {/* Brand Header */}
             <a
                 href="/"
-                className={`flex items-center gap-3 pb-6 border-b border-[#222222] hover:opacity-90 transition-opacity focus:outline-none focus:ring-1 focus:ring-[#d1ffca] rounded ${
+                className={`flex items-center gap-3 rounded border-b border-[#222222] pb-6 transition-opacity hover:opacity-90 focus:ring-1 focus:ring-[#d1ffca] focus:outline-none ${
                     collapsed ? 'justify-center' : ''
                 }`}
                 title="Ir al inicio"
@@ -146,10 +146,10 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                 <IconBrandMark size={36} />
                 {!collapsed && (
                     <div className="flex flex-col">
-                        <span className="font-mono text-[9px] text-[#888888] tracking-widest uppercase">
+                        <span className="font-mono text-[9px] tracking-widest text-[#888888] uppercase">
                             Valle del Mantaro
                         </span>
-                        <strong className="font-display text-base tracking-wide uppercase text-white font-bold leading-none mt-0.5">
+                        <strong className="font-display mt-0.5 text-base leading-none font-bold tracking-wide text-white uppercase">
                             Consorcio Pillco Marca
                         </strong>
                     </div>
@@ -158,24 +158,24 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
 
             {/* Live Indicator Strip */}
             {!collapsed && (
-                <div className="my-4 py-2 px-3 rounded-lg bg-[#111111] border border-[#222222] flex items-center justify-between text-[11px] font-mono">
+                <div className="my-4 flex items-center justify-between rounded-lg border border-[#222222] bg-[#111111] px-3 py-2 font-mono text-[11px]">
                     <span className="flex items-center gap-2 text-[#cccccc]">
-                        <span className="w-2 h-2 rounded-full bg-[#d1ffca] animate-pulse" />
+                        <span className="h-2 w-2 animate-pulse rounded-full bg-[#d1ffca]" />
                         SISTEMA ACTIVO
                     </span>
-                    <span className="text-[#888888] text-[9px]">HUANCAYO</span>
+                    <span className="text-[9px] text-[#888888]">HUANCAYO</span>
                 </div>
             )}
 
             {/* Rol de Usuario */}
             <div className={`mb-4 ${collapsed ? 'px-0 text-center' : 'px-2'}`}>
                 {!collapsed && (
-                    <span className="text-[10px] font-mono text-[#777777] uppercase tracking-wider block">
+                    <span className="block font-mono text-[10px] tracking-wider text-[#777777] uppercase">
                         Rol Operativo
                     </span>
                 )}
                 <span
-                    className="text-xs font-semibold text-[#d1ffca] truncate block mt-0.5"
+                    className="mt-0.5 block truncate text-xs font-semibold text-[#d1ffca]"
                     title={collapsed ? rolNombre : undefined}
                 >
                     {collapsed ? rolNombre.charAt(0).toUpperCase() : rolNombre}
@@ -183,13 +183,20 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
             </div>
 
             {/* Navigation Groups */}
-            <nav className={`sidebar-scroll flex-1 space-y-6 overflow-y-auto ${collapsed ? 'px-1' : 'pr-1'}`}>
+            <nav
+                className={`sidebar-scroll flex-1 space-y-6 overflow-y-auto ${collapsed ? 'px-1' : 'pr-1'}`}
+            >
                 {groups.map((group, gIdx) => (
                     <div key={gIdx} className="space-y-1.5">
                         {collapsed ? (
-                            gIdx > 0 && <div className="mx-auto mb-2 h-px w-8 bg-[#222222]" aria-hidden="true" />
+                            gIdx > 0 && (
+                                <div
+                                    className="mx-auto mb-2 h-px w-8 bg-[#222222]"
+                                    aria-hidden="true"
+                                />
+                            )
                         ) : (
-                            <div className="px-2 text-[10px] font-mono uppercase tracking-widest text-[#777777]">
+                            <div className="px-2 font-mono text-[10px] tracking-widest text-[#777777] uppercase">
                                 {group.title}
                             </div>
                         )}
@@ -201,8 +208,16 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                                         <Link
                                             href={item.href}
                                             onClick={handleNavigate}
-                                            title={collapsed ? item.label : undefined}
-                                            aria-label={collapsed ? item.label : undefined}
+                                            title={
+                                                collapsed
+                                                    ? item.label
+                                                    : undefined
+                                            }
+                                            aria-label={
+                                                collapsed
+                                                    ? item.label
+                                                    : undefined
+                                            }
                                             className={
                                                 collapsed
                                                     ? `flex h-10 w-full items-center justify-center rounded-lg transition-all ${
@@ -210,32 +225,41 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                                                               ? 'bg-[#d1ffca] text-[#000000] shadow-sm'
                                                               : 'text-[#bbbbbb] hover:bg-[#1a1a1a] hover:text-white'
                                                       }`
-                                                    : `flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                                                    : `flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium transition-all ${
                                                           isCurrent
-                                                              ? 'bg-[#d1ffca] text-[#000000] font-bold shadow-sm'
+                                                              ? 'bg-[#d1ffca] font-bold text-[#000000] shadow-sm'
                                                               : 'text-[#bbbbbb] hover:bg-[#1a1a1a] hover:text-white'
                                                       }`
                                             }
                                         >
                                             {collapsed ? (
                                                 <span className="flex-shrink-0">
-                                                    {renderNavIcon(item.icon, 18)}
+                                                    {renderNavIcon(
+                                                        item.icon,
+                                                        18,
+                                                    )}
                                                 </span>
                                             ) : (
                                                 <>
                                                     <span className="flex items-center gap-2.5 truncate">
-                                                        <span className="opacity-80 flex-shrink-0">
-                                                            {renderNavIcon(item.icon)}
+                                                        <span className="flex-shrink-0 opacity-80">
+                                                            {renderNavIcon(
+                                                                item.icon,
+                                                            )}
                                                         </span>
-                                                        <span className="truncate">{item.label}</span>
+                                                        <span className="truncate">
+                                                            {item.label}
+                                                        </span>
                                                     </span>
                                                     {item.badge && (
                                                         <span
-                                                            className={`px-1.5 py-0.5 rounded text-[9px] font-mono ${
-                                                                item.tone === 'yellow'
-                                                                    ? 'bg-[#fff100] text-black font-bold'
-                                                                    : item.tone === 'mint'
-                                                                      ? 'bg-[#d1ffca] text-black font-bold'
+                                                            className={`rounded px-1.5 py-0.5 font-mono text-[9px] ${
+                                                                item.tone ===
+                                                                'yellow'
+                                                                    ? 'bg-[#fff100] font-bold text-black'
+                                                                    : item.tone ===
+                                                                        'mint'
+                                                                      ? 'bg-[#d1ffca] font-bold text-black'
                                                                       : 'bg-[#262626] text-[#aaaaaa]'
                                                             }`}
                                                         >
@@ -254,22 +278,34 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
             </nav>
 
             {/* Footer Status + Collapse Toggle */}
-            <div className="pt-4 mt-auto border-t border-[#222222] space-y-3">
+            <div className="mt-auto space-y-3 border-t border-[#222222] pt-4">
                 {onToggleCollapse && (
                     <button
                         type="button"
                         onClick={onToggleCollapse}
-                        aria-label={collapsed ? 'Expandir menú lateral' : 'Contraer menú lateral'}
+                        aria-label={
+                            collapsed
+                                ? 'Expandir menú lateral'
+                                : 'Contraer menú lateral'
+                        }
                         aria-expanded={!collapsed}
-                        title={collapsed ? 'Expandir menú lateral' : 'Contraer menú lateral'}
-                        className="w-full flex items-center justify-center gap-2 rounded-lg bg-[#d1ffca] px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-[#000000] shadow-sm transition-colors hover:bg-[#b8f5b0] focus:outline-none focus:ring-2 focus:ring-[#d1ffca] focus:ring-offset-2 focus:ring-offset-[#000000]"
+                        title={
+                            collapsed
+                                ? 'Expandir menú lateral'
+                                : 'Contraer menú lateral'
+                        }
+                        className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#d1ffca] px-3 py-2 text-[11px] font-bold tracking-wide text-[#000000] uppercase shadow-sm transition-colors hover:bg-[#b8f5b0] focus:ring-2 focus:ring-[#d1ffca] focus:ring-offset-2 focus:ring-offset-[#000000] focus:outline-none"
                     >
-                        {collapsed ? <IconChevronRight size={16} /> : <IconChevronLeft size={16} />}
+                        {collapsed ? (
+                            <IconChevronRight size={16} />
+                        ) : (
+                            <IconChevronLeft size={16} />
+                        )}
                         {!collapsed && <span>Contraer menú</span>}
                     </button>
                 )}
                 {!collapsed && (
-                    <div className="text-[10px] font-mono text-[#666666] flex justify-between items-center">
+                    <div className="flex items-center justify-between font-mono text-[10px] text-[#666666]">
                         <span>SICAAO · V3.0</span>
                         <span>PMI / PMU</span>
                     </div>

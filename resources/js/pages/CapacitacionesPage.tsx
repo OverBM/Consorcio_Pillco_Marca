@@ -7,7 +7,14 @@ import { useHttp, usePage } from '@inertiajs/react';
 import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge } from '../components/ui';
-import { Field, Input, Select, FormPanel, FormSection, SubmitButton } from '../components/form';
+import {
+    Field,
+    Input,
+    Select,
+    FormPanel,
+    FormSection,
+    SubmitButton,
+} from '../components/form';
 import { DataTable } from '../components/DataTable';
 import { EmptyState } from '../components/EmptyState';
 import { useNotifications } from '../components/notifications/NotificationProvider';
@@ -39,9 +46,13 @@ const TIPOS = [
     { value: 'induccion', label: 'Inducción' },
 ];
 
-export default function CapacitacionesPage({ capacitacionesDb = [] }: CapacitacionesPageProps) {
+export default function CapacitacionesPage({
+    capacitacionesDb = [],
+}: CapacitacionesPageProps) {
     const notify = useNotifications();
-    const { catalogos } = usePage().props as unknown as { catalogos?: Catalogos };
+    const { catalogos } = usePage().props as unknown as {
+        catalogos?: Catalogos;
+    };
     const obras = catalogos?.obras ?? [];
 
     const crear = useHttp<{
@@ -51,9 +62,19 @@ export default function CapacitacionesPage({ capacitacionesDb = [] }: Capacitaci
         fecha_programada: string;
         instructor: string;
         nota_minima: string;
-    }>({ tipo: 'sst', titulo: '', obra_id: '', fecha_programada: '', instructor: '', nota_minima: '' });
+    }>({
+        tipo: 'sst',
+        titulo: '',
+        obra_id: '',
+        fecha_programada: '',
+        instructor: '',
+        nota_minima: '',
+    });
 
-    const filas: CapacitacionFila[] = useMemo(() => capacitacionesDb.map((c) => ({ ...c, id: String(c.id) })), [capacitacionesDb]);
+    const filas: CapacitacionFila[] = useMemo(
+        () => capacitacionesDb.map((c) => ({ ...c, id: String(c.id) })),
+        [capacitacionesDb],
+    );
 
     const enviar = (event: FormEvent) => {
         event.preventDefault();
@@ -73,17 +94,29 @@ export default function CapacitacionesPage({ capacitacionesDb = [] }: Capacitaci
             obra_id: crear.data.obra_id ? Number(crear.data.obra_id) : null,
             fecha_programada: crear.data.fecha_programada,
             instructor: crear.data.instructor.trim() || null,
-            nota_minima: crear.data.nota_minima ? Number(crear.data.nota_minima) : null,
+            nota_minima: crear.data.nota_minima
+                ? Number(crear.data.nota_minima)
+                : null,
         }));
 
         void crear.post('/api/v1/sst/capacitaciones', {
             onSuccess: () => {
                 notify.success('Capacitación SST programada.');
-                crear.setData({ tipo: 'sst', titulo: '', obra_id: '', fecha_programada: '', instructor: '', nota_minima: '' });
+                crear.setData({
+                    tipo: 'sst',
+                    titulo: '',
+                    obra_id: '',
+                    fecha_programada: '',
+                    instructor: '',
+                    nota_minima: '',
+                });
                 refrescarProps('capacitacionesDb');
             },
             onError: (errors: Record<string, string>) => {
-                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo programar la capacitación.');
+                notify.error(
+                    Object.values(errors).flat().join(' ') ||
+                        'No se pudo programar la capacitación.',
+                );
             },
         });
     };
@@ -99,21 +132,62 @@ export default function CapacitacionesPage({ capacitacionesDb = [] }: Capacitaci
                 <div className="lg:col-span-2">
                     <Card title={`Capacitaciones (${filas.length})`}>
                         {filas.length === 0 ? (
-                            <EmptyState title="Sin capacitaciones programadas" hint="Programa la primera capacitación con el panel lateral." />
+                            <EmptyState
+                                title="Sin capacitaciones programadas"
+                                hint="Programa la primera capacitación con el panel lateral."
+                            />
                         ) : (
                             <DataTable
                                 emptyLabel="Sin capacitaciones programadas."
                                 columns={[
-                                    { key: 'titulo', header: 'Tema de Capacitación', cell: (c) => <span className="font-bold text-ink">{c.titulo}</span> },
-                                    { key: 'tipo', header: 'Tipo', mono: true, cell: (c) => c.tipo.toUpperCase() },
-                                    { key: 'obra', header: 'Obra', cell: (c) => c.obra?.nombre ?? 'Todas' },
-                                    { key: 'fecha', header: 'Fecha Programada', mono: true, cell: (c) => formatFecha(c.fecha_programada) },
-                                    { key: 'instructor', header: 'Instructor / Especialista', cell: (c) => c.instructor ?? '—' },
+                                    {
+                                        key: 'titulo',
+                                        header: 'Tema de Capacitación',
+                                        cell: (c) => (
+                                            <span className="text-ink font-bold">
+                                                {c.titulo}
+                                            </span>
+                                        ),
+                                    },
+                                    {
+                                        key: 'tipo',
+                                        header: 'Tipo',
+                                        mono: true,
+                                        cell: (c) => c.tipo.toUpperCase(),
+                                    },
+                                    {
+                                        key: 'obra',
+                                        header: 'Obra',
+                                        cell: (c) => c.obra?.nombre ?? 'Todas',
+                                    },
+                                    {
+                                        key: 'fecha',
+                                        header: 'Fecha Programada',
+                                        mono: true,
+                                        cell: (c) =>
+                                            formatFecha(c.fecha_programada),
+                                    },
+                                    {
+                                        key: 'instructor',
+                                        header: 'Instructor / Especialista',
+                                        cell: (c) => c.instructor ?? '—',
+                                    },
                                     {
                                         key: 'estado',
                                         header: 'Estado',
                                         align: 'center',
-                                        cell: (c) => <Badge tone={c.estado === 'ejecutada' || c.estado === 'completada' ? 'ok' : 'warn'}>{c.estado.toUpperCase()}</Badge>,
+                                        cell: (c) => (
+                                            <Badge
+                                                tone={
+                                                    c.estado === 'ejecutada' ||
+                                                    c.estado === 'completada'
+                                                        ? 'ok'
+                                                        : 'warn'
+                                                }
+                                            >
+                                                {c.estado.toUpperCase()}
+                                            </Badge>
+                                        ),
                                     },
                                 ]}
                                 rows={filas}
@@ -122,14 +196,30 @@ export default function CapacitacionesPage({ capacitacionesDb = [] }: Capacitaci
                     </Card>
                 </div>
 
-                <FormPanel title="Programar Capacitación" subtitle="Inducción o capacitación técnica SST" onSubmit={enviar} className="text-xs">
+                <FormPanel
+                    title="Programar Capacitación"
+                    subtitle="Inducción o capacitación técnica SST"
+                    onSubmit={enviar}
+                    className="text-xs"
+                >
                     <FormSection title="Datos" columns={1}>
                         <Field label="Tema" required>
-                            <Input value={crear.data.titulo} onChange={(e) => crear.setData('titulo', e.target.value)} placeholder="Trabajos en Altura y Uso de Arnés" />
+                            <Input
+                                value={crear.data.titulo}
+                                onChange={(e) =>
+                                    crear.setData('titulo', e.target.value)
+                                }
+                                placeholder="Trabajos en Altura y Uso de Arnés"
+                            />
                         </Field>
                         <div className="grid grid-cols-2 gap-3">
                             <Field label="Tipo" required>
-                                <Select value={crear.data.tipo} onChange={(e) => crear.setData('tipo', e.target.value)}>
+                                <Select
+                                    value={crear.data.tipo}
+                                    onChange={(e) =>
+                                        crear.setData('tipo', e.target.value)
+                                    }
+                                >
                                     {TIPOS.map((t) => (
                                         <option key={t.value} value={t.value}>
                                             {t.label}
@@ -138,7 +228,12 @@ export default function CapacitacionesPage({ capacitacionesDb = [] }: Capacitaci
                                 </Select>
                             </Field>
                             <Field label="Obra">
-                                <Select value={crear.data.obra_id} onChange={(e) => crear.setData('obra_id', e.target.value)}>
+                                <Select
+                                    value={crear.data.obra_id}
+                                    onChange={(e) =>
+                                        crear.setData('obra_id', e.target.value)
+                                    }
+                                >
                                     <option value="">Todas las obras</option>
                                     {obras.map((o) => (
                                         <option key={o.id} value={String(o.id)}>
@@ -149,19 +244,52 @@ export default function CapacitacionesPage({ capacitacionesDb = [] }: Capacitaci
                             </Field>
                         </div>
                         <Field label="Fecha Programada" required>
-                            <Input type="date" value={crear.data.fecha_programada} onChange={(e) => crear.setData('fecha_programada', e.target.value)} />
+                            <Input
+                                type="date"
+                                value={crear.data.fecha_programada}
+                                onChange={(e) =>
+                                    crear.setData(
+                                        'fecha_programada',
+                                        e.target.value,
+                                    )
+                                }
+                            />
                         </Field>
                         <div className="grid grid-cols-2 gap-3">
                             <Field label="Instructor">
-                                <Input value={crear.data.instructor} onChange={(e) => crear.setData('instructor', e.target.value)} placeholder="Ing. Prevencionista" />
+                                <Input
+                                    value={crear.data.instructor}
+                                    onChange={(e) =>
+                                        crear.setData(
+                                            'instructor',
+                                            e.target.value,
+                                        )
+                                    }
+                                    placeholder="Ing. Prevencionista"
+                                />
                             </Field>
                             <Field label="Nota Mínima" hint="Escala 0–20">
-                                <Input type="number" min={0} max={20} step="0.1" value={crear.data.nota_minima} onChange={(e) => crear.setData('nota_minima', e.target.value)} />
+                                <Input
+                                    type="number"
+                                    min={0}
+                                    max={20}
+                                    step="0.1"
+                                    value={crear.data.nota_minima}
+                                    onChange={(e) =>
+                                        crear.setData(
+                                            'nota_minima',
+                                            e.target.value,
+                                        )
+                                    }
+                                />
                             </Field>
                         </div>
                     </FormSection>
 
-                    <SubmitButton status={crear.processing ? 'submitting' : 'idle'} className="w-full">
+                    <SubmitButton
+                        status={crear.processing ? 'submitting' : 'idle'}
+                        className="w-full"
+                    >
                         <IconPlus size={15} />
                         Programar Capacitación
                     </SubmitButton>

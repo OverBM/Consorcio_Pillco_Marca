@@ -1,7 +1,10 @@
 // Formato de números, fechas, moneda y cantidades (es-PE).
 
 const FMT_NUM = new Intl.NumberFormat('es-PE', { maximumFractionDigits: 1 });
-const FMT_MONEY = new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' });
+const FMT_MONEY = new Intl.NumberFormat('es-PE', {
+    style: 'currency',
+    currency: 'PEN',
+});
 
 export function formatNum(n: number): string {
     return FMT_NUM.format(n);
@@ -33,7 +36,11 @@ export function formatFs(iso: string): string {
     if (Number.isNaN(date.getTime())) {
         return iso;
     }
-    return date.toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' });
+    return date.toLocaleDateString('es-PE', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+    });
 }
 
 export function iniciales(nombre: string): string {

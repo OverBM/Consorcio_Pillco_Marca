@@ -54,7 +54,14 @@ interface FasesAdminPageProps {
     tiposCriterioDb?: string[];
 }
 
-const REQ_VACIO = { fase: '', codigo: '', nombre: '', descripcion: '', orden: 0, activo: true };
+const REQ_VACIO = {
+    fase: '',
+    codigo: '',
+    nombre: '',
+    descripcion: '',
+    orden: 0,
+    activo: true,
+};
 const CRIT_VACIO = {
     fase: '',
     codigo: '',
@@ -74,7 +81,9 @@ export default function FasesAdminPage({
     tiposCriterioDb = [],
 }: FasesAdminPageProps) {
     const notify = useNotifications();
-    const [faseActiva, setFaseActiva] = useState<string>(fasesCatalogo[0]?.codigo ?? 'inicio');
+    const [faseActiva, setFaseActiva] = useState<string>(
+        fasesCatalogo[0]?.codigo ?? 'inicio',
+    );
 
     const [reqModal, setReqModal] = useState(false);
     const [reqEditando, setReqEditando] = useState<RequisitoFila | null>(null);
@@ -91,11 +100,17 @@ export default function FasesAdminPage({
     const refrescar = () => refrescarProps('requisitosDb', 'criteriosDb');
 
     const requisitosFase = useMemo<RequisitoFila[]>(
-        () => requisitosDb.filter((r) => r.fase === faseActiva).map((r) => ({ ...r, id: String(r.id), dbId: r.id })),
+        () =>
+            requisitosDb
+                .filter((r) => r.fase === faseActiva)
+                .map((r) => ({ ...r, id: String(r.id), dbId: r.id })),
         [requisitosDb, faseActiva],
     );
     const criteriosFase = useMemo<CriterioFila[]>(
-        () => criteriosDb.filter((c) => c.fase === faseActiva).map((c) => ({ ...c, id: String(c.id), dbId: c.id })),
+        () =>
+            criteriosDb
+                .filter((c) => c.fase === faseActiva)
+                .map((c) => ({ ...c, id: String(c.id), dbId: c.id })),
         [criteriosDb, faseActiva],
     );
 
@@ -137,23 +152,37 @@ export default function FasesAdminPage({
         reqForm.transform(() => payload);
         const opciones = {
             onSuccess: () => {
-                notify.success(reqEditando ? 'Requisito actualizado.' : 'Requisito creado.');
+                notify.success(
+                    reqEditando
+                        ? 'Requisito actualizado.'
+                        : 'Requisito creado.',
+                );
                 setReqModal(false);
                 refrescar();
             },
             onError: (errors: Record<string, string>) => {
-                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo guardar el requisito.');
+                notify.error(
+                    Object.values(errors).flat().join(' ') ||
+                        'No se pudo guardar el requisito.',
+                );
             },
         };
         if (reqEditando) {
-            void reqForm.put(`/api/v1/admin/fases/requisitos/${reqEditando.dbId}`, opciones);
+            void reqForm.put(
+                `/api/v1/admin/fases/requisitos/${reqEditando.dbId}`,
+                opciones,
+            );
         } else {
             void reqForm.post('/api/v1/admin/fases/requisitos', opciones);
         }
     };
 
     const abrirNuevoCriterio = () => {
-        critForm.setData({ ...CRIT_VACIO, fase: faseActiva, tipo: tiposCriterioDb[0] ?? '' });
+        critForm.setData({
+            ...CRIT_VACIO,
+            fase: faseActiva,
+            tipo: tiposCriterioDb[0] ?? '',
+        });
         critForm.clearErrors();
         setCritEditando(null);
         setCritModal(true);
@@ -166,7 +195,10 @@ export default function FasesAdminPage({
             nombre: c.nombre,
             tipo: c.tipo,
             parametros: JSON.stringify(c.parametros ?? {}, null, 0),
-            umbral: c.umbral === null || c.umbral === undefined ? '' : String(c.umbral),
+            umbral:
+                c.umbral === null || c.umbral === undefined
+                    ? ''
+                    : String(c.umbral),
             obligatorio: c.obligatorio,
             orden: c.orden,
             activo: c.activo,
@@ -196,7 +228,10 @@ export default function FasesAdminPage({
             nombre: critForm.data.nombre.trim(),
             tipo: critForm.data.tipo,
             parametros,
-            umbral: critForm.data.umbral === '' ? null : Number(critForm.data.umbral),
+            umbral:
+                critForm.data.umbral === ''
+                    ? null
+                    : Number(critForm.data.umbral),
             obligatorio: critForm.data.obligatorio,
             orden: Number(critForm.data.orden) || 0,
             activo: critForm.data.activo,
@@ -208,16 +243,24 @@ export default function FasesAdminPage({
         critForm.transform(() => payload);
         const opciones = {
             onSuccess: () => {
-                notify.success(critEditando ? 'Criterio actualizado.' : 'Criterio creado.');
+                notify.success(
+                    critEditando ? 'Criterio actualizado.' : 'Criterio creado.',
+                );
                 setCritModal(false);
                 refrescar();
             },
             onError: (errors: Record<string, string>) => {
-                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo guardar el criterio.');
+                notify.error(
+                    Object.values(errors).flat().join(' ') ||
+                        'No se pudo guardar el criterio.',
+                );
             },
         };
         if (critEditando) {
-            void critForm.put(`/api/v1/admin/fases/criterios/${critEditando.dbId}`, opciones);
+            void critForm.put(
+                `/api/v1/admin/fases/criterios/${critEditando.dbId}`,
+                opciones,
+            );
         } else {
             void critForm.post('/api/v1/admin/fases/criterios', opciones);
         }
@@ -240,7 +283,10 @@ export default function FasesAdminPage({
                 refrescar();
             },
             onError: (errors: Record<string, string>) => {
-                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo eliminar el registro.');
+                notify.error(
+                    Object.values(errors).flat().join(' ') ||
+                        'No se pudo eliminar el registro.',
+                );
             },
         });
     };
@@ -252,15 +298,15 @@ export default function FasesAdminPage({
                 subtitle="Catálogo administrable que define las condiciones verificables para aprobar cada fase del ciclo de vida"
             />
 
-            <div className="flex flex-wrap gap-2 border-b border-line pb-3">
+            <div className="border-line flex flex-wrap gap-2 border-b pb-3">
                 {fasesCatalogo.map((fase) => (
                     <button
                         key={fase.codigo}
                         onClick={() => setFaseActiva(fase.codigo)}
-                        className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                        className={`cursor-pointer rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all ${
                             faseActiva === fase.codigo
                                 ? 'btn-primary shadow-sm'
-                                : 'bg-surface text-muted hover:text-ink hover:bg-soft border border-line'
+                                : 'bg-surface text-muted hover:text-ink hover:bg-soft border-line border'
                         }`}
                     >
                         {fase.orden.toString().padStart(2, '0')} · {fase.nombre}
@@ -272,26 +318,64 @@ export default function FasesAdminPage({
                 title={`Requisitos de ${nombreFase(faseActiva)}`}
                 className="p-5"
                 action={
-                    <Button variant="mint" size="sm" onClick={abrirNuevoRequisito}>
+                    <Button
+                        variant="mint"
+                        size="sm"
+                        onClick={abrirNuevoRequisito}
+                    >
                         <IconPlus size={14} /> Nuevo requisito
                     </Button>
                 }
             >
                 {requisitosFase.length === 0 ? (
-                    <EmptyState title="Sin requisitos" hint="Agrega los entregables exigidos para esta fase." />
+                    <EmptyState
+                        title="Sin requisitos"
+                        hint="Agrega los entregables exigidos para esta fase."
+                    />
                 ) : (
                     <DataTable
                         emptyLabel="Sin requisitos."
                         columns={[
-                            { key: 'codigo', header: 'Código', mono: true, cell: (r) => <span className="font-bold text-ink">{r.codigo}</span> },
-                            { key: 'nombre', header: 'Requisito', cell: (r) => r.nombre },
-                            { key: 'descripcion', header: 'Descripción', cell: (r) => <span className="text-xs text-muted">{r.descripcion ?? '—'}</span> },
-                            { key: 'orden', header: 'Orden', align: 'center', mono: true, cell: (r) => r.orden },
+                            {
+                                key: 'codigo',
+                                header: 'Código',
+                                mono: true,
+                                cell: (r) => (
+                                    <span className="text-ink font-bold">
+                                        {r.codigo}
+                                    </span>
+                                ),
+                            },
+                            {
+                                key: 'nombre',
+                                header: 'Requisito',
+                                cell: (r) => r.nombre,
+                            },
+                            {
+                                key: 'descripcion',
+                                header: 'Descripción',
+                                cell: (r) => (
+                                    <span className="text-muted text-xs">
+                                        {r.descripcion ?? '—'}
+                                    </span>
+                                ),
+                            },
+                            {
+                                key: 'orden',
+                                header: 'Orden',
+                                align: 'center',
+                                mono: true,
+                                cell: (r) => r.orden,
+                            },
                             {
                                 key: 'activo',
                                 header: 'Estado',
                                 align: 'center',
-                                cell: (r) => <Badge tone={r.activo ? 'ok' : 'neutral'}>{r.activo ? 'Activo' : 'Inactivo'}</Badge>,
+                                cell: (r) => (
+                                    <Badge tone={r.activo ? 'ok' : 'neutral'}>
+                                        {r.activo ? 'Activo' : 'Inactivo'}
+                                    </Badge>
+                                ),
                             },
                             {
                                 key: 'acciones',
@@ -299,10 +383,20 @@ export default function FasesAdminPage({
                                 align: 'right',
                                 cell: (r) => (
                                     <div className="flex items-center justify-end gap-2">
-                                        <Button variant="secondary" size="sm" onClick={() => abrirEditarRequisito(r)}>
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            onClick={() =>
+                                                abrirEditarRequisito(r)
+                                            }
+                                        >
                                             Editar
                                         </Button>
-                                        <Button variant="danger" size="sm" onClick={() => setReqEliminar(r)}>
+                                        <Button
+                                            variant="danger"
+                                            size="sm"
+                                            onClick={() => setReqEliminar(r)}
+                                        >
                                             Eliminar
                                         </Button>
                                     </div>
@@ -318,32 +412,80 @@ export default function FasesAdminPage({
                 title={`Criterios de aprobación de ${nombreFase(faseActiva)}`}
                 className="p-5"
                 action={
-                    <Button variant="mint" size="sm" onClick={abrirNuevoCriterio}>
+                    <Button
+                        variant="mint"
+                        size="sm"
+                        onClick={abrirNuevoCriterio}
+                    >
                         <IconPlus size={14} /> Nuevo criterio
                     </Button>
                 }
             >
                 {criteriosFase.length === 0 ? (
-                    <EmptyState title="Sin criterios" hint="Define las verificaciones necesarias para aprobar esta fase." />
+                    <EmptyState
+                        title="Sin criterios"
+                        hint="Define las verificaciones necesarias para aprobar esta fase."
+                    />
                 ) : (
                     <DataTable
                         emptyLabel="Sin criterios."
                         columns={[
-                            { key: 'codigo', header: 'Código', mono: true, cell: (c) => <span className="font-bold text-ink">{c.codigo}</span> },
-                            { key: 'nombre', header: 'Criterio', cell: (c) => c.nombre },
-                            { key: 'tipo', header: 'Tipo verificación', mono: true, cell: (c) => <Badge tone="violet">{c.tipo}</Badge> },
-                            { key: 'umbral', header: 'Umbral', align: 'center', mono: true, cell: (c) => (c.umbral === null || c.umbral === undefined ? '—' : String(c.umbral)) },
+                            {
+                                key: 'codigo',
+                                header: 'Código',
+                                mono: true,
+                                cell: (c) => (
+                                    <span className="text-ink font-bold">
+                                        {c.codigo}
+                                    </span>
+                                ),
+                            },
+                            {
+                                key: 'nombre',
+                                header: 'Criterio',
+                                cell: (c) => c.nombre,
+                            },
+                            {
+                                key: 'tipo',
+                                header: 'Tipo verificación',
+                                mono: true,
+                                cell: (c) => (
+                                    <Badge tone="violet">{c.tipo}</Badge>
+                                ),
+                            },
+                            {
+                                key: 'umbral',
+                                header: 'Umbral',
+                                align: 'center',
+                                mono: true,
+                                cell: (c) =>
+                                    c.umbral === null || c.umbral === undefined
+                                        ? '—'
+                                        : String(c.umbral),
+                            },
                             {
                                 key: 'obligatorio',
                                 header: 'Obligatorio',
                                 align: 'center',
-                                cell: (c) => <Badge tone={c.obligatorio ? 'warn' : 'neutral'}>{c.obligatorio ? 'Sí' : 'No'}</Badge>,
+                                cell: (c) => (
+                                    <Badge
+                                        tone={
+                                            c.obligatorio ? 'warn' : 'neutral'
+                                        }
+                                    >
+                                        {c.obligatorio ? 'Sí' : 'No'}
+                                    </Badge>
+                                ),
                             },
                             {
                                 key: 'activo',
                                 header: 'Estado',
                                 align: 'center',
-                                cell: (c) => <Badge tone={c.activo ? 'ok' : 'neutral'}>{c.activo ? 'Activo' : 'Inactivo'}</Badge>,
+                                cell: (c) => (
+                                    <Badge tone={c.activo ? 'ok' : 'neutral'}>
+                                        {c.activo ? 'Activo' : 'Inactivo'}
+                                    </Badge>
+                                ),
                             },
                             {
                                 key: 'acciones',
@@ -351,10 +493,20 @@ export default function FasesAdminPage({
                                 align: 'right',
                                 cell: (c) => (
                                     <div className="flex items-center justify-end gap-2">
-                                        <Button variant="secondary" size="sm" onClick={() => abrirEditarCriterio(c)}>
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            onClick={() =>
+                                                abrirEditarCriterio(c)
+                                            }
+                                        >
                                             Editar
                                         </Button>
-                                        <Button variant="danger" size="sm" onClick={() => setCritEliminar(c)}>
+                                        <Button
+                                            variant="danger"
+                                            size="sm"
+                                            onClick={() => setCritEliminar(c)}
+                                        >
                                             Eliminar
                                         </Button>
                                     </div>
@@ -366,51 +518,129 @@ export default function FasesAdminPage({
                 )}
             </Card>
 
-            <Modal open={reqModal} onClose={() => setReqModal(false)} title={reqEditando ? 'Editar requisito' : 'Nuevo requisito'}>
+            <Modal
+                open={reqModal}
+                onClose={() => setReqModal(false)}
+                title={reqEditando ? 'Editar requisito' : 'Nuevo requisito'}
+            >
                 <form onSubmit={guardarRequisito} className="space-y-4">
-                    <Field label="Código" required hint="Identificador único dentro de la fase">
-                        <Input value={reqForm.data.codigo} onChange={(e) => reqForm.setData('codigo', e.target.value)} required />
+                    <Field
+                        label="Código"
+                        required
+                        hint="Identificador único dentro de la fase"
+                    >
+                        <Input
+                            value={reqForm.data.codigo}
+                            onChange={(e) =>
+                                reqForm.setData('codigo', e.target.value)
+                            }
+                            required
+                        />
                     </Field>
                     <Field label="Nombre" required>
-                        <Input value={reqForm.data.nombre} onChange={(e) => reqForm.setData('nombre', e.target.value)} required />
+                        <Input
+                            value={reqForm.data.nombre}
+                            onChange={(e) =>
+                                reqForm.setData('nombre', e.target.value)
+                            }
+                            required
+                        />
                     </Field>
                     <Field label="Descripción">
-                        <TextArea rows={2} value={reqForm.data.descripcion} onChange={(e) => reqForm.setData('descripcion', e.target.value)} />
+                        <TextArea
+                            rows={2}
+                            value={reqForm.data.descripcion}
+                            onChange={(e) =>
+                                reqForm.setData('descripcion', e.target.value)
+                            }
+                        />
                     </Field>
                     <div className="grid grid-cols-2 gap-3">
                         <Field label="Orden">
-                            <Input type="number" value={reqForm.data.orden} onChange={(e) => reqForm.setData('orden', Number(e.target.value))} />
+                            <Input
+                                type="number"
+                                value={reqForm.data.orden}
+                                onChange={(e) =>
+                                    reqForm.setData(
+                                        'orden',
+                                        Number(e.target.value),
+                                    )
+                                }
+                            />
                         </Field>
                         <Field label="Activo">
-                            <Select value={reqForm.data.activo ? '1' : '0'} onChange={(e) => reqForm.setData('activo', e.target.value === '1')}>
+                            <Select
+                                value={reqForm.data.activo ? '1' : '0'}
+                                onChange={(e) =>
+                                    reqForm.setData(
+                                        'activo',
+                                        e.target.value === '1',
+                                    )
+                                }
+                            >
                                 <option value="1">Activo</option>
                                 <option value="0">Inactivo</option>
                             </Select>
                         </Field>
                     </div>
                     <div className="flex justify-end gap-2 pt-2">
-                        <Button variant="secondary" type="button" onClick={() => setReqModal(false)}>
+                        <Button
+                            variant="secondary"
+                            type="button"
+                            onClick={() => setReqModal(false)}
+                        >
                             Cancelar
                         </Button>
-                        <Button variant="mint" type="submit" disabled={reqForm.processing}>
+                        <Button
+                            variant="mint"
+                            type="submit"
+                            disabled={reqForm.processing}
+                        >
                             <IconSave size={14} /> Guardar
                         </Button>
                     </div>
                 </form>
             </Modal>
 
-            <Modal open={critModal} onClose={() => setCritModal(false)} title={critEditando ? 'Editar criterio' : 'Nuevo criterio'} wide>
+            <Modal
+                open={critModal}
+                onClose={() => setCritModal(false)}
+                title={critEditando ? 'Editar criterio' : 'Nuevo criterio'}
+                wide
+            >
                 <form onSubmit={guardarCriterio} className="space-y-4">
                     <div className="grid grid-cols-2 gap-3">
                         <Field label="Código" required>
-                            <Input value={critForm.data.codigo} onChange={(e) => critForm.setData('codigo', e.target.value)} required />
+                            <Input
+                                value={critForm.data.codigo}
+                                onChange={(e) =>
+                                    critForm.setData('codigo', e.target.value)
+                                }
+                                required
+                            />
                         </Field>
                         <Field label="Nombre" required>
-                            <Input value={critForm.data.nombre} onChange={(e) => critForm.setData('nombre', e.target.value)} required />
+                            <Input
+                                value={critForm.data.nombre}
+                                onChange={(e) =>
+                                    critForm.setData('nombre', e.target.value)
+                                }
+                                required
+                            />
                         </Field>
                     </div>
-                    <Field label="Tipo de verificación" required hint="Debe ser uno de los tipos soportados por el sistema">
-                        <Select value={critForm.data.tipo} onChange={(e) => critForm.setData('tipo', e.target.value)} required>
+                    <Field
+                        label="Tipo de verificación"
+                        required
+                        hint="Debe ser uno de los tipos soportados por el sistema"
+                    >
+                        <Select
+                            value={critForm.data.tipo}
+                            onChange={(e) =>
+                                critForm.setData('tipo', e.target.value)
+                            }
+                            required
+                        >
                             {tiposCriterioDb.map((tipo) => (
                                 <option key={tipo} value={tipo}>
                                     {tipo}
@@ -418,51 +648,118 @@ export default function FasesAdminPage({
                             ))}
                         </Select>
                     </Field>
-                    <Field label="Parámetros (JSON)" hint='Por ejemplo {"tipo_documento":"informe"} o {"metrica":"avance_fisico_pct","operador":">=","valor":100}'>
-                        <TextArea rows={3} value={critForm.data.parametros} onChange={(e) => critForm.setData('parametros', e.target.value)} />
+                    <Field
+                        label="Parámetros (JSON)"
+                        hint='Por ejemplo {"tipo_documento":"informe"} o {"metrica":"avance_fisico_pct","operador":">=","valor":100}'
+                    >
+                        <TextArea
+                            rows={3}
+                            value={critForm.data.parametros}
+                            onChange={(e) =>
+                                critForm.setData('parametros', e.target.value)
+                            }
+                        />
                     </Field>
                     <div className="grid grid-cols-3 gap-3">
                         <Field label="Umbral">
-                            <Input value={critForm.data.umbral} onChange={(e) => critForm.setData('umbral', e.target.value)} placeholder="Ej. 100" />
+                            <Input
+                                value={critForm.data.umbral}
+                                onChange={(e) =>
+                                    critForm.setData('umbral', e.target.value)
+                                }
+                                placeholder="Ej. 100"
+                            />
                         </Field>
                         <Field label="Obligatorio">
                             <Select
                                 value={critForm.data.obligatorio ? '1' : '0'}
-                                onChange={(e) => critForm.setData('obligatorio', e.target.value === '1')}
+                                onChange={(e) =>
+                                    critForm.setData(
+                                        'obligatorio',
+                                        e.target.value === '1',
+                                    )
+                                }
                             >
                                 <option value="1">Sí</option>
                                 <option value="0">No</option>
                             </Select>
                         </Field>
                         <Field label="Orden">
-                            <Input type="number" value={critForm.data.orden} onChange={(e) => critForm.setData('orden', Number(e.target.value))} />
+                            <Input
+                                type="number"
+                                value={critForm.data.orden}
+                                onChange={(e) =>
+                                    critForm.setData(
+                                        'orden',
+                                        Number(e.target.value),
+                                    )
+                                }
+                            />
                         </Field>
                     </div>
                     <Field label="Activo">
-                        <Select value={critForm.data.activo ? '1' : '0'} onChange={(e) => critForm.setData('activo', e.target.value === '1')}>
+                        <Select
+                            value={critForm.data.activo ? '1' : '0'}
+                            onChange={(e) =>
+                                critForm.setData(
+                                    'activo',
+                                    e.target.value === '1',
+                                )
+                            }
+                        >
                             <option value="1">Activo</option>
                             <option value="0">Inactivo</option>
                         </Select>
                     </Field>
                     <div className="flex justify-end gap-2 pt-2">
-                        <Button variant="secondary" type="button" onClick={() => setCritModal(false)}>
+                        <Button
+                            variant="secondary"
+                            type="button"
+                            onClick={() => setCritModal(false)}
+                        >
                             Cancelar
                         </Button>
-                        <Button variant="mint" type="submit" disabled={critForm.processing}>
+                        <Button
+                            variant="mint"
+                            type="submit"
+                            disabled={critForm.processing}
+                        >
                             <IconSave size={14} /> Guardar
                         </Button>
                     </div>
                 </form>
             </Modal>
 
-            <Modal open={Boolean(reqEliminar || critEliminar)} onClose={() => { setReqEliminar(null); setCritEliminar(null); }} title="Eliminar registro">
+            <Modal
+                open={Boolean(reqEliminar || critEliminar)}
+                onClose={() => {
+                    setReqEliminar(null);
+                    setCritEliminar(null);
+                }}
+                title="Eliminar registro"
+            >
                 <div className="space-y-4">
-                    <p className="text-sm text-ink">¿Confirmas la eliminación de este registro? Esta acción no se puede deshacer.</p>
+                    <p className="text-ink text-sm">
+                        ¿Confirmas la eliminación de este registro? Esta acción
+                        no se puede deshacer.
+                    </p>
                     <div className="flex justify-end gap-2">
-                        <Button variant="secondary" type="button" onClick={() => { setReqEliminar(null); setCritEliminar(null); }}>
+                        <Button
+                            variant="secondary"
+                            type="button"
+                            onClick={() => {
+                                setReqEliminar(null);
+                                setCritEliminar(null);
+                            }}
+                        >
                             Cancelar
                         </Button>
-                        <Button variant="danger" type="button" onClick={confirmarEliminar} disabled={eliminar.processing}>
+                        <Button
+                            variant="danger"
+                            type="button"
+                            onClick={confirmarEliminar}
+                            disabled={eliminar.processing}
+                        >
                             <IconTrash size={14} /> Eliminar
                         </Button>
                     </div>

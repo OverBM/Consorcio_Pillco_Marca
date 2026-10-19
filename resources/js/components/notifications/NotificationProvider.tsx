@@ -39,7 +39,12 @@ const DEFAULT_DURATION = 4500;
 
 const ICONS: Record<NotificationKind, ReactNode> = {
     success: (
-        <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4" aria-hidden="true">
+        <svg
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            className="h-4 w-4"
+            aria-hidden="true"
+        >
             <path
                 fillRule="evenodd"
                 d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
@@ -48,7 +53,12 @@ const ICONS: Record<NotificationKind, ReactNode> = {
         </svg>
     ),
     error: (
-        <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4" aria-hidden="true">
+        <svg
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            className="h-4 w-4"
+            aria-hidden="true"
+        >
             <path
                 fillRule="evenodd"
                 d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
@@ -57,7 +67,12 @@ const ICONS: Record<NotificationKind, ReactNode> = {
         </svg>
     ),
     info: (
-        <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4" aria-hidden="true">
+        <svg
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            className="h-4 w-4"
+            aria-hidden="true"
+        >
             <path
                 fillRule="evenodd"
                 d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zm-1 9a1 1 0 01-1-1v-4a1 1 0 112 0v4a1 1 0 01-1 1z"
@@ -108,11 +123,18 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const push = useCallback(
-        (kind: NotificationKind, message: string, options?: NotificationOptions): number => {
+        (
+            kind: NotificationKind,
+            message: string,
+            options?: NotificationOptions,
+        ): number => {
             const id = ++counter.current;
             const duration = options?.duration ?? DEFAULT_DURATION;
 
-            setNotifications((current) => [...current, { id, kind, message, ...options }]);
+            setNotifications((current) => [
+                ...current,
+                { id, kind, message, ...options },
+            ]);
 
             if (duration > 0) {
                 timers.current.set(
@@ -158,10 +180,18 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
                                       STYLES[item.kind],
                                   )}
                               >
-                                  <span className="mt-0.5 shrink-0">{ICONS[item.kind]}</span>
+                                  <span className="mt-0.5 shrink-0">
+                                      {ICONS[item.kind]}
+                                  </span>
                                   <div className="min-w-0 flex-1">
-                                      {item.title && <p className="text-sm font-semibold">{item.title}</p>}
-                                      <p className="text-[13px] leading-snug break-words">{item.message}</p>
+                                      {item.title && (
+                                          <p className="text-sm font-semibold">
+                                              {item.title}
+                                          </p>
+                                      )}
+                                      <p className="text-[13px] leading-snug break-words">
+                                          {item.message}
+                                      </p>
                                   </div>
                                   <button
                                       type="button"
@@ -169,7 +199,12 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
                                       aria-label="Cerrar notificación"
                                       className="shrink-0 cursor-pointer rounded-md p-1 opacity-70 transition-opacity hover:opacity-100"
                                   >
-                                      <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5" aria-hidden="true">
+                                      <svg
+                                          viewBox="0 0 20 20"
+                                          fill="currentColor"
+                                          className="h-3.5 w-3.5"
+                                          aria-hidden="true"
+                                      >
                                           <path
                                               fillRule="evenodd"
                                               d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
@@ -191,7 +226,9 @@ export function useNotifications(): NotifyApi {
     const context = useContext(NotificationContext);
 
     if (!context) {
-        throw new Error('useNotifications debe usarse dentro de <NotificationProvider>');
+        throw new Error(
+            'useNotifications debe usarse dentro de <NotificationProvider>',
+        );
     }
 
     return context;

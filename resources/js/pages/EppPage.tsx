@@ -7,7 +7,14 @@ import { useHttp, usePage } from '@inertiajs/react';
 import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge } from '../components/ui';
-import { Field, Input, Select, FormPanel, FormSection, SubmitButton } from '../components/form';
+import {
+    Field,
+    Input,
+    Select,
+    FormPanel,
+    FormSection,
+    SubmitButton,
+} from '../components/form';
 import { DataTable } from '../components/DataTable';
 import { EmptyState } from '../components/EmptyState';
 import { useNotifications } from '../components/notifications/NotificationProvider';
@@ -21,7 +28,11 @@ interface EppAsignacionDb {
     entregado_en: string;
     estado: string;
     trabajador?: { id: number; nombres: string; cargo: string | null } | null;
-    material?: { id: number; nombre: string; unidad?: { codigo: string } | null } | null;
+    material?: {
+        id: number;
+        nombre: string;
+        unidad?: { codigo: string } | null;
+    } | null;
     almacen?: { id: number; nombre: string } | null;
 }
 
@@ -39,20 +50,33 @@ interface EppPageProps {
 
 type EppFila = Omit<EppAsignacionDb, 'id'> & { id: string };
 
-export default function EppPage({ asignacionesDb = [], trabajadoresDb = [] }: EppPageProps) {
+export default function EppPage({
+    asignacionesDb = [],
+    trabajadoresDb = [],
+}: EppPageProps) {
     const notify = useNotifications();
-    const { catalogos } = usePage().props as unknown as { catalogos?: Catalogos };
+    const { catalogos } = usePage().props as unknown as {
+        catalogos?: Catalogos;
+    };
     const almacenes = catalogos?.almacenes ?? [];
     const materiales = catalogos?.materiales ?? [];
 
-    const crear = useHttp<{ trabajador_id: string; almacen_id: string; material_id: string; numero_serie: string }>({
+    const crear = useHttp<{
+        trabajador_id: string;
+        almacen_id: string;
+        material_id: string;
+        numero_serie: string;
+    }>({
         trabajador_id: '',
         almacen_id: almacenes[0] ? String(almacenes[0].id) : '',
         material_id: '',
         numero_serie: '',
     });
 
-    const filas: EppFila[] = useMemo(() => asignacionesDb.map((a) => ({ ...a, id: String(a.id) })), [asignacionesDb]);
+    const filas: EppFila[] = useMemo(
+        () => asignacionesDb.map((a) => ({ ...a, id: String(a.id) })),
+        [asignacionesDb],
+    );
 
     const enviar = (event: FormEvent) => {
         event.preventDefault();
@@ -89,7 +113,10 @@ export default function EppPage({ asignacionesDb = [], trabajadoresDb = [] }: Ep
                 refrescarProps('asignacionesDb');
             },
             onError: (errors: Record<string, string>) => {
-                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo asignar el EPP.');
+                notify.error(
+                    Object.values(errors).flat().join(' ') ||
+                        'No se pudo asignar el EPP.',
+                );
             },
         });
     };
@@ -105,30 +132,76 @@ export default function EppPage({ asignacionesDb = [], trabajadoresDb = [] }: Ep
                 <div className="lg:col-span-2">
                     <Card title={`Asignaciones de EPP (${filas.length})`}>
                         {filas.length === 0 ? (
-                            <EmptyState title="Sin asignaciones de EPP" hint="Entrega el primer equipo con el panel lateral." />
+                            <EmptyState
+                                title="Sin asignaciones de EPP"
+                                hint="Entrega el primer equipo con el panel lateral."
+                            />
                         ) : (
                             <DataTable
                                 emptyLabel="Sin asignaciones de EPP registradas."
                                 columns={[
-                                    { key: 'trabajador', header: 'Trabajador Asignado', cell: (e) => <span className="font-bold text-ink">{e.trabajador?.nombres ?? '—'}</span> },
-                                    { key: 'cargo', header: 'Cargo', cell: (e) => e.trabajador?.cargo ?? '—' },
+                                    {
+                                        key: 'trabajador',
+                                        header: 'Trabajador Asignado',
+                                        cell: (e) => (
+                                            <span className="text-ink font-bold">
+                                                {e.trabajador?.nombres ?? '—'}
+                                            </span>
+                                        ),
+                                    },
+                                    {
+                                        key: 'cargo',
+                                        header: 'Cargo',
+                                        cell: (e) => e.trabajador?.cargo ?? '—',
+                                    },
                                     {
                                         key: 'epp',
                                         header: 'EPP',
                                         cell: (e) => (
                                             <span>
                                                 {e.material?.nombre ?? '—'}
-                                                {e.material?.unidad?.codigo ? <span className="ml-1 text-muted">({e.material.unidad.codigo})</span> : null}
+                                                {e.material?.unidad?.codigo ? (
+                                                    <span className="text-muted ml-1">
+                                                        (
+                                                        {
+                                                            e.material.unidad
+                                                                .codigo
+                                                        }
+                                                        )
+                                                    </span>
+                                                ) : null}
                                             </span>
                                         ),
                                     },
-                                    { key: 'serie', header: 'N° Serie / Código Único', mono: true, cell: (e) => e.numero_serie ?? 'S/N' },
-                                    { key: 'fecha', header: 'Fecha de Entrega', mono: true, cell: (e) => formatFs(e.entregado_en) },
+                                    {
+                                        key: 'serie',
+                                        header: 'N° Serie / Código Único',
+                                        mono: true,
+                                        cell: (e) => e.numero_serie ?? 'S/N',
+                                    },
+                                    {
+                                        key: 'fecha',
+                                        header: 'Fecha de Entrega',
+                                        mono: true,
+                                        cell: (e) => formatFs(e.entregado_en),
+                                    },
                                     {
                                         key: 'estado',
                                         header: 'Estado',
                                         align: 'center',
-                                        cell: (e) => <Badge tone={e.estado === 'vigente' ? 'ok' : 'neutral'}>{e.estado === 'vigente' ? 'Vigente' : e.estado.toUpperCase()}</Badge>,
+                                        cell: (e) => (
+                                            <Badge
+                                                tone={
+                                                    e.estado === 'vigente'
+                                                        ? 'ok'
+                                                        : 'neutral'
+                                                }
+                                            >
+                                                {e.estado === 'vigente'
+                                                    ? 'Vigente'
+                                                    : e.estado.toUpperCase()}
+                                            </Badge>
+                                        ),
                                     },
                                 ]}
                                 rows={filas}
@@ -137,10 +210,23 @@ export default function EppPage({ asignacionesDb = [], trabajadoresDb = [] }: Ep
                     </Card>
                 </div>
 
-                <FormPanel title="Asignar EPP" subtitle="Entrega serializada con egreso de stock" onSubmit={enviar} className="text-xs">
+                <FormPanel
+                    title="Asignar EPP"
+                    subtitle="Entrega serializada con egreso de stock"
+                    onSubmit={enviar}
+                    className="text-xs"
+                >
                     <FormSection title="Entrega" columns={1}>
                         <Field label="Trabajador" required>
-                            <Select value={crear.data.trabajador_id} onChange={(e) => crear.setData('trabajador_id', e.target.value)}>
+                            <Select
+                                value={crear.data.trabajador_id}
+                                onChange={(e) =>
+                                    crear.setData(
+                                        'trabajador_id',
+                                        e.target.value,
+                                    )
+                                }
+                            >
                                 <option value="">Selecciona trabajador…</option>
                                 {trabajadoresDb.map((t) => (
                                     <option key={t.id} value={String(t.id)}>
@@ -151,7 +237,12 @@ export default function EppPage({ asignacionesDb = [], trabajadoresDb = [] }: Ep
                             </Select>
                         </Field>
                         <Field label="Almacén" required>
-                            <Select value={crear.data.almacen_id} onChange={(e) => crear.setData('almacen_id', e.target.value)}>
+                            <Select
+                                value={crear.data.almacen_id}
+                                onChange={(e) =>
+                                    crear.setData('almacen_id', e.target.value)
+                                }
+                            >
                                 <option value="">Selecciona almacén…</option>
                                 {almacenes.map((a) => (
                                     <option key={a.id} value={String(a.id)}>
@@ -161,22 +252,44 @@ export default function EppPage({ asignacionesDb = [], trabajadoresDb = [] }: Ep
                             </Select>
                         </Field>
                         <Field label="Equipo de Protección" required>
-                            <Select value={crear.data.material_id} onChange={(e) => crear.setData('material_id', e.target.value)}>
+                            <Select
+                                value={crear.data.material_id}
+                                onChange={(e) =>
+                                    crear.setData('material_id', e.target.value)
+                                }
+                            >
                                 <option value="">Selecciona EPP…</option>
                                 {materiales.map((m) => (
                                     <option key={m.id} value={String(m.id)}>
                                         {m.nombre}
-                                        {m.unidad?.codigo ? ` (${m.unidad.codigo})` : ''}
+                                        {m.unidad?.codigo
+                                            ? ` (${m.unidad.codigo})`
+                                            : ''}
                                     </option>
                                 ))}
                             </Select>
                         </Field>
-                        <Field label="N° de Serie" hint="Opcional, para equipos serializados">
-                            <Input value={crear.data.numero_serie} onChange={(e) => crear.setData('numero_serie', e.target.value)} placeholder="3M-CSC-2026-0098" />
+                        <Field
+                            label="N° de Serie"
+                            hint="Opcional, para equipos serializados"
+                        >
+                            <Input
+                                value={crear.data.numero_serie}
+                                onChange={(e) =>
+                                    crear.setData(
+                                        'numero_serie',
+                                        e.target.value,
+                                    )
+                                }
+                                placeholder="3M-CSC-2026-0098"
+                            />
                         </Field>
                     </FormSection>
 
-                    <SubmitButton status={crear.processing ? 'submitting' : 'idle'} className="w-full">
+                    <SubmitButton
+                        status={crear.processing ? 'submitting' : 'idle'}
+                        className="w-full"
+                    >
                         <IconBoxes size={15} />
                         Asignar y Descontar
                     </SubmitButton>

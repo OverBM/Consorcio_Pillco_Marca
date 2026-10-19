@@ -17,15 +17,21 @@ export function BarChart7d({
                     <>
                         <div className="flex h-36 w-full max-w-9 items-end justify-center gap-1">
                             <div
-                                className="w-3 rounded-t-md bg-brand-500 transition-[height] duration-300 hover:bg-brand-600"
-                                style={{ height: `${Math.round((d.ingreso / max) * 100)}%` }}
+                                className="bg-brand-500 hover:bg-brand-600 w-3 rounded-t-md transition-[height] duration-300"
+                                style={{
+                                    height: `${Math.round((d.ingreso / max) * 100)}%`,
+                                }}
                             />
                             <div
-                                className="w-3 rounded-t-md bg-ok-soft transition-[height] duration-300"
-                                style={{ height: `${Math.round((d.salida / max) * 100)}%` }}
+                                className="bg-ok-soft w-3 rounded-t-md transition-[height] duration-300"
+                                style={{
+                                    height: `${Math.round((d.salida / max) * 100)}%`,
+                                }}
                             />
                         </div>
-                        <span className="text-[11px] font-medium text-muted">{d.etiqueta}</span>
+                        <span className="text-muted text-[11px] font-medium">
+                            {d.etiqueta}
+                        </span>
                     </>
                 );
 
@@ -33,7 +39,7 @@ export function BarChart7d({
                     <button
                         type="button"
                         key={d.etiqueta}
-                        className="flex flex-1 flex-col items-center gap-1.5 bg-transparent border-0 p-0 cursor-pointer text-left focus:outline-none"
+                        className="flex flex-1 cursor-pointer flex-col items-center gap-1.5 border-0 bg-transparent p-0 text-left focus:outline-none"
                         title={`Ingresos ${formatNum(d.ingreso)} · Salidas ${formatNum(d.salida)}`}
                         onClick={() => onBarClick(d.etiqueta)}
                     >
@@ -53,12 +59,21 @@ export function BarChart7d({
     );
 }
 
-export function ChartLegend({ items }: { items: { label: string; className: string }[] }) {
+export function ChartLegend({
+    items,
+}: {
+    items: { label: string; className: string }[];
+}) {
     return (
         <div className="flex flex-wrap items-center gap-3">
             {items.map((i) => (
-                <span key={i.label} className="flex items-center gap-1.5 text-xs text-muted">
-                    <span className={cn('h-2.5 w-2.5 rounded-sm', i.className)} />
+                <span
+                    key={i.label}
+                    className="text-muted flex items-center gap-1.5 text-xs"
+                >
+                    <span
+                        className={cn('h-2.5 w-2.5 rounded-sm', i.className)}
+                    />
                     {i.label}
                 </span>
             ))}

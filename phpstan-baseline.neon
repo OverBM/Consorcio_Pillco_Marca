@@ -1,0 +1,2605 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Call to an undefined method App\\Domain\\Geo\\GeoService\:\:estimarEtaMinutos\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Domain/Excedentes/RankingReceptoresService.php
+
+		-
+			message: '#^Method App\\Domain\\Excedentes\\RankingReceptoresService\:\:obtenerRankingObrasReceptoras\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Domain/Excedentes/RankingReceptoresService.php
+
+		-
+			message: '#^Parameter \#1 \$array of function usort contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Domain/Excedentes/RankingReceptoresService.php
+
+		-
+			message: '#^Parameter \#2 \$callback of function usort contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Domain/Excedentes/RankingReceptoresService.php
+
+		-
+			message: '#^Comparison operation "\<\=" between 35\.0 and 0 is always false\.$#'
+			identifier: smallerOrEqual.alwaysFalse
+			count: 1
+			path: app/Domain/Geo/GeoService.php
+
+		-
+			message: '#^Method App\\Domain\\Geo\\GeoService\:\:verificarGeocercaObra\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Domain/Geo/GeoService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$codigo\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Optimization/AhpOptimizationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Optimization/AhpOptimizationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Optimization/AhpOptimizationService.php
+
+		-
+			message: '#^Parameter \#1 \$array of function usort contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Domain/Optimization/AhpOptimizationService.php
+
+		-
+			message: '#^Parameter \#2 \$callback of function usort contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Domain/Optimization/AhpOptimizationService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>codigo" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Domain/Optimization/AhpOptimizationService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nombre" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Domain/Optimization/AhpOptimizationService.php
+
+		-
+			message: '#^Method App\\Domain\\Project\\EvmProjectService\:\:evmDefault\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Domain/Project/EvmProjectService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\IndicadorAmbiental\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\IndicadorAmbiental\>\:\:\$limite_maximo\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/AmbienteController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Api/V1/AmbienteController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$codigo\.$#'
+			identifier: property.notFound
+			count: 6
+			path: app/Http/Controllers/Api/V1/AuthController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Http/Controllers/Api/V1/AuthController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
+			identifier: property.notFound
+			count: 6
+			path: app/Http/Controllers/Api/V1/AuthController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$permisos\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/AuthController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 6
+			path: app/Http/Controllers/Api/V1/AuthController.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 6
+			path: app/Http/Controllers/Api/V1/AuthController.php
+
+		-
+			message: '#^Unable to resolve the template type TFlatMapKey in call to method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:flatMap\(\)$#'
+			identifier: argument.templateType
+			count: 2
+			path: app/Http/Controllers/Api/V1/AuthController.php
+
+		-
+			message: '#^Unable to resolve the template type TFlatMapValue in call to method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:flatMap\(\)$#'
+			identifier: argument.templateType
+			count: 2
+			path: app/Http/Controllers/Api/V1/AuthController.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\Partida\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Partida\>\:\:update\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/AvanceFisicoController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/AvanceFisicoController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Almacen\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Almacen\>\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/BusquedaMultialmacenController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Almacen\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Almacen\>\:\:\$latitud\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/BusquedaMultialmacenController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Almacen\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Almacen\>\:\:\$longitud\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/BusquedaMultialmacenController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Almacen\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Almacen\>\:\:\$nombre\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/BusquedaMultialmacenController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Material\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Material\>\:\:\$codigo\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/BusquedaMultialmacenController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Material\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Material\>\:\:\$criticidad\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/BusquedaMultialmacenController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Material\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Material\>\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/BusquedaMultialmacenController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Material\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Material\>\:\:\$nombre\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/BusquedaMultialmacenController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/BusquedaMultialmacenController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$latitud\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/BusquedaMultialmacenController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$longitud\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/BusquedaMultialmacenController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/BusquedaMultialmacenController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$obra_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/BusquedaMultialmacenController.php
+
+		-
+			message: '#^Parameter \#1 \$array of function usort contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/V1/BusquedaMultialmacenController.php
+
+		-
+			message: '#^Parameter \#2 \$callback of function usort contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/V1/BusquedaMultialmacenController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nombre" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/BusquedaMultialmacenController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\TransferenciaDetalle\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\TransferenciaDetalle\>\:\:\$material_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/DespachoController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Transferencia\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Transferencia\>\:\:\$almacen_origen_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/DespachoController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Transferencia\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Transferencia\>\:\:\$codigo\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/DespachoController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Transferencia\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Transferencia\>\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/DespachoController.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\TransferenciaDetalle\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\TransferenciaDetalle\>\:\:update\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/DespachoController.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\Transferencia\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Transferencia\>\:\:update\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/DespachoController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/DespachoController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Recepcion\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Recepcion\>\:\:\$almacen_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/DevolucionController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/DevolucionController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/ExcedenteController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\InventarioFisicoDetalle\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\InventarioFisicoDetalle\>\:\:\$cantidad_sistema\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/InventarioFisicoController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\InventarioFisicoDetalle\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\InventarioFisicoDetalle\>\:\:\$material_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/InventarioFisicoController.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\InventarioFisicoDetalle\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\InventarioFisicoDetalle\>\:\:update\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/InventarioFisicoController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Api/V1/InventarioFisicoController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/MermaController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/OrdenCompraController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Obra\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Obra\>\:\:\$latitud\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/PersonalController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Obra\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Obra\>\:\:\$longitud\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/PersonalController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/PersonalController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/ProyectoController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Obra\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/V1/ProyectoController.php
+
+		-
+			message: '#^Relation ''avancesFisicos'' is not found in App\\Models\\Obra model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/V1/ProyectoController.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Obra\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Http/Controllers/Api/V1/ProyectoController.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:all\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Http/Controllers/Api/V1/ProyectoController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>bac" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/ProyectoController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>costo_real" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/ProyectoController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/ProyectoController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>valor_ganado" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/ProyectoController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>valor_planificado" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/ProyectoController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/RecepcionController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Api/V1/RequerimientoController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Api/V1/SolicitudCambioController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$cantidad\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/SolicitudMaterialController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$material_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/SolicitudMaterialController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Api/V1/SolicitudMaterialController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 3
+			path: app/Http/Controllers/Api/V1/SstController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\TransferenciaDetalle\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\TransferenciaDetalle\>\:\:\$material_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/TransferenciaController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$cantidad_solicitada\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/TransferenciaController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$material_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/TransferenciaController.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\TransferenciaDetalle\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\TransferenciaDetalle\>\:\:update\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/TransferenciaController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 3
+			path: app/Http/Controllers/Api/V1/TransferenciaController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/UsuarioController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/UsuarioController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/V1/UsuarioController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{codigo\: string, nombre\: string\}, Closure\(App\\Models\\Rol\)\: array\{codigo\: string, nombre\: string\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/UsuarioController.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Http/Controllers/Api/V1/UsuarioController.php
+
+		-
+			message: '#^Unable to resolve the template type TKey in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Http/Controllers/Api/V1/UsuarioController.php
+
+		-
+			message: '#^Unable to resolve the template type TValue in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Http/Controllers/Api/V1/UsuarioController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>bac" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Api/V1/ValorizacionController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/ValorizacionController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model&object\{pivot\: Illuminate\\Database\\Eloquent\\Relations\\Pivot\}\:\:\$codigo\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Web/AuthWebController.php
+
+		-
+			message: '#^Cannot call method isFuture\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Web/AuthWebController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Web\\AuthWebController\:\:showLogin\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Http/Controllers/Web/AuthWebController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>codigo" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Web/AuthWebController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Almacen\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Almacen\>\:\:\$obra_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Web/ContextoController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$almacen_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Web/DashboardViewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$cantidad\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Web/DashboardViewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$cantidad_reservada\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Web/DashboardViewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$codigo\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Web/DashboardViewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Web/DashboardViewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Web/DashboardViewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$material_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Web/DashboardViewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Web/DashboardViewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$punto_reorden\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Web/DashboardViewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$stock_minimo\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Web/DashboardViewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$stock_seguridad\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Web/DashboardViewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$unidadMedida\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Web/DashboardViewController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Web\\DashboardViewController\:\:construirIndicadores\(\) has parameter \$disponiblePorAlmacen with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Controllers/Web/DashboardViewController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Web\\DashboardViewController\:\:construirIndicadores\(\) has parameter \$obrasModel with generic class Illuminate\\Support\\Collection but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Http/Controllers/Web/DashboardViewController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Web\\DashboardViewController\:\:construirIndicadores\(\) has parameter \$stockModel with generic class Illuminate\\Support\\Collection but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Http/Controllers/Web/DashboardViewController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Web\\DashboardViewController\:\:construirSobrantes\(\) has parameter \$almacenesModel with generic class Illuminate\\Support\\Collection but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Http/Controllers/Web/DashboardViewController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Web\\DashboardViewController\:\:construirSobrantes\(\) has parameter \$obrasModel with generic class Illuminate\\Support\\Collection but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Http/Controllers/Web/DashboardViewController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Web\\DashboardViewController\:\:disponibilidadPorAlmacen\(\) has parameter \$stock with generic class Illuminate\\Support\\Collection but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Http/Controllers/Web/DashboardViewController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Web\\DashboardViewController\:\:mapearAlmacenes\(\) has parameter \$almacenes with generic class Illuminate\\Support\\Collection but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Http/Controllers/Web/DashboardViewController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Web\\DashboardViewController\:\:mapearObras\(\) has parameter \$obras with generic class Illuminate\\Support\\Collection but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Http/Controllers/Web/DashboardViewController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Web\\DashboardViewController\:\:minimosPorMaterial\(\) has parameter \$stock with generic class Illuminate\\Support\\Collection but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Http/Controllers/Web/DashboardViewController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Web\\DashboardViewController\:\:resolverAlmacenCentralId\(\) has parameter \$almacenesRed with generic class Illuminate\\Support\\Collection but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Http/Controllers/Web/DashboardViewController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Material\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Web/DashboardViewController.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Material\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Http/Controllers/Web/DashboardViewController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>codigo" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 3
+			path: app/Http/Controllers/Web/DashboardViewController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>distrito" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Web/DashboardViewController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nombre" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 4
+			path: app/Http/Controllers/Web/DashboardViewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$almacen_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Web/LogisticaViewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$cantidad\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Web/LogisticaViewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$cantidad_reservada\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Web/LogisticaViewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Web/LogisticaViewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$material_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Web/LogisticaViewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$punto_reorden\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Web/LogisticaViewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$stock_minimo\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Web/LogisticaViewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$stock_seguridad\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Web/LogisticaViewController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>codigo" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Web/LogisticaViewController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nombre" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Web/LogisticaViewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$codigo\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Web/PerfilController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Web/PerfilController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Web/PerfilController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 3
+			path: app/Http/Controllers/Web/PerfilController.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 3
+			path: app/Http/Controllers/Web/PerfilController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$codigo\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Web/PersonalSstViewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$email\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Web/PersonalSstViewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Web/PersonalSstViewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Web/PersonalSstViewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Web/PersonalSstViewController.php
+
+		-
+			message: '#^Cannot call method toIso8601String\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Web/PersonalSstViewController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Usuario\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Web/PersonalSstViewController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Pagination\\AbstractPaginator\<int,App\\Models\\Auditoria\>\:\:through\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Web/PersonalSstViewController.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Usuario\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Http/Controllers/Web/PersonalSstViewController.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Pagination\\AbstractPaginator\<int,App\\Models\\Auditoria\>\:\:through\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Http/Controllers/Web/PersonalSstViewController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nombre" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Web/PersonalSstViewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre_completo\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Web/PmiViewController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Obra\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Web/PmiViewController.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Obra\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Http/Controllers/Web/PmiViewController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nombre_completo" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Web/PmiViewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$descripcion\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Web/ProyectoPublicoViewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$entidad_contratante\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Web/ProyectoPublicoViewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Web/ProyectoPublicoViewController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Web\\ProyectoPublicoViewController\:\:mapaAproximado\(\) never returns null so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: app/Http/Controllers/Web/ProyectoPublicoViewController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nombre" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Web/ProyectoPublicoViewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Web/SolicitudesAccesoController.php
+
+		-
+			message: '#^Cannot call method format\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Web/SolicitudesAccesoController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\SolicitudAcceso\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Web/SolicitudesAccesoController.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\SolicitudAcceso\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Http/Controllers/Web/SolicitudesAccesoController.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:values\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Http/Controllers/Web/SolicitudesAccesoController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$codigo\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Http/Middleware/HandleInertiaRequests.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Middleware/HandleInertiaRequests.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Http/Middleware/HandleInertiaRequests.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$permisos\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Middleware/HandleInertiaRequests.php
+
+		-
+			message: '#^Anonymous function should return Illuminate\\Support\\Collection\<int, array\{id\: int, codigo\: string, nombre\: string, distrito\: string\|null, estado\: string, avance_fisico_pct\: float\}\> but returns Illuminate\\Support\\Collection\<int, array\{id\: int, codigo\: string, nombre\: string, distrito\: string\|null, estado\: string, avance_fisico_pct\: float\}\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Middleware/HandleInertiaRequests.php
+
+		-
+			message: '#^Anonymous function should return Illuminate\\Support\\Collection\<int, array\{id\: int, codigo\: string, nombre\: string, unidad\: array\{id\: mixed, codigo\: mixed, nombre\: mixed\}\|null\}\> but returns Illuminate\\Support\\Collection\<int, array\{id\: int, codigo\: string, nombre\: string, unidad\: array\{id\: mixed, codigo\: mixed, nombre\: mixed\}\|null\}\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Middleware/HandleInertiaRequests.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Material\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Middleware/HandleInertiaRequests.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 3
+			path: app/Http/Middleware/HandleInertiaRequests.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Material\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Http/Middleware/HandleInertiaRequests.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 3
+			path: app/Http/Middleware/HandleInertiaRequests.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,array\<string, array\<string, mixed\>\|int\|string\|null\>\>\:\:values\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Http/Middleware/HandleInertiaRequests.php
+
+		-
+			message: '#^Unable to resolve the template type TFlatMapKey in call to method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:flatMap\(\)$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Http/Middleware/HandleInertiaRequests.php
+
+		-
+			message: '#^Unable to resolve the template type TFlatMapValue in call to method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:flatMap\(\)$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Http/Middleware/HandleInertiaRequests.php
+
+		-
+			message: '#^Class App\\Models\\Adelanto uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Adelanto.php
+
+		-
+			message: '#^Method App\\Models\\Adelanto\:\:eventos\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Adelanto.php
+
+		-
+			message: '#^Method App\\Models\\Adelanto\:\:obra\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Adelanto.php
+
+		-
+			message: '#^Method App\\Models\\Adelanto\:\:solicitante\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Adelanto.php
+
+		-
+			message: '#^Class App\\Models\\AdelantoEvento uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/AdelantoEvento.php
+
+		-
+			message: '#^Method App\\Models\\AdelantoEvento\:\:adelanto\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/AdelantoEvento.php
+
+		-
+			message: '#^Method App\\Models\\AdelantoEvento\:\:usuario\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/AdelantoEvento.php
+
+		-
+			message: '#^Class App\\Models\\Alerta uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Alerta.php
+
+		-
+			message: '#^Method App\\Models\\Alerta\:\:obra\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Alerta.php
+
+		-
+			message: '#^Class App\\Models\\UbicacionAlmacen not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/Almacen.php
+
+		-
+			message: '#^Method App\\Models\\Almacen\:\:getUbicacionGeoJsonAttribute\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Models/Almacen.php
+
+		-
+			message: '#^Method App\\Models\\Almacen\:\:obra\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Almacen.php
+
+		-
+			message: '#^Method App\\Models\\Almacen\:\:setLatitudAttribute\(\) has parameter \$value with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Models/Almacen.php
+
+		-
+			message: '#^Method App\\Models\\Almacen\:\:setLongitudAttribute\(\) has parameter \$value with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Models/Almacen.php
+
+		-
+			message: '#^Method App\\Models\\Almacen\:\:stock\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Almacen.php
+
+		-
+			message: '#^Method App\\Models\\Almacen\:\:ubicaciones\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Almacen.php
+
+		-
+			message: '#^Method App\\Models\\Almacen\:\:usuarios\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany does not specify its types\: TRelatedModel, TDeclaringModel, TPivotModel, TAccessor \(2\-4 required\)$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Almacen.php
+
+		-
+			message: '#^Parameter \#1 \$related of method Illuminate\\Database\\Eloquent\\Model\:\:hasMany\(\) expects class\-string\<Illuminate\\Database\\Eloquent\\Model\>, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Models/Almacen.php
+
+		-
+			message: '#^Unable to resolve the template type TRelatedModel in call to method Illuminate\\Database\\Eloquent\\Model\:\:hasMany\(\)$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Models/Almacen.php
+
+		-
+			message: '#^Class App\\Models\\Asistencia uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Asistencia.php
+
+		-
+			message: '#^Method App\\Models\\Asistencia\:\:obra\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Asistencia.php
+
+		-
+			message: '#^Method App\\Models\\Asistencia\:\:trabajador\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Asistencia.php
+
+		-
+			message: '#^Method App\\Models\\Auditoria\:\:usuario\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Auditoria.php
+
+		-
+			message: '#^Parameter \#1 \$valor of method App\\Models\\Auditoria\:\:jsonCanonico\(\) expects array\<string, mixed\>\|null, string\|null given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Models/Auditoria.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: app/Models/Auditoria.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Http\\Request\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Models/Auditoria.php
+
+		-
+			message: '#^Class App\\Models\\AvanceFisico uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/AvanceFisico.php
+
+		-
+			message: '#^Method App\\Models\\AvanceFisico\:\:obra\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/AvanceFisico.php
+
+		-
+			message: '#^Method App\\Models\\AvanceFisico\:\:partida\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/AvanceFisico.php
+
+		-
+			message: '#^Method App\\Models\\AvanceFisico\:\:registrador\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/AvanceFisico.php
+
+		-
+			message: '#^Class App\\Models\\Capacitacion uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Capacitacion.php
+
+		-
+			message: '#^Method App\\Models\\Capacitacion\:\:obra\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Capacitacion.php
+
+		-
+			message: '#^Method App\\Models\\CategoriaMaterial\:\:materiales\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/CategoriaMaterial.php
+
+		-
+			message: '#^Class App\\Models\\CierreObra uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/CierreObra.php
+
+		-
+			message: '#^Method App\\Models\\CierreObra\:\:obra\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/CierreObra.php
+
+		-
+			message: '#^Class App\\Models\\Comunicacion uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Comunicacion.php
+
+		-
+			message: '#^Method App\\Models\\Comunicacion\:\:interesado\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Comunicacion.php
+
+		-
+			message: '#^Method App\\Models\\Comunicacion\:\:obra\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Comunicacion.php
+
+		-
+			message: '#^Class App\\Models\\ConfirmacionRecepcionDestino uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ConfirmacionRecepcionDestino.php
+
+		-
+			message: '#^Method App\\Models\\ConfirmacionRecepcionDestino\:\:almacenero\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ConfirmacionRecepcionDestino.php
+
+		-
+			message: '#^Method App\\Models\\ConfirmacionRecepcionDestino\:\:transferencia\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ConfirmacionRecepcionDestino.php
+
+		-
+			message: '#^Class App\\Models\\Cotizacion uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Cotizacion.php
+
+		-
+			message: '#^Method App\\Models\\Cotizacion\:\:detalles\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Cotizacion.php
+
+		-
+			message: '#^Method App\\Models\\Cotizacion\:\:proveedor\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Cotizacion.php
+
+		-
+			message: '#^Method App\\Models\\Cotizacion\:\:requerimiento\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Cotizacion.php
+
+		-
+			message: '#^Class App\\Models\\CotizacionDetalle uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/CotizacionDetalle.php
+
+		-
+			message: '#^Method App\\Models\\CotizacionDetalle\:\:cotizacion\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/CotizacionDetalle.php
+
+		-
+			message: '#^Method App\\Models\\CotizacionDetalle\:\:material\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/CotizacionDetalle.php
+
+		-
+			message: '#^Class App\\Models\\Despacho uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Despacho.php
+
+		-
+			message: '#^Method App\\Models\\Despacho\:\:despachador\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Despacho.php
+
+		-
+			message: '#^Method App\\Models\\Despacho\:\:transferencia\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Despacho.php
+
+		-
+			message: '#^Class App\\Models\\DevolucionDetalle uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/DevolucionDetalle.php
+
+		-
+			message: '#^Method App\\Models\\DevolucionDetalle\:\:devolucion\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/DevolucionDetalle.php
+
+		-
+			message: '#^Method App\\Models\\DevolucionDetalle\:\:lote\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/DevolucionDetalle.php
+
+		-
+			message: '#^Method App\\Models\\DevolucionDetalle\:\:material\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/DevolucionDetalle.php
+
+		-
+			message: '#^Class App\\Models\\DevolucionProveedor uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/DevolucionProveedor.php
+
+		-
+			message: '#^Method App\\Models\\DevolucionProveedor\:\:aprobador\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/DevolucionProveedor.php
+
+		-
+			message: '#^Method App\\Models\\DevolucionProveedor\:\:detalles\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/DevolucionProveedor.php
+
+		-
+			message: '#^Method App\\Models\\DevolucionProveedor\:\:proveedor\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/DevolucionProveedor.php
+
+		-
+			message: '#^Method App\\Models\\DevolucionProveedor\:\:recepcion\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/DevolucionProveedor.php
+
+		-
+			message: '#^Method App\\Models\\DevolucionProveedor\:\:registrador\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/DevolucionProveedor.php
+
+		-
+			message: '#^Class App\\Models\\Documento uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Documento.php
+
+		-
+			message: '#^Method App\\Models\\Documento\:\:obra\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Documento.php
+
+		-
+			message: '#^Method App\\Models\\Documento\:\:subidoPor\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Documento.php
+
+		-
+			message: '#^Class App\\Models\\EmpresaEors uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/EmpresaEors.php
+
+		-
+			message: '#^Class App\\Models\\EppAsignacion uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/EppAsignacion.php
+
+		-
+			message: '#^Method App\\Models\\EppAsignacion\:\:almacen\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/EppAsignacion.php
+
+		-
+			message: '#^Method App\\Models\\EppAsignacion\:\:material\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/EppAsignacion.php
+
+		-
+			message: '#^Method App\\Models\\EppAsignacion\:\:trabajador\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/EppAsignacion.php
+
+		-
+			message: '#^Class App\\Models\\EppSolicitud uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/EppSolicitud.php
+
+		-
+			message: '#^Method App\\Models\\EppSolicitud\:\:almacen\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/EppSolicitud.php
+
+		-
+			message: '#^Method App\\Models\\EppSolicitud\:\:material\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/EppSolicitud.php
+
+		-
+			message: '#^Method App\\Models\\EppSolicitud\:\:trabajador\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/EppSolicitud.php
+
+		-
+			message: '#^Class App\\Models\\Equipo uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Equipo.php
+
+		-
+			message: '#^Method App\\Models\\Equipo\:\:obra\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Equipo.php
+
+		-
+			message: '#^Class App\\Models\\ExcedenteDetectado uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ExcedenteDetectado.php
+
+		-
+			message: '#^Method App\\Models\\ExcedenteDetectado\:\:almacen\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ExcedenteDetectado.php
+
+		-
+			message: '#^Method App\\Models\\ExcedenteDetectado\:\:material\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ExcedenteDetectado.php
+
+		-
+			message: '#^Method App\\Models\\ExcedenteDetectado\:\:obra\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ExcedenteDetectado.php
+
+		-
+			message: '#^Class App\\Models\\FaseCriterio uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/FaseCriterio.php
+
+		-
+			message: '#^Class App\\Models\\FaseRequisito uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/FaseRequisito.php
+
+		-
+			message: '#^Class App\\Models\\Hito uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Hito.php
+
+		-
+			message: '#^Method App\\Models\\Hito\:\:obra\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Hito.php
+
+		-
+			message: '#^Class App\\Models\\Incidente uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Incidente.php
+
+		-
+			message: '#^Method App\\Models\\Incidente\:\:obra\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Incidente.php
+
+		-
+			message: '#^Method App\\Models\\Incidente\:\:reportador\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Incidente.php
+
+		-
+			message: '#^Method App\\Models\\Incidente\:\:trabajador\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Incidente.php
+
+		-
+			message: '#^Class App\\Models\\IndicadorAmbiental uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/IndicadorAmbiental.php
+
+		-
+			message: '#^Class App\\Models\\Interesado uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Interesado.php
+
+		-
+			message: '#^Method App\\Models\\Interesado\:\:obra\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Interesado.php
+
+		-
+			message: '#^Class App\\Models\\InventarioFisico uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/InventarioFisico.php
+
+		-
+			message: '#^Method App\\Models\\InventarioFisico\:\:almacen\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/InventarioFisico.php
+
+		-
+			message: '#^Method App\\Models\\InventarioFisico\:\:cerrador\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/InventarioFisico.php
+
+		-
+			message: '#^Method App\\Models\\InventarioFisico\:\:detalles\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/InventarioFisico.php
+
+		-
+			message: '#^Method App\\Models\\InventarioFisico\:\:programador\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/InventarioFisico.php
+
+		-
+			message: '#^Class App\\Models\\InventarioFisicoDetalle uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/InventarioFisicoDetalle.php
+
+		-
+			message: '#^Method App\\Models\\InventarioFisicoDetalle\:\:inventario\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/InventarioFisicoDetalle.php
+
+		-
+			message: '#^Method App\\Models\\InventarioFisicoDetalle\:\:material\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/InventarioFisicoDetalle.php
+
+		-
+			message: '#^Method App\\Models\\Kardex\:\:almacen\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Kardex.php
+
+		-
+			message: '#^Method App\\Models\\Kardex\:\:material\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Kardex.php
+
+		-
+			message: '#^Method App\\Models\\Kardex\:\:usuario\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Kardex.php
+
+		-
+			message: '#^Class App\\Models\\LeccionAprendida uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/LeccionAprendida.php
+
+		-
+			message: '#^Method App\\Models\\LeccionAprendida\:\:obra\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/LeccionAprendida.php
+
+		-
+			message: '#^Method App\\Models\\LeccionAprendida\:\:registrador\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/LeccionAprendida.php
+
+		-
+			message: '#^Class App\\Models\\LineaBaseCosto uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/LineaBaseCosto.php
+
+		-
+			message: '#^Method App\\Models\\LineaBaseCosto\:\:aprobador\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/LineaBaseCosto.php
+
+		-
+			message: '#^Method App\\Models\\LineaBaseCosto\:\:obra\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/LineaBaseCosto.php
+
+		-
+			message: '#^Class App\\Models\\Lote uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Lote.php
+
+		-
+			message: '#^Method App\\Models\\Lote\:\:material\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Lote.php
+
+		-
+			message: '#^Method App\\Models\\Lote\:\:proveedor\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Lote.php
+
+		-
+			message: '#^Class App\\Models\\Marcacion uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Marcacion.php
+
+		-
+			message: '#^Method App\\Models\\Marcacion\:\:obra\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Marcacion.php
+
+		-
+			message: '#^Method App\\Models\\Marcacion\:\:trabajador\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Marcacion.php
+
+		-
+			message: '#^Method App\\Models\\Material\:\:categoria\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Material.php
+
+		-
+			message: '#^Method App\\Models\\Material\:\:kardex\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Material.php
+
+		-
+			message: '#^Method App\\Models\\Material\:\:stock\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Material.php
+
+		-
+			message: '#^Method App\\Models\\Material\:\:unidad\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Material.php
+
+		-
+			message: '#^Method App\\Models\\Material\:\:unidadMedida\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Material.php
+
+		-
+			message: '#^Class App\\Models\\MedicionAmbiental uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/MedicionAmbiental.php
+
+		-
+			message: '#^Method App\\Models\\MedicionAmbiental\:\:indicador\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/MedicionAmbiental.php
+
+		-
+			message: '#^Method App\\Models\\MedicionAmbiental\:\:obra\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/MedicionAmbiental.php
+
+		-
+			message: '#^Class App\\Models\\Merma uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Merma.php
+
+		-
+			message: '#^Method App\\Models\\Merma\:\:almacen\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Merma.php
+
+		-
+			message: '#^Method App\\Models\\Merma\:\:aprobador\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Merma.php
+
+		-
+			message: '#^Method App\\Models\\Merma\:\:lote\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Merma.php
+
+		-
+			message: '#^Method App\\Models\\Merma\:\:material\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Merma.php
+
+		-
+			message: '#^Method App\\Models\\Merma\:\:registrador\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Merma.php
+
+		-
+			message: '#^Method App\\Models\\Notificacion\:\:scopeNoLeidas\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Models/Notificacion.php
+
+		-
+			message: '#^Method App\\Models\\Notificacion\:\:scopeNoLeidas\(\) has parameter \$query with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Models/Notificacion.php
+
+		-
+			message: '#^Method App\\Models\\Notificacion\:\:usuario\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Notificacion.php
+
+		-
+			message: '#^Class App\\Models\\FrenteTrabajo not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/Obra.php
+
+		-
+			message: '#^Method App\\Models\\Obra\:\:almacenes\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Obra.php
+
+		-
+			message: '#^Method App\\Models\\Obra\:\:frentes\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Obra.php
+
+		-
+			message: '#^Method App\\Models\\Obra\:\:getUbicacionGeoJsonAttribute\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Models/Obra.php
+
+		-
+			message: '#^Method App\\Models\\Obra\:\:partidas\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Obra.php
+
+		-
+			message: '#^Method App\\Models\\Obra\:\:programa\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Obra.php
+
+		-
+			message: '#^Method App\\Models\\Obra\:\:residente\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Obra.php
+
+		-
+			message: '#^Method App\\Models\\Obra\:\:setLatitudAttribute\(\) has parameter \$value with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Models/Obra.php
+
+		-
+			message: '#^Method App\\Models\\Obra\:\:setLongitudAttribute\(\) has parameter \$value with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Models/Obra.php
+
+		-
+			message: '#^Method App\\Models\\Obra\:\:usuarios\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany does not specify its types\: TRelatedModel, TDeclaringModel, TPivotModel, TAccessor \(2\-4 required\)$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Obra.php
+
+		-
+			message: '#^Parameter \#1 \$related of method Illuminate\\Database\\Eloquent\\Model\:\:hasMany\(\) expects class\-string\<Illuminate\\Database\\Eloquent\\Model\>, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Models/Obra.php
+
+		-
+			message: '#^Unable to resolve the template type TRelatedModel in call to method Illuminate\\Database\\Eloquent\\Model\:\:hasMany\(\)$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Models/Obra.php
+
+		-
+			message: '#^Class App\\Models\\ObraFase uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ObraFase.php
+
+		-
+			message: '#^Method App\\Models\\ObraFase\:\:aprobador\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ObraFase.php
+
+		-
+			message: '#^Method App\\Models\\ObraFase\:\:obra\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ObraFase.php
+
+		-
+			message: '#^Class App\\Models\\ObservacionEvidencia uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ObservacionEvidencia.php
+
+		-
+			message: '#^Method App\\Models\\ObservacionEvidencia\:\:observacion\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ObservacionEvidencia.php
+
+		-
+			message: '#^Class App\\Models\\ObservacionTecnica uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ObservacionTecnica.php
+
+		-
+			message: '#^Method App\\Models\\ObservacionTecnica\:\:evidencias\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ObservacionTecnica.php
+
+		-
+			message: '#^Method App\\Models\\ObservacionTecnica\:\:obra\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ObservacionTecnica.php
+
+		-
+			message: '#^Method App\\Models\\ObservacionTecnica\:\:responsable\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ObservacionTecnica.php
+
+		-
+			message: '#^Class App\\Models\\OrdenCompra uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/OrdenCompra.php
+
+		-
+			message: '#^Method App\\Models\\OrdenCompra\:\:almacenDestino\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/OrdenCompra.php
+
+		-
+			message: '#^Method App\\Models\\OrdenCompra\:\:detalles\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/OrdenCompra.php
+
+		-
+			message: '#^Method App\\Models\\OrdenCompra\:\:emitente\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/OrdenCompra.php
+
+		-
+			message: '#^Method App\\Models\\OrdenCompra\:\:obra\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/OrdenCompra.php
+
+		-
+			message: '#^Method App\\Models\\OrdenCompra\:\:proveedor\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/OrdenCompra.php
+
+		-
+			message: '#^Method App\\Models\\OrdenCompra\:\:recepciones\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/OrdenCompra.php
+
+		-
+			message: '#^Class App\\Models\\OrdenCompraDetalle uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/OrdenCompraDetalle.php
+
+		-
+			message: '#^Method App\\Models\\OrdenCompraDetalle\:\:material\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/OrdenCompraDetalle.php
+
+		-
+			message: '#^Method App\\Models\\OrdenCompraDetalle\:\:ordenCompra\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/OrdenCompraDetalle.php
+
+		-
+			message: '#^Class App\\Models\\Partida uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Partida.php
+
+		-
+			message: '#^Method App\\Models\\Partida\:\:obra\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Partida.php
+
+		-
+			message: '#^Method App\\Models\\Permiso\:\:roles\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany does not specify its types\: TRelatedModel, TDeclaringModel, TPivotModel, TAccessor \(2\-4 required\)$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Permiso.php
+
+		-
+			message: '#^Class App\\Models\\Planilla uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Planilla.php
+
+		-
+			message: '#^Method App\\Models\\Planilla\:\:detalles\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Planilla.php
+
+		-
+			message: '#^Method App\\Models\\Planilla\:\:obra\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Planilla.php
+
+		-
+			message: '#^Class App\\Models\\PlanillaDetalle uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/PlanillaDetalle.php
+
+		-
+			message: '#^Method App\\Models\\PlanillaDetalle\:\:planilla\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/PlanillaDetalle.php
+
+		-
+			message: '#^Method App\\Models\\PlanillaDetalle\:\:trabajador\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/PlanillaDetalle.php
+
+		-
+			message: '#^Method App\\Models\\Programa\:\:obras\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Programa.php
+
+		-
+			message: '#^Class App\\Models\\Proveedor uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Proveedor.php
+
+		-
+			message: '#^Method App\\Models\\Proveedor\:\:ordenesCompra\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Proveedor.php
+
+		-
+			message: '#^Class App\\Models\\Recepcion uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Recepcion.php
+
+		-
+			message: '#^Method App\\Models\\Recepcion\:\:almacen\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Recepcion.php
+
+		-
+			message: '#^Method App\\Models\\Recepcion\:\:almacenero\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Recepcion.php
+
+		-
+			message: '#^Method App\\Models\\Recepcion\:\:detalles\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Recepcion.php
+
+		-
+			message: '#^Method App\\Models\\Recepcion\:\:ordenCompra\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Recepcion.php
+
+		-
+			message: '#^Class App\\Models\\RecepcionDetalle uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/RecepcionDetalle.php
+
+		-
+			message: '#^Method App\\Models\\RecepcionDetalle\:\:lote\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/RecepcionDetalle.php
+
+		-
+			message: '#^Method App\\Models\\RecepcionDetalle\:\:material\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/RecepcionDetalle.php
+
+		-
+			message: '#^Method App\\Models\\RecepcionDetalle\:\:recepcion\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/RecepcionDetalle.php
+
+		-
+			message: '#^Class App\\Models\\Requerimiento uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Requerimiento.php
+
+		-
+			message: '#^Method App\\Models\\Requerimiento\:\:almacen\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Requerimiento.php
+
+		-
+			message: '#^Method App\\Models\\Requerimiento\:\:aprobador\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Requerimiento.php
+
+		-
+			message: '#^Method App\\Models\\Requerimiento\:\:cotizaciones\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Requerimiento.php
+
+		-
+			message: '#^Method App\\Models\\Requerimiento\:\:detalles\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Requerimiento.php
+
+		-
+			message: '#^Method App\\Models\\Requerimiento\:\:obra\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Requerimiento.php
+
+		-
+			message: '#^Method App\\Models\\Requerimiento\:\:partida\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Requerimiento.php
+
+		-
+			message: '#^Method App\\Models\\Requerimiento\:\:solicitante\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Requerimiento.php
+
+		-
+			message: '#^Class App\\Models\\RequerimientoDetalle uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/RequerimientoDetalle.php
+
+		-
+			message: '#^Method App\\Models\\RequerimientoDetalle\:\:material\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/RequerimientoDetalle.php
+
+		-
+			message: '#^Method App\\Models\\RequerimientoDetalle\:\:requerimiento\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/RequerimientoDetalle.php
+
+		-
+			message: '#^Class App\\Models\\Residuo uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Residuo.php
+
+		-
+			message: '#^Method App\\Models\\Residuo\:\:almacen\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Residuo.php
+
+		-
+			message: '#^Method App\\Models\\Residuo\:\:eors\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Residuo.php
+
+		-
+			message: '#^Method App\\Models\\Residuo\:\:material\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Residuo.php
+
+		-
+			message: '#^Method App\\Models\\Residuo\:\:obra\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Residuo.php
+
+		-
+			message: '#^Class App\\Models\\Riesgo uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Riesgo.php
+
+		-
+			message: '#^Method App\\Models\\Riesgo\:\:obra\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Riesgo.php
+
+		-
+			message: '#^Method App\\Models\\Riesgo\:\:responsable\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Riesgo.php
+
+		-
+			message: '#^Method App\\Models\\Rol\:\:permisos\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany does not specify its types\: TRelatedModel, TDeclaringModel, TPivotModel, TAccessor \(2\-4 required\)$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Rol.php
+
+		-
+			message: '#^Method App\\Models\\Rol\:\:usuarios\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany does not specify its types\: TRelatedModel, TDeclaringModel, TPivotModel, TAccessor \(2\-4 required\)$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Rol.php
+
+		-
+			message: '#^Method App\\Models\\SolicitudAcceso\:\:revisor\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/SolicitudAcceso.php
+
+		-
+			message: '#^Method App\\Models\\SolicitudAcceso\:\:scopePendientes\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Models/SolicitudAcceso.php
+
+		-
+			message: '#^Method App\\Models\\SolicitudAcceso\:\:scopePendientes\(\) has parameter \$query with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Models/SolicitudAcceso.php
+
+		-
+			message: '#^Class App\\Models\\SolicitudCambio uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/SolicitudCambio.php
+
+		-
+			message: '#^Method App\\Models\\SolicitudCambio\:\:decisor\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/SolicitudCambio.php
+
+		-
+			message: '#^Method App\\Models\\SolicitudCambio\:\:obra\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/SolicitudCambio.php
+
+		-
+			message: '#^Method App\\Models\\SolicitudCambio\:\:solicitante\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/SolicitudCambio.php
+
+		-
+			message: '#^Class App\\Models\\SolicitudMaterial uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/SolicitudMaterial.php
+
+		-
+			message: '#^Method App\\Models\\SolicitudMaterial\:\:almacen\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/SolicitudMaterial.php
+
+		-
+			message: '#^Method App\\Models\\SolicitudMaterial\:\:detalles\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/SolicitudMaterial.php
+
+		-
+			message: '#^Method App\\Models\\SolicitudMaterial\:\:obra\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/SolicitudMaterial.php
+
+		-
+			message: '#^Method App\\Models\\SolicitudMaterial\:\:partida\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/SolicitudMaterial.php
+
+		-
+			message: '#^Method App\\Models\\SolicitudMaterial\:\:solicitante\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/SolicitudMaterial.php
+
+		-
+			message: '#^Class App\\Models\\SolicitudMaterialDetalle uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/SolicitudMaterialDetalle.php
+
+		-
+			message: '#^Method App\\Models\\SolicitudMaterialDetalle\:\:material\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/SolicitudMaterialDetalle.php
+
+		-
+			message: '#^Method App\\Models\\SolicitudMaterialDetalle\:\:solicitud\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/SolicitudMaterialDetalle.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Models/StockAlmacen.php
+
+		-
+			message: '#^Method App\\Models\\StockAlmacen\:\:almacen\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/StockAlmacen.php
+
+		-
+			message: '#^Method App\\Models\\StockAlmacen\:\:material\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/StockAlmacen.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nombre" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Models/StockAlmacen.php
+
+		-
+			message: '#^Class App\\Models\\Trabajador uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Trabajador.php
+
+		-
+			message: '#^Method App\\Models\\Trabajador\:\:asistencias\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Trabajador.php
+
+		-
+			message: '#^Method App\\Models\\Trabajador\:\:marcaciones\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Trabajador.php
+
+		-
+			message: '#^Method App\\Models\\Trabajador\:\:obra\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Trabajador.php
+
+		-
+			message: '#^Class App\\Models\\Transferencia uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Transferencia.php
+
+		-
+			message: '#^Method App\\Models\\Transferencia\:\:almacenDestino\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Transferencia.php
+
+		-
+			message: '#^Method App\\Models\\Transferencia\:\:almacenOrigen\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Transferencia.php
+
+		-
+			message: '#^Method App\\Models\\Transferencia\:\:aprobador\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Transferencia.php
+
+		-
+			message: '#^Method App\\Models\\Transferencia\:\:confirmacionRecepcion\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasOne does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Transferencia.php
+
+		-
+			message: '#^Method App\\Models\\Transferencia\:\:creador\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Transferencia.php
+
+		-
+			message: '#^Method App\\Models\\Transferencia\:\:despacho\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasOne does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Transferencia.php
+
+		-
+			message: '#^Method App\\Models\\Transferencia\:\:detalles\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Transferencia.php
+
+		-
+			message: '#^Method App\\Models\\Transferencia\:\:excedente\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Transferencia.php
+
+		-
+			message: '#^Method App\\Models\\Transferencia\:\:solicitud\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Transferencia.php
+
+		-
+			message: '#^Class App\\Models\\TransferenciaDetalle uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/TransferenciaDetalle.php
+
+		-
+			message: '#^Method App\\Models\\TransferenciaDetalle\:\:lote\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/TransferenciaDetalle.php
+
+		-
+			message: '#^Method App\\Models\\TransferenciaDetalle\:\:material\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/TransferenciaDetalle.php
+
+		-
+			message: '#^Method App\\Models\\TransferenciaDetalle\:\:transferencia\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/TransferenciaDetalle.php
+
+		-
+			message: '#^Method App\\Models\\UnidadMedida\:\:materiales\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/UnidadMedida.php
+
+		-
+			message: '#^Class App\\Models\\CertificacionUsuario not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/Usuario.php
+
+		-
+			message: '#^Class App\\Models\\Usuario uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Usuario.php
+
+		-
+			message: '#^Method App\\Models\\Usuario\:\:almacenes\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany does not specify its types\: TRelatedModel, TDeclaringModel, TPivotModel, TAccessor \(2\-4 required\)$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Usuario.php
+
+		-
+			message: '#^Method App\\Models\\Usuario\:\:certificaciones\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Usuario.php
+
+		-
+			message: '#^Method App\\Models\\Usuario\:\:obras\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany does not specify its types\: TRelatedModel, TDeclaringModel, TPivotModel, TAccessor \(2\-4 required\)$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Usuario.php
+
+		-
+			message: '#^Method App\\Models\\Usuario\:\:rol\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany does not specify its types\: TRelatedModel, TDeclaringModel, TPivotModel, TAccessor \(2\-4 required\)$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Usuario.php
+
+		-
+			message: '#^Method App\\Models\\Usuario\:\:roles\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany does not specify its types\: TRelatedModel, TDeclaringModel, TPivotModel, TAccessor \(2\-4 required\)$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Usuario.php
+
+		-
+			message: '#^Parameter \#1 \$related of method Illuminate\\Database\\Eloquent\\Model\:\:hasMany\(\) expects class\-string\<Illuminate\\Database\\Eloquent\\Model\>, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Models/Usuario.php
+
+		-
+			message: '#^Unable to resolve the template type TRelatedModel in call to method Illuminate\\Database\\Eloquent\\Model\:\:hasMany\(\)$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Models/Usuario.php
+
+		-
+			message: '#^Class App\\Models\\Valorizacion uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Valorizacion.php
+
+		-
+			message: '#^Method App\\Models\\Valorizacion\:\:aprobador\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Valorizacion.php
+
+		-
+			message: '#^Method App\\Models\\Valorizacion\:\:obra\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Valorizacion.php
+
+		-
+			message: '#^Method App\\Support\\NotificacionesFeed\:\:paraUsuario\(\) should return array\{items\: list\<array\<string, mixed\>\>, sin_leer\: int\} but returns array\{items\: array\<int, array\{id\: string, origen\: string, tipo\: string, titulo\: string, cuerpo\: string\|null, severidad\: string\|null, referencia_tipo\: string\|null, referencia_id\: int\|null, \.\.\.\}\>, sin_leer\: int\<0, max\>\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Support/NotificacionesFeed.php
+
+		-
+			message: '#^Offset ''P\-01'' might not exist on array\{P\-01\?\: int, P\-02\: int, P\-03\?\: int\}\.$#'
+			identifier: offsetAccess.notFound
+			count: 2
+			path: database/seeders/EjemploValleMantaroSeeder.php
+
+		-
+			message: '#^Offset ''P\-03'' might not exist on array\{P\-01\?\: int, P\-02\: int, P\-03\?\: int\}\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: database/seeders/EjemploValleMantaroSeeder.php

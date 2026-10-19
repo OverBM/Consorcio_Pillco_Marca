@@ -6,15 +6,31 @@ export type EstadoObra = 'activa' | 'en-cierre' | 'cerrada';
 
 export type TipoAlmacen = 'central' | 'frente' | 'cantera';
 
-export type EstadoStock = 'optimo' | 'bajo' | 'critico' | 'sobrante' | 'reservado' | 'inactivo';
+export type EstadoStock =
+    | 'optimo'
+    | 'bajo'
+    | 'critico'
+    | 'sobrante'
+    | 'reservado'
+    | 'inactivo';
 
-export type TipoAlerta = 'critico' | 'sobrante' | 'vencimiento' | 'discrepancia';
+export type TipoAlerta =
+    | 'critico'
+    | 'sobrante'
+    | 'vencimiento'
+    | 'discrepancia';
 
 export type EstadoDespacho = 'pendiente' | 'en-transito' | 'entregado';
 
 export type EstadoRecepcion = 'pendiente' | 'confirmada';
 
-export type CategoriaMaterial = 'Cemento' | 'Acero' | 'Agregados' | 'Tuberías' | 'Ladrillos' | 'Otros';
+export type CategoriaMaterial =
+    | 'Cemento'
+    | 'Acero'
+    | 'Agregados'
+    | 'Tuberías'
+    | 'Ladrillos'
+    | 'Otros';
 
 export type Rol =
     | 'jefe-almacen-central'

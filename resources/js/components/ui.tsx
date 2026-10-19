@@ -33,10 +33,10 @@ export function Button({
     return (
         <button
             className={cn(
-                'inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition-all duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed',
+                'inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg font-semibold transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50',
                 variantStyles[variant],
                 sizeStyles[size],
-                className
+                className,
             )}
             disabled={disabled}
             {...props}
@@ -66,8 +66,16 @@ export function Card({
             {(title || action) && (
                 <header className="mb-4 flex items-start justify-between gap-3">
                     <div>
-                        {title && <h3 className="font-display text-base font-semibold text-ink">{title}</h3>}
-                        {subtitle && <p className="mt-0.5 text-xs text-muted">{subtitle}</p>}
+                        {title && (
+                            <h3 className="font-display text-ink text-base font-semibold">
+                                {title}
+                            </h3>
+                        )}
+                        {subtitle && (
+                            <p className="text-muted mt-0.5 text-xs">
+                                {subtitle}
+                            </p>
+                        )}
                     </div>
                     {action}
                 </header>
@@ -77,8 +85,19 @@ export function Card({
     );
 }
 
-export function EstadoDot({ className, size = 6 }: { className: string; size?: number }) {
-    return <span className={cn('inline-block shrink-0 rounded-full', className)} style={{ width: size, height: size }} />;
+export function EstadoDot({
+    className,
+    size = 6,
+}: {
+    className: string;
+    size?: number;
+}) {
+    return (
+        <span
+            className={cn('inline-block shrink-0 rounded-full', className)}
+            style={{ width: size, height: size }}
+        />
+    );
 }
 
 export function Badge({
@@ -97,7 +116,9 @@ export function Badge({
         violet: 'bg-sobrante-soft text-violet-800',
         neutral: 'bg-soft text-slate-700',
     };
-    return <span className={cn('chip', tones[tone], className)}>{children}</span>;
+    return (
+        <span className={cn('chip', tones[tone], className)}>{children}</span>
+    );
 }
 
 export function Modal({
@@ -121,13 +142,24 @@ export function Modal({
             <button
                 type="button"
                 aria-label="Cerrar modal"
-                className="absolute inset-0 w-full h-full bg-ink/50 backdrop-blur-sm border-0 cursor-default p-0"
+                className="bg-ink/50 absolute inset-0 h-full w-full cursor-default border-0 p-0 backdrop-blur-sm"
                 onClick={onClose}
             />
-            <div className={cn('panel relative z-10 max-h-[90vh] w-full overflow-y-auto p-6', wide ? 'max-w-3xl' : 'max-w-lg')}>
+            <div
+                className={cn(
+                    'panel relative z-10 max-h-[90vh] w-full overflow-y-auto p-6',
+                    wide ? 'max-w-3xl' : 'max-w-lg',
+                )}
+            >
                 <header className="mb-4 flex items-start justify-between gap-3">
-                    <h3 className="font-display text-lg font-semibold text-ink">{title}</h3>
-                    <button onClick={onClose} className="rounded-md p-1 text-muted transition-colors hover:bg-soft hover:text-ink cursor-pointer" aria-label="Cerrar">
+                    <h3 className="font-display text-ink text-lg font-semibold">
+                        {title}
+                    </h3>
+                    <button
+                        onClick={onClose}
+                        className="text-muted hover:bg-soft hover:text-ink cursor-pointer rounded-md p-1 transition-colors"
+                        aria-label="Cerrar"
+                    >
                         <IconX size={18} />
                     </button>
                 </header>

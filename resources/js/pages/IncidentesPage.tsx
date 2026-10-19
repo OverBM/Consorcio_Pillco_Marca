@@ -2,12 +2,20 @@
 // Lista `incidentesDb` y reporta nuevos eventos vía `useHttp`
 // contra `/api/v1/sst/incidentes`.
 
-import { useMemo, useState, type FormEvent } from 'react';
+import { useMemo, type FormEvent } from 'react';
 import { useHttp, usePage } from '@inertiajs/react';
 import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge } from '../components/ui';
-import { Field, Input, Select, Textarea, FormPanel, FormSection, SubmitButton } from '../components/form';
+import {
+    Field,
+    Input,
+    Select,
+    Textarea,
+    FormPanel,
+    FormSection,
+    SubmitButton,
+} from '../components/form';
 import { DataTable } from '../components/DataTable';
 import { EmptyState } from '../components/EmptyState';
 import { useNotifications } from '../components/notifications/NotificationProvider';
@@ -48,9 +56,14 @@ const TIPOS = [
     { value: 'cuasi', label: 'Cuasi-accidente' },
 ];
 
-export default function IncidentesPage({ incidentesDb = [], trabajadoresDb = [] }: IncidentesPageProps) {
+export default function IncidentesPage({
+    incidentesDb = [],
+    trabajadoresDb = [],
+}: IncidentesPageProps) {
     const notify = useNotifications();
-    const { catalogos } = usePage().props as unknown as { catalogos?: Catalogos };
+    const { catalogos } = usePage().props as unknown as {
+        catalogos?: Catalogos;
+    };
     const obras = catalogos?.obras ?? [];
 
     const crear = useHttp<{
@@ -73,14 +86,25 @@ export default function IncidentesPage({ incidentesDb = [], trabajadoresDb = [] 
         causas: '',
     });
 
-    const filas: IncidenteFila[] = useMemo(() => incidentesDb.map((i) => ({ ...i, id: String(i.id) })), [incidentesDb]);
+    const filas: IncidenteFila[] = useMemo(
+        () => incidentesDb.map((i) => ({ ...i, id: String(i.id) })),
+        [incidentesDb],
+    );
 
-    const graves = useMemo(() => filas.filter((i) => i.gravedad !== 'leve').length, [filas]);
-    const abiertos = useMemo(() => filas.filter((i) => i.estado !== 'cerrado').length, [filas]);
+    const graves = useMemo(
+        () => filas.filter((i) => i.gravedad !== 'leve').length,
+        [filas],
+    );
+    const abiertos = useMemo(
+        () => filas.filter((i) => i.estado !== 'cerrado').length,
+        [filas],
+    );
 
     const trabajadoresFiltrados = useMemo(() => {
         if (!crear.data.obra_id) return trabajadoresDb;
-        return trabajadoresDb.filter((t) => !t.obra_id || String(t.obra_id) === crear.data.obra_id);
+        return trabajadoresDb.filter(
+            (t) => !t.obra_id || String(t.obra_id) === crear.data.obra_id,
+        );
     }, [trabajadoresDb, crear.data.obra_id]);
 
     const enviar = (event: FormEvent) => {
@@ -101,7 +125,9 @@ export default function IncidentesPage({ incidentesDb = [], trabajadoresDb = [] 
 
         crear.transform(() => ({
             obra_id: Number(crear.data.obra_id),
-            trabajador_id: crear.data.trabajador_id ? Number(crear.data.trabajador_id) : null,
+            trabajador_id: crear.data.trabajador_id
+                ? Number(crear.data.trabajador_id)
+                : null,
             tipo: crear.data.tipo,
             gravedad: crear.data.gravedad,
             ocurrido_en: crear.data.ocurrido_en,
@@ -126,7 +152,10 @@ export default function IncidentesPage({ incidentesDb = [], trabajadoresDb = [] 
                 refrescarProps('incidentesDb');
             },
             onError: (errors: Record<string, string>) => {
-                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar el incidente.');
+                notify.error(
+                    Object.values(errors).flat().join(' ') ||
+                        'No se pudo registrar el incidente.',
+                );
             },
         });
     };
@@ -140,19 +169,37 @@ export default function IncidentesPage({ incidentesDb = [], trabajadoresDb = [] 
 
             <div className="grid gap-4 sm:grid-cols-3">
                 <Card className="p-4">
-                    <span className="text-xs font-mono uppercase text-muted">Eventos Registrados</span>
-                    <p className="mt-1 text-2xl font-bold font-mono text-ink">{filas.length}</p>
-                    <span className="text-xs text-muted">Total histórico notificado</span>
+                    <span className="text-muted font-mono text-xs uppercase">
+                        Eventos Registrados
+                    </span>
+                    <p className="text-ink mt-1 font-mono text-2xl font-bold">
+                        {filas.length}
+                    </p>
+                    <span className="text-muted text-xs">
+                        Total histórico notificado
+                    </span>
                 </Card>
                 <Card className="p-4">
-                    <span className="text-xs font-mono uppercase text-muted">Eventos Graves / Fatales</span>
-                    <p className="mt-1 text-2xl font-bold font-mono text-danger">{graves}</p>
-                    <span className="text-xs text-muted">Requieren investigación SSOMA</span>
+                    <span className="text-muted font-mono text-xs uppercase">
+                        Eventos Graves / Fatales
+                    </span>
+                    <p className="text-danger mt-1 font-mono text-2xl font-bold">
+                        {graves}
+                    </p>
+                    <span className="text-muted text-xs">
+                        Requieren investigación SSOMA
+                    </span>
                 </Card>
                 <Card className="p-4">
-                    <span className="text-xs font-mono uppercase text-muted">Investigaciones Abiertas</span>
-                    <p className="mt-1 text-2xl font-bold font-mono text-amber-600">{abiertos}</p>
-                    <span className="text-xs text-muted">Pendientes de cierre</span>
+                    <span className="text-muted font-mono text-xs uppercase">
+                        Investigaciones Abiertas
+                    </span>
+                    <p className="mt-1 font-mono text-2xl font-bold text-amber-600">
+                        {abiertos}
+                    </p>
+                    <span className="text-muted text-xs">
+                        Pendientes de cierre
+                    </span>
                 </Card>
             </div>
 
@@ -160,27 +207,79 @@ export default function IncidentesPage({ incidentesDb = [], trabajadoresDb = [] 
                 <div className="lg:col-span-2">
                     <Card title={`Incidentes (${filas.length})`}>
                         {filas.length === 0 ? (
-                            <EmptyState title="Sin incidentes registrados" hint="Reporta el primer evento con el panel lateral." />
+                            <EmptyState
+                                title="Sin incidentes registrados"
+                                hint="Reporta el primer evento con el panel lateral."
+                            />
                         ) : (
                             <DataTable
                                 emptyLabel="Sin incidentes registrados."
                                 columns={[
-                                    { key: 'codigo', header: 'Código', mono: true },
-                                    { key: 'fecha', header: 'Fecha y Hora', mono: true, cell: (i) => formatFs(i.ocurrido_en) },
-                                    { key: 'tipo', header: 'Tipo', cell: (i) => i.tipo.toUpperCase() },
-                                    { key: 'trabajador', header: 'Personal Involucrado', cell: (i) => i.trabajador?.nombres ?? '—' },
-                                    { key: 'descripcion', header: 'Descripción', cell: (i) => <span className="block max-w-64 truncate text-xs text-muted" title={i.descripcion}>{i.descripcion}</span> },
+                                    {
+                                        key: 'codigo',
+                                        header: 'Código',
+                                        mono: true,
+                                    },
+                                    {
+                                        key: 'fecha',
+                                        header: 'Fecha y Hora',
+                                        mono: true,
+                                        cell: (i) => formatFs(i.ocurrido_en),
+                                    },
+                                    {
+                                        key: 'tipo',
+                                        header: 'Tipo',
+                                        cell: (i) => i.tipo.toUpperCase(),
+                                    },
+                                    {
+                                        key: 'trabajador',
+                                        header: 'Personal Involucrado',
+                                        cell: (i) =>
+                                            i.trabajador?.nombres ?? '—',
+                                    },
+                                    {
+                                        key: 'descripcion',
+                                        header: 'Descripción',
+                                        cell: (i) => (
+                                            <span
+                                                className="text-muted block max-w-64 truncate text-xs"
+                                                title={i.descripcion}
+                                            >
+                                                {i.descripcion}
+                                            </span>
+                                        ),
+                                    },
                                     {
                                         key: 'gravedad',
                                         header: 'Gravedad',
                                         align: 'center',
-                                        cell: (i) => <Badge tone={i.gravedad === 'leve' ? 'warn' : 'danger'}>{i.gravedad.toUpperCase()}</Badge>,
+                                        cell: (i) => (
+                                            <Badge
+                                                tone={
+                                                    i.gravedad === 'leve'
+                                                        ? 'warn'
+                                                        : 'danger'
+                                                }
+                                            >
+                                                {i.gravedad.toUpperCase()}
+                                            </Badge>
+                                        ),
                                     },
                                     {
                                         key: 'estado',
                                         header: 'Estado',
                                         align: 'center',
-                                        cell: (i) => <Badge tone={i.estado === 'cerrado' ? 'ok' : 'warn'}>{i.estado.toUpperCase()}</Badge>,
+                                        cell: (i) => (
+                                            <Badge
+                                                tone={
+                                                    i.estado === 'cerrado'
+                                                        ? 'ok'
+                                                        : 'warn'
+                                                }
+                                            >
+                                                {i.estado.toUpperCase()}
+                                            </Badge>
+                                        ),
                                     },
                                 ]}
                                 rows={filas}
@@ -189,10 +288,20 @@ export default function IncidentesPage({ incidentesDb = [], trabajadoresDb = [] 
                     </Card>
                 </div>
 
-                <FormPanel title="Reportar Incidente" subtitle="Notificación inmediata SSOMA" onSubmit={enviar} className="text-xs">
+                <FormPanel
+                    title="Reportar Incidente"
+                    subtitle="Notificación inmediata SSOMA"
+                    onSubmit={enviar}
+                    className="text-xs"
+                >
                     <FormSection title="Evento" columns={1}>
                         <Field label="Obra" required>
-                            <Select value={crear.data.obra_id} onChange={(e) => crear.setData('obra_id', e.target.value)}>
+                            <Select
+                                value={crear.data.obra_id}
+                                onChange={(e) =>
+                                    crear.setData('obra_id', e.target.value)
+                                }
+                            >
                                 <option value="">Selecciona obra…</option>
                                 {obras.map((o) => (
                                     <option key={o.id} value={String(o.id)}>
@@ -203,7 +312,12 @@ export default function IncidentesPage({ incidentesDb = [], trabajadoresDb = [] 
                         </Field>
                         <div className="grid grid-cols-2 gap-3">
                             <Field label="Tipo" required>
-                                <Select value={crear.data.tipo} onChange={(e) => crear.setData('tipo', e.target.value)}>
+                                <Select
+                                    value={crear.data.tipo}
+                                    onChange={(e) =>
+                                        crear.setData('tipo', e.target.value)
+                                    }
+                                >
                                     {TIPOS.map((t) => (
                                         <option key={t.value} value={t.value}>
                                             {t.label}
@@ -212,7 +326,15 @@ export default function IncidentesPage({ incidentesDb = [], trabajadoresDb = [] 
                                 </Select>
                             </Field>
                             <Field label="Gravedad" required>
-                                <Select value={crear.data.gravedad} onChange={(e) => crear.setData('gravedad', e.target.value)}>
+                                <Select
+                                    value={crear.data.gravedad}
+                                    onChange={(e) =>
+                                        crear.setData(
+                                            'gravedad',
+                                            e.target.value,
+                                        )
+                                    }
+                                >
                                     <option value="leve">Leve</option>
                                     <option value="grave">Grave</option>
                                     <option value="fatal">Fatal</option>
@@ -220,8 +342,18 @@ export default function IncidentesPage({ incidentesDb = [], trabajadoresDb = [] 
                             </Field>
                         </div>
                         <Field label="Personal Involucrado">
-                            <Select value={crear.data.trabajador_id} onChange={(e) => crear.setData('trabajador_id', e.target.value)}>
-                                <option value="">Sin personal específico</option>
+                            <Select
+                                value={crear.data.trabajador_id}
+                                onChange={(e) =>
+                                    crear.setData(
+                                        'trabajador_id',
+                                        e.target.value,
+                                    )
+                                }
+                            >
+                                <option value="">
+                                    Sin personal específico
+                                </option>
                                 {trabajadoresFiltrados.map((t) => (
                                     <option key={t.id} value={String(t.id)}>
                                         {t.nombres}
@@ -230,29 +362,57 @@ export default function IncidentesPage({ incidentesDb = [], trabajadoresDb = [] 
                             </Select>
                         </Field>
                         <Field label="Fecha y Hora" required>
-                            <Input type="datetime-local" value={crear.data.ocurrido_en} onChange={(e) => crear.setData('ocurrido_en', e.target.value)} />
+                            <Input
+                                type="datetime-local"
+                                value={crear.data.ocurrido_en}
+                                onChange={(e) =>
+                                    crear.setData('ocurrido_en', e.target.value)
+                                }
+                            />
                         </Field>
                     </FormSection>
 
                     <FormSection title="Detalle" columns={1}>
                         <Field label="Descripción del Evento" required>
-                            <Textarea value={crear.data.descripcion} onChange={(e) => crear.setData('descripcion', e.target.value)} rows={3} placeholder="Relato de lo ocurrido…" />
+                            <Textarea
+                                value={crear.data.descripcion}
+                                onChange={(e) =>
+                                    crear.setData('descripcion', e.target.value)
+                                }
+                                rows={3}
+                                placeholder="Relato de lo ocurrido…"
+                            />
                         </Field>
                         <Field label="Causas básicas / inmediatas">
-                            <Textarea value={crear.data.causas} onChange={(e) => crear.setData('causas', e.target.value)} rows={2} placeholder="Factores contribuyentes…" />
+                            <Textarea
+                                value={crear.data.causas}
+                                onChange={(e) =>
+                                    crear.setData('causas', e.target.value)
+                                }
+                                rows={2}
+                                placeholder="Factores contribuyentes…"
+                            />
                         </Field>
-                        <label className="flex items-center gap-2 text-xs text-ink">
+                        <label className="text-ink flex items-center gap-2 text-xs">
                             <input
                                 type="checkbox"
                                 checked={crear.data.requiere_traslado}
-                                onChange={(e) => crear.setData('requiere_traslado', e.target.checked)}
-                                className="h-4 w-4 rounded border-line"
+                                onChange={(e) =>
+                                    crear.setData(
+                                        'requiere_traslado',
+                                        e.target.checked,
+                                    )
+                                }
+                                className="border-line h-4 w-4 rounded"
                             />
                             Requiere traslado a centro médico
                         </label>
                     </FormSection>
 
-                    <SubmitButton status={crear.processing ? 'submitting' : 'idle'} className="w-full">
+                    <SubmitButton
+                        status={crear.processing ? 'submitting' : 'idle'}
+                        className="w-full"
+                    >
                         <IconAlertTriangle size={15} />
                         Registrar Incidente
                     </SubmitButton>

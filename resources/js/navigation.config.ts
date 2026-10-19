@@ -1,4 +1,4 @@
-import { NavGroup } from './design-system/DashboardSidebar';
+import { NavGroup, NavItem } from './design-system/DashboardSidebar';
 
 export type AppRoleId =
     | 'gerente_general'
@@ -29,110 +29,129 @@ export interface AppRoleItem {
 
 /**
  * Catálogo alineado con los 18 códigos de `RolesSeeder`.
+ *
+ * Cada línea del spec tiene el formato `id|nombre|badge|descripcion`.
  */
-export const APP_ROLES: AppRoleItem[] = [
-    { id: 'gerente_general', nombre: 'Gerente General', badge: 'GG', descripcion: 'Visión consolidada y programa PMU' },
-    { id: 'planificacion_administracion', nombre: 'Planificación / Administración', badge: 'PA', descripcion: 'Planificación, administración y accesos' },
-    { id: 'area_tecnica', nombre: 'Área Técnica / Ingeniería', badge: 'AT', descripcion: 'Ingeniería y gestión técnica de obra' },
-    { id: 'area_financiera', nombre: 'Área Financiera', badge: 'AF', descripcion: 'Costos, valorizaciones y compras' },
-    { id: 'residente_obra', nombre: 'Residente de Obra', badge: 'RO', descripcion: 'Gestión y control de frente de obra' },
-    { id: 'maestro_obra', nombre: 'Maestro de Obra / Cuadrillas', badge: 'MO', descripcion: 'Ejecución y cuadrillas en campo' },
-    { id: 'obrero_obra', nombre: 'Obrero / Personal de Obra', badge: 'OB', descripcion: 'Personal operativo de obra' },
-    { id: 'almacenero_obra', nombre: 'Almacenero de Obra', badge: 'ALM', descripcion: 'Recepción, despacho y kardex' },
-    { id: 'jefe_logistica_compras', nombre: 'Jefe de Logística / Compras', badge: 'LOG', descripcion: 'Aprobaciones y compras multi-almacén' },
-    { id: 'jefe_recursos_humanos', nombre: 'Jefe de Recursos Humanos', badge: 'RRHH', descripcion: 'Personal, asistencia y planillas' },
-    { id: 'prevencionista_ssoma', nombre: 'Prevencionista SSOMA', badge: 'SST', descripcion: 'Seguridad y salud ocupacional' },
-    { id: 'supervisor_ambiental', nombre: 'Supervisor Ambiental', badge: 'AMB', descripcion: 'Monitoreo ambiental y residuos' },
-    { id: 'oficina_tecnica', nombre: 'Oficina Técnica', badge: 'OT', descripcion: 'Control técnico y documentario' },
-    { id: 'proveedor', nombre: 'Proveedor', badge: 'PRV', descripcion: 'Cotizaciones y órdenes de compra' },
-    { id: 'banco_fideicomitente', nombre: 'Banco Fideicomitente', badge: 'BAN', descripcion: 'Supervisión financiera del fideicomiso' },
-    { id: 'supervision_obra_entidad', nombre: 'Supervisión de Obra (Entidad)', badge: 'SUP', descripcion: 'Supervisión de la entidad contratante' },
-    { id: 'administrador_sistema', nombre: 'Administrador del Sistema', badge: 'ADM', descripcion: 'Accesos, roles y configuración' },
-    { id: 'auditor', nombre: 'Auditor', badge: 'AUD', descripcion: 'Lectura integral y bitácora' },
-];
+const ROLES_SPEC = `gerente_general|Gerente General|GG|Visión consolidada y programa PMU
+planificacion_administracion|Planificación / Administración|PA|Planificación, administración y accesos
+area_tecnica|Área Técnica / Ingeniería|AT|Ingeniería y gestión técnica de obra
+area_financiera|Área Financiera|AF|Costos, valorizaciones y compras
+residente_obra|Residente de Obra|RO|Gestión y control de frente de obra
+maestro_obra|Maestro de Obra / Cuadrillas|MO|Ejecución y cuadrillas en campo
+obrero_obra|Obrero / Personal de Obra|OB|Personal operativo de obra
+almacenero_obra|Almacenero de Obra|ALM|Recepción, despacho y kardex
+jefe_logistica_compras|Jefe de Logística / Compras|LOG|Aprobaciones y compras multi-almacén
+jefe_recursos_humanos|Jefe de Recursos Humanos|RRHH|Personal, asistencia y planillas
+prevencionista_ssoma|Prevencionista SSOMA|SST|Seguridad y salud ocupacional
+supervisor_ambiental|Supervisor Ambiental|AMB|Monitoreo ambiental y residuos
+oficina_tecnica|Oficina Técnica|OT|Control técnico y documentario
+proveedor|Proveedor|PRV|Cotizaciones y órdenes de compra
+banco_fideicomitente|Banco Fideicomitente|BAN|Supervisión financiera del fideicomiso
+supervision_obra_entidad|Supervisión de Obra (Entidad)|SUP|Supervisión de la entidad contratante
+administrador_sistema|Administrador del Sistema|ADM|Accesos, roles y configuración
+auditor|Auditor|AUD|Lectura integral y bitácora`;
+
+export const APP_ROLES: AppRoleItem[] = ROLES_SPEC.split('\n')
+    .filter((linea) => linea.trim() !== '')
+    .map((linea) => {
+        const [id, nombre, badge, descripcion] = linea.split('|');
+
+        return { id: id as AppRoleId, nombre, badge, descripcion };
+    });
 
 /**
  * Módulos accesibles por defecto cuando el usuario no tiene permisos resueltos.
  * El Panel General y Mi Perfil quedan siempre disponibles para usuarios autenticados.
+ *
+ * Cada sección inicia con `# Título` y cada módulo se declara como
+ * `id|label|href|icon|permiso|badge|tone` (permiso, badge y tone son opcionales).
  */
-export const NAVIGATION_CONFIG: NavGroup[] = [
-    {
-        title: 'Panel Principal',
-        items: [
-            { id: 'panel-general', label: 'Panel General', href: '/panel', icon: 'dashboard', permiso: 'panel.ver' },
-            { id: 'mi-perfil', label: 'Mi Perfil', href: '/perfil', icon: 'shield' },
-        ],
-    },
-    {
-        title: 'Programa (PMU)',
-        items: [
-            { id: 'programa-tablero', label: 'Tablero Consolidado', href: '/programa', icon: 'building', permiso: 'programa.ver' },
-            { id: 'programa-redistribucion', label: 'Redistribución Excedentes', href: '/programa/redistribucion', icon: 'refresh', badge: 'ACTIVO', tone: 'mint', permiso: 'programa.ver' },
-        ],
-    },
-    {
-        title: 'Gestión de Obra (PMI)',
-        items: [
-            { id: 'ciclo-vida', label: 'Ciclo de Vida de Obra', href: '/gestion-obra/ciclo-vida', icon: 'flag', permiso: 'pmi.ver' },
-            { id: 'alcance-partidas', label: 'Alcance y Partidas', href: '/gestion-obra/partidas', icon: 'file', permiso: 'pmi.ver' },
-            { id: 'cronograma-evm', label: 'Cronograma y EVM', href: '/gestion-obra/cronograma-evm', icon: 'trending-up', permiso: 'pmi.ver' },
-            { id: 'costos-valorizacion', label: 'Costos y Valorizaciones', href: '/gestion-obra/valorizaciones', icon: 'dollar', permiso: 'pmi.ver' },
-            { id: 'riesgos-alertas', label: 'Riesgos y Alertas', href: '/gestion-obra/riesgos', icon: 'alert', badge: 'SST/Stock', tone: 'yellow', permiso: 'pmi.ver' },
-            { id: 'control-cambios', label: 'Control de Cambios', href: '/gestion-obra/cambios', icon: 'edit', permiso: 'pmi.ver' },
-            { id: 'cierre-obra', label: 'Cierre y Liquidación', href: '/gestion-obra/cierre', icon: 'flag', permiso: 'pmi.ver' },
-        ],
-    },
-    {
-        title: 'Almacén y Logística',
-        items: [
-            { id: 'matriz-stock', label: 'Matriz de Stock', href: '/stock', icon: 'box', permiso: 'logistica.ver' },
-            { id: 'recepcion-obra', label: 'Recepción de Obra', href: '/recepcion', icon: 'inbox', permiso: 'logistica.ver' },
-            { id: 'solicitudes-material', label: 'Solicitudes de Material', href: '/solicitudes', icon: 'clipboard', permiso: 'logistica.ver' },
-            { id: 'despacho-rutas', label: 'Despacho y Rutas', href: '/despachos', icon: 'truck', permiso: 'logistica.ver' },
-            { id: 'transferencias', label: 'Transferencias', href: '/transferencias', icon: 'repeat', permiso: 'logistica.ver' },
-            { id: 'inventario-fisico', label: 'Inventario Físico (Ciego)', href: '/inventario-fisico', icon: 'search', permiso: 'logistica.ver' },
-            { id: 'mermas', label: 'Control de Mermas', href: '/mermas', icon: 'trending-down', permiso: 'logistica.ver' },
-        ],
-    },
-    {
-        title: 'Compras y Proveedores',
-        items: [
-            { id: 'requerimientos', label: 'Requerimientos de Compra', href: '/compras/requerimientos', icon: 'shopping-cart', permiso: 'compras.ver' },
-            { id: 'cotizaciones', label: 'Cotizaciones Proveedor', href: '/compras/cotizaciones', icon: 'scale', permiso: 'compras.ver' },
-            { id: 'ordenes-compra', label: 'Órdenes de Compra', href: '/compras/ordenes-compra', icon: 'file-check', permiso: 'compras.ver' },
-            { id: 'proveedores', label: 'Directorio de Proveedores', href: '/compras/proveedores', icon: 'building', permiso: 'compras.ver' },
-            { id: 'devoluciones', label: 'Devoluciones a Proveedor', href: '/compras/devoluciones', icon: 'repeat', permiso: 'compras.ver' },
-        ],
-    },
-    {
-        title: 'Personal y SST',
-        items: [
-            { id: 'asistencia-geocerca', label: 'Asistencia con Geocerca', href: '/personal/asistencia', icon: 'map-pin', permiso: 'personal.ver' },
-            { id: 'planillas', label: 'Planillas de Pago', href: '/personal/planillas', icon: 'dollar', permiso: 'personal.ver' },
-            { id: 'capacitaciones', label: 'Capacitación y Habilitación', href: '/personal/capacitaciones', icon: 'flag', permiso: 'personal.ver' },
-            { id: 'incidentes-sst', label: 'Incidentes y Accidentes', href: '/sst/incidentes', icon: 'alert', permiso: 'personal.ver' },
-            { id: 'epp-serializado', label: 'Uso y Control de EPP', href: '/sst/epp', icon: 'shield', permiso: 'personal.ver' },
-        ],
-    },
-    {
-        title: 'Calidad y Ambiente',
-        items: [
-            { id: 'observaciones-tecnicas', label: 'Observaciones Técnicas', href: '/calidad/observaciones', icon: 'search', permiso: 'calidad.ver' },
-            { id: 'monitoreo-ambiental', label: 'Monitoreo Ambiental', href: '/ambiente/monitoreo', icon: 'refresh', permiso: 'calidad.ver' },
-            { id: 'residuos-desmonte', label: 'Gestión de Residuos', href: '/ambiente/residuos', icon: 'repeat', permiso: 'calidad.ver' },
-        ],
-    },
-    {
-        title: 'Administración',
-        items: [
-            { id: 'usuarios-roles', label: 'Usuarios y Accesos', href: '/admin/usuarios', icon: 'users', permiso: 'admin.ver' },
-            { id: 'solicitudes-acceso', label: 'Solicitudes de Acceso', href: '/admin/solicitudes', icon: 'clipboard', badge: 'NUEVO', tone: 'mint', permiso: 'admin.ver' },
-            { id: 'auditoria', label: 'Bitácora de Auditoría', href: '/admin/auditoria', icon: 'shield', permiso: 'admin.ver' },
-                { id: 'parametros', label: 'Parámetros del Sistema', href: '/admin/parametros', icon: 'settings', permiso: 'admin.ver' },
-                { id: 'fases-catalogo', label: 'Requisitos y Criterios por Fase', href: '/admin/fases', icon: 'flag', permiso: 'admin.ver' },
-        ],
-    },
-];
+const NAV_SPEC = `# Panel Principal
+panel-general|Panel General|/panel|dashboard|panel.ver
+mi-perfil|Mi Perfil|/perfil|shield
+# Programa (PMU)
+programa-tablero|Tablero Consolidado|/programa|building|programa.ver
+programa-redistribucion|Redistribución Excedentes|/programa/redistribucion|refresh|programa.ver|ACTIVO|mint
+# Gestión de Obra (PMI)
+ciclo-vida|Ciclo de Vida de Obra|/gestion-obra/ciclo-vida|flag|pmi.ver
+alcance-partidas|Alcance y Partidas|/gestion-obra/partidas|file|pmi.ver
+cronograma-evm|Cronograma y EVM|/gestion-obra/cronograma-evm|trending-up|pmi.ver
+costos-valorizacion|Costos y Valorizaciones|/gestion-obra/valorizaciones|dollar|pmi.ver
+riesgos-alertas|Riesgos y Alertas|/gestion-obra/riesgos|alert|pmi.ver|SST/Stock|yellow
+control-cambios|Control de Cambios|/gestion-obra/cambios|edit|pmi.ver
+cierre-obra|Cierre y Liquidación|/gestion-obra/cierre|flag|pmi.ver
+# Almacén y Logística
+matriz-stock|Matriz de Stock|/stock|box|logistica.ver
+recepcion-obra|Recepción de Obra|/recepcion|inbox|logistica.ver
+solicitudes-material|Solicitudes de Material|/solicitudes|clipboard|logistica.ver
+despacho-rutas|Despacho y Rutas|/despachos|truck|logistica.ver
+transferencias|Transferencias|/transferencias|repeat|logistica.ver
+inventario-fisico|Inventario Físico (Ciego)|/inventario-fisico|search|logistica.ver
+mermas|Control de Mermas|/mermas|trending-down|logistica.ver
+# Compras y Proveedores
+requerimientos|Requerimientos de Compra|/compras/requerimientos|shopping-cart|compras.ver
+cotizaciones|Cotizaciones Proveedor|/compras/cotizaciones|scale|compras.ver
+ordenes-compra|Órdenes de Compra|/compras/ordenes-compra|file-check|compras.ver
+proveedores|Directorio de Proveedores|/compras/proveedores|building|compras.ver
+devoluciones|Devoluciones a Proveedor|/compras/devoluciones|repeat|compras.ver
+# Personal y SST
+asistencia-geocerca|Asistencia con Geocerca|/personal/asistencia|map-pin|personal.ver
+planillas|Planillas de Pago|/personal/planillas|dollar|personal.ver
+capacitaciones|Capacitación y Habilitación|/personal/capacitaciones|flag|personal.ver
+incidentes-sst|Incidentes y Accidentes|/sst/incidentes|alert|personal.ver
+epp-serializado|Uso y Control de EPP|/sst/epp|shield|personal.ver
+# Calidad y Ambiente
+observaciones-tecnicas|Observaciones Técnicas|/calidad/observaciones|search|calidad.ver
+monitoreo-ambiental|Monitoreo Ambiental|/ambiente/monitoreo|refresh|calidad.ver
+residuos-desmonte|Gestión de Residuos|/ambiente/residuos|repeat|calidad.ver
+# Administración
+usuarios-roles|Usuarios y Accesos|/admin/usuarios|users|admin.ver
+solicitudes-acceso|Solicitudes de Acceso|/admin/solicitudes|clipboard|admin.ver|NUEVO|mint
+auditoria|Bitácora de Auditoría|/admin/auditoria|shield|admin.ver
+parametros|Parámetros del Sistema|/admin/parametros|settings|admin.ver
+fases-catalogo|Requisitos y Criterios por Fase|/admin/fases|flag|admin.ver`;
+
+const crearNavItem = (linea: string): NavItem => {
+    const [id, label, href, icon, permiso, badge, tone] = linea.split('|');
+
+    const item: NavItem = { id, label, href };
+
+    if (icon) {
+        item.icon = icon;
+    }
+    if (permiso) {
+        item.permiso = permiso;
+    }
+    if (badge) {
+        item.badge = badge;
+    }
+    if (tone) {
+        item.tone = tone as NavItem['tone'];
+    }
+
+    return item;
+};
+
+const crearGruposNavegacion = (): NavGroup[] => {
+    const grupos: NavGroup[] = [];
+
+    for (const linea of NAV_SPEC.split('\n')) {
+        if (linea.trim() === '') {
+            continue;
+        }
+
+        if (linea.startsWith('#')) {
+            grupos.push({ title: linea.replace(/^#\s*/, ''), items: [] });
+            continue;
+        }
+
+        grupos[grupos.length - 1].items.push(crearNavItem(linea));
+    }
+
+    return grupos;
+};
+
+export const NAVIGATION_CONFIG: NavGroup[] = crearGruposNavegacion();
 
 /**
  * Filtra la navegación dejando solo los módulos permitidos.
@@ -144,6 +163,8 @@ export function filtrarNavegacion(permisos: string[]): NavGroup[] {
 
     return NAVIGATION_CONFIG.map((grupo) => ({
         ...grupo,
-        items: grupo.items.filter((item) => !item.permiso || permitidos.has(item.permiso)),
+        items: grupo.items.filter(
+            (item) => !item.permiso || permitidos.has(item.permiso),
+        ),
     })).filter((grupo) => grupo.items.length > 0);
 }

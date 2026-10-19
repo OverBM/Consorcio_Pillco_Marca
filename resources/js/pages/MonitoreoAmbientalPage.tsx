@@ -7,7 +7,15 @@ import { useHttp, usePage } from '@inertiajs/react';
 import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge } from '../components/ui';
-import { Field, Input, Select, Textarea, FormPanel, FormSection, SubmitButton } from '../components/form';
+import {
+    Field,
+    Input,
+    Select,
+    Textarea,
+    FormPanel,
+    FormSection,
+    SubmitButton,
+} from '../components/form';
 import { DataTable } from '../components/DataTable';
 import { EmptyState } from '../components/EmptyState';
 import { useNotifications } from '../components/notifications/NotificationProvider';
@@ -40,24 +48,41 @@ interface MonitoreoPageProps {
 
 type MedicionFila = Omit<MedicionDb, 'id'> & { id: string };
 
-export default function MonitoreoAmbientalPage({ medicionesDb = [], indicadoresDb = [] }: MonitoreoPageProps) {
+export default function MonitoreoAmbientalPage({
+    medicionesDb = [],
+    indicadoresDb = [],
+}: MonitoreoPageProps) {
     const notify = useNotifications();
-    const { catalogos } = usePage().props as unknown as { catalogos?: Catalogos };
+    const { catalogos } = usePage().props as unknown as {
+        catalogos?: Catalogos;
+    };
     const obras = catalogos?.obras ?? [];
 
-    const crear = useHttp<{ obra_id: string; indicador_id: string; valor: string; medida_correctiva: string }>({
+    const crear = useHttp<{
+        obra_id: string;
+        indicador_id: string;
+        valor: string;
+        medida_correctiva: string;
+    }>({
         obra_id: obras[0] ? String(obras[0].id) : '',
         indicador_id: indicadoresDb[0] ? String(indicadoresDb[0].id) : '',
         valor: '',
         medida_correctiva: '',
     });
 
-    const filas: MedicionFila[] = useMemo(() => medicionesDb.map((m) => ({ ...m, id: String(m.id) })), [medicionesDb]);
+    const filas: MedicionFila[] = useMemo(
+        () => medicionesDb.map((m) => ({ ...m, id: String(m.id) })),
+        [medicionesDb],
+    );
 
-    const excedidas = useMemo(() => filas.filter((m) => m.fuera_de_limite).length, [filas]);
+    const excedidas = useMemo(
+        () => filas.filter((m) => m.fuera_de_limite).length,
+        [filas],
+    );
 
     const indicadorSeleccionado = useMemo(
-        () => indicadoresDb.find((i) => String(i.id) === crear.data.indicador_id),
+        () =>
+            indicadoresDb.find((i) => String(i.id) === crear.data.indicador_id),
         [indicadoresDb, crear.data.indicador_id],
     );
 
@@ -87,11 +112,21 @@ export default function MonitoreoAmbientalPage({ medicionesDb = [], indicadoresD
         void crear.post('/api/v1/ambiente/mediciones', {
             onSuccess: () => {
                 notify.success('Medición ambiental registrada.');
-                crear.setData({ obra_id: obras[0] ? String(obras[0].id) : '', indicador_id: indicadoresDb[0] ? String(indicadoresDb[0].id) : '', valor: '', medida_correctiva: '' });
+                crear.setData({
+                    obra_id: obras[0] ? String(obras[0].id) : '',
+                    indicador_id: indicadoresDb[0]
+                        ? String(indicadoresDb[0].id)
+                        : '',
+                    valor: '',
+                    medida_correctiva: '',
+                });
                 refrescarProps('medicionesDb');
             },
             onError: (errors: Record<string, string>) => {
-                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar la medición.');
+                notify.error(
+                    Object.values(errors).flat().join(' ') ||
+                        'No se pudo registrar la medición.',
+                );
             },
         });
     };
@@ -107,21 +142,67 @@ export default function MonitoreoAmbientalPage({ medicionesDb = [], indicadoresD
                 <div className="lg:col-span-2">
                     <Card title={`Mediciones Registradas (${filas.length})`}>
                         {filas.length === 0 ? (
-                            <EmptyState title="Sin mediciones ambientales" hint="Registra la primera medición con el panel lateral." />
+                            <EmptyState
+                                title="Sin mediciones ambientales"
+                                hint="Registra la primera medición con el panel lateral."
+                            />
                         ) : (
                             <DataTable
                                 emptyLabel="Sin mediciones ambientales registradas."
                                 columns={[
-                                    { key: 'indicador', header: 'Parámetro Ambiental', cell: (m) => <span className="font-bold text-ink">{m.indicador?.nombre ?? '—'}</span> },
-                                    { key: 'obra', header: 'Obra', cell: (m) => m.obra?.nombre ?? '—' },
-                                    { key: 'fecha', header: 'Fecha y Hora', mono: true, cell: (m) => formatFs(m.medido_en) },
-                                    { key: 'limite', header: 'LMP Normativo', align: 'right', mono: true, cell: (m) => `${formatNum(Number(m.indicador?.limite_maximo ?? 0))} ${m.indicador?.unidad ?? ''}` },
-                                    { key: 'valor', header: 'Valor Medido', align: 'right', mono: true, cell: (m) => `${formatNum(Number(m.valor))} ${m.indicador?.unidad ?? ''}` },
+                                    {
+                                        key: 'indicador',
+                                        header: 'Parámetro Ambiental',
+                                        cell: (m) => (
+                                            <span className="text-ink font-bold">
+                                                {m.indicador?.nombre ?? '—'}
+                                            </span>
+                                        ),
+                                    },
+                                    {
+                                        key: 'obra',
+                                        header: 'Obra',
+                                        cell: (m) => m.obra?.nombre ?? '—',
+                                    },
+                                    {
+                                        key: 'fecha',
+                                        header: 'Fecha y Hora',
+                                        mono: true,
+                                        cell: (m) => formatFs(m.medido_en),
+                                    },
+                                    {
+                                        key: 'limite',
+                                        header: 'LMP Normativo',
+                                        align: 'right',
+                                        mono: true,
+                                        cell: (m) =>
+                                            `${formatNum(Number(m.indicador?.limite_maximo ?? 0))} ${m.indicador?.unidad ?? ''}`,
+                                    },
+                                    {
+                                        key: 'valor',
+                                        header: 'Valor Medido',
+                                        align: 'right',
+                                        mono: true,
+                                        cell: (m) =>
+                                            `${formatNum(Number(m.valor))} ${m.indicador?.unidad ?? ''}`,
+                                    },
                                     {
                                         key: 'estado',
                                         header: 'Cumplimiento',
                                         align: 'center',
-                                        cell: (m) => <Badge tone={m.fuera_de_limite ? 'danger' : 'ok'}>{m.fuera_de_limite ? 'Supera LMP' : 'Dentro de Norma'}</Badge>,
+                                        cell: (m) => (
+                                            <Badge
+                                                tone={
+                                                    m.fuera_de_limite
+                                                        ? 'danger'
+                                                        : 'ok'
+                                                }
+                                            >
+                                                {m.fuera_de_limite
+                                                    ? 'Supera LMP'
+                                                    : 'Dentro de Norma'}
+                                            </Badge>
+                                        ),
                                     },
                                 ]}
                                 rows={filas}
@@ -130,10 +211,20 @@ export default function MonitoreoAmbientalPage({ medicionesDb = [], indicadoresD
                     </Card>
                 </div>
 
-                <FormPanel title="Registrar Medición" subtitle={`${excedidas} mediciones exceden el LMP`} onSubmit={enviar} className="text-xs">
+                <FormPanel
+                    title="Registrar Medición"
+                    subtitle={`${excedidas} mediciones exceden el LMP`}
+                    onSubmit={enviar}
+                    className="text-xs"
+                >
                     <FormSection title="Parámetro" columns={1}>
                         <Field label="Obra" required>
-                            <Select value={crear.data.obra_id} onChange={(e) => crear.setData('obra_id', e.target.value)}>
+                            <Select
+                                value={crear.data.obra_id}
+                                onChange={(e) =>
+                                    crear.setData('obra_id', e.target.value)
+                                }
+                            >
                                 <option value="">Selecciona obra…</option>
                                 {obras.map((o) => (
                                     <option key={o.id} value={String(o.id)}>
@@ -143,7 +234,15 @@ export default function MonitoreoAmbientalPage({ medicionesDb = [], indicadoresD
                             </Select>
                         </Field>
                         <Field label="Indicador Ambiental" required>
-                            <Select value={crear.data.indicador_id} onChange={(e) => crear.setData('indicador_id', e.target.value)}>
+                            <Select
+                                value={crear.data.indicador_id}
+                                onChange={(e) =>
+                                    crear.setData(
+                                        'indicador_id',
+                                        e.target.value,
+                                    )
+                                }
+                            >
                                 <option value="">Selecciona indicador…</option>
                                 {indicadoresDb.map((i) => (
                                     <option key={i.id} value={String(i.id)}>
@@ -152,18 +251,47 @@ export default function MonitoreoAmbientalPage({ medicionesDb = [], indicadoresD
                                 ))}
                             </Select>
                         </Field>
-                        <Field label="Valor Medido" required hint={indicadorSeleccionado ? `LMP: ${formatNum(Number(indicadorSeleccionado.limite_maximo))} ${indicadorSeleccionado.unidad}` : 'Unidad según el indicador'}>
-                            <Input type="number" min={0} step="0.001" value={crear.data.valor} onChange={(e) => crear.setData('valor', e.target.value)} />
+                        <Field
+                            label="Valor Medido"
+                            required
+                            hint={
+                                indicadorSeleccionado
+                                    ? `LMP: ${formatNum(Number(indicadorSeleccionado.limite_maximo))} ${indicadorSeleccionado.unidad}`
+                                    : 'Unidad según el indicador'
+                            }
+                        >
+                            <Input
+                                type="number"
+                                min={0}
+                                step="0.001"
+                                value={crear.data.valor}
+                                onChange={(e) =>
+                                    crear.setData('valor', e.target.value)
+                                }
+                            />
                         </Field>
                     </FormSection>
 
                     <FormSection title="Acción" columns={1}>
                         <Field label="Medida Correctiva">
-                            <Textarea value={crear.data.medida_correctiva} onChange={(e) => crear.setData('medida_correctiva', e.target.value)} rows={2} placeholder="Aplica solo si se supera el LMP…" />
+                            <Textarea
+                                value={crear.data.medida_correctiva}
+                                onChange={(e) =>
+                                    crear.setData(
+                                        'medida_correctiva',
+                                        e.target.value,
+                                    )
+                                }
+                                rows={2}
+                                placeholder="Aplica solo si se supera el LMP…"
+                            />
                         </Field>
                     </FormSection>
 
-                    <SubmitButton status={crear.processing ? 'submitting' : 'idle'} className="w-full">
+                    <SubmitButton
+                        status={crear.processing ? 'submitting' : 'idle'}
+                        className="w-full"
+                    >
                         <IconPlus size={15} />
                         Registrar Medición
                     </SubmitButton>

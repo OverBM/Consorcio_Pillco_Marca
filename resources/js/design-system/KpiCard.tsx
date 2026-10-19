@@ -30,18 +30,20 @@ export const KpiCard: React.FC<KpiCardProps> = ({
 
     return (
         <div
-            className={`min-h-[135px] p-4 flex flex-col rounded-[16px] transition-all ${
+            className={`flex min-h-[135px] flex-col rounded-[16px] p-4 transition-all ${
                 isDark
-                    ? 'bg-[#000000] text-white border border-black shadow-md'
+                    ? 'border border-black bg-[#000000] text-white shadow-md'
                     : isAlert
-                    ? 'bg-white text-black border-t-4 border-t-[#fff100] border-x border-b border-[#c6c6c6]/50 shadow-sm'
-                    : 'bg-white text-black border border-[#c6c6c6]/50 shadow-sm'
+                      ? 'border-x border-t-4 border-b border-[#c6c6c6]/50 border-t-[#fff100] bg-white text-black shadow-sm'
+                      : 'border border-[#c6c6c6]/50 bg-white text-black shadow-sm'
             } ${className}`}
         >
-            <div className="flex items-center justify-between text-[11px] font-mono tracking-wider uppercase opacity-75">
+            <div className="flex items-center justify-between font-mono text-[11px] tracking-wider uppercase opacity-75">
                 <span>{title}</span>
                 {iconGlyph && (
-                    <span className={`text-base ${isAlert ? 'text-[#000000] bg-[#fff100] px-1.5 py-0.5 rounded-full' : ''}`}>
+                    <span
+                        className={`text-base ${isAlert ? 'rounded-full bg-[#fff100] px-1.5 py-0.5 text-[#000000]' : ''}`}
+                    >
                         {iconGlyph}
                     </span>
                 )}
@@ -52,28 +54,20 @@ export const KpiCard: React.FC<KpiCardProps> = ({
                     {value}
                 </span>
                 {unit && (
-                    <span className="font-mono text-xs opacity-75">
-                        {unit}
-                    </span>
+                    <span className="font-mono text-xs opacity-75">{unit}</span>
                 )}
             </div>
 
-            <div className="mt-auto pt-3 flex items-center justify-between text-xs font-mono">
+            <div className="mt-auto flex items-center justify-between pt-3 font-mono text-xs">
                 {delta && (
                     <span
-                        className={`font-semibold ${
-                            deltaType === 'positive'
-                                ? isDark ? 'text-[#d1ffca]' : 'text-emerald-700'
-                                : deltaType === 'negative'
-                                ? 'text-rose-600'
-                                : 'opacity-70'
-                        }`}
+                        className={`font-semibold ${deltaType === 'positive' ? (isDark ? 'text-[#d1ffca]' : 'text-emerald-700') : deltaType === 'negative' ? 'text-rose-600' : 'opacity-70'}`}
                     >
                         {delta}
                     </span>
                 )}
                 {footNote && (
-                    <span className="opacity-60 text-[10px] ml-auto">
+                    <span className="ml-auto text-[10px] opacity-60">
                         {footNote}
                     </span>
                 )}

@@ -11,7 +11,7 @@ import { estadoDeAlmacen, ESTADO_META } from '../utils/estados';
 import { formatCantidad } from '../utils/format';
 import type { StockState } from '../types/stock';
 import type { Almacen, Material, Obra } from '../types';
-import { IconMapPin, IconSearch } from './icons';
+import { IconMapPin } from './icons';
 
 export interface RutaMapa {
     id: string;
@@ -72,11 +72,19 @@ export function MapaLeaflet({
     const routesLayerRef = useRef<L.LayerGroup | null>(null);
 
     const [tileMode, setTileMode] = useState<'osm' | 'satellite'>('osm');
-    const [filtroEstado, setFiltroEstado] = useState<'todos' | 'optimo' | 'bajo' | 'critico' | 'sobrante'>('todos');
+    const [filtroEstado, setFiltroEstado] = useState<
+        'todos' | 'optimo' | 'bajo' | 'critico' | 'sobrante'
+    >('todos');
     const [mostrarLeyenda, setMostrarLeyenda] = useState(true);
 
-    const obrasMap = useMemo(() => new Map(obras.map((o) => [o.id, o])), [obras]);
-    const almacenesMap = useMemo(() => new Map(almacenes.map((a) => [a.id, a])), [almacenes]);
+    const obrasMap = useMemo(
+        () => new Map(obras.map((o) => [o.id, o])),
+        [obras],
+    );
+    const almacenesMap = useMemo(
+        () => new Map(almacenes.map((a) => [a.id, a])),
+        [almacenes],
+    );
 
     // Exponer handlers globales para los botones de acción dentro de popups HTML
     useEffect(() => {
@@ -84,7 +92,10 @@ export function MapaLeaflet({
             __cpmSelectObra?: (id: string) => void;
             __cpmSetObraActiva?: (id: string) => void;
             __cpmVerMatriz?: (obraId: string) => void;
-            __cpmVerRedistribucion?: (obraId: string, almacenId: string) => void;
+            __cpmVerRedistribucion?: (
+                obraId: string,
+                almacenId: string,
+            ) => void;
         };
 
         win.__cpmSelectObra = (id: string) => {
@@ -97,7 +108,11 @@ export function MapaLeaflet({
             if (onPinClick) {
                 onPinClick(id);
             }
-            window.dispatchEvent(new CustomEvent('cpm:set-obra-activa', { detail: { obraId: id } }));
+            window.dispatchEvent(
+                new CustomEvent('cpm:set-obra-activa', {
+                    detail: { obraId: id },
+                }),
+            );
         };
 
         win.__cpmVerMatriz = (obraId?: string, almacenId?: string) => {
@@ -109,7 +124,11 @@ export function MapaLeaflet({
         };
 
         win.__cpmVerRedistribucion = (obraId: string, almacenId: string) => {
-            window.dispatchEvent(new CustomEvent('cpm:calcular-redistribucion', { detail: { obraId, almacenId } }));
+            window.dispatchEvent(
+                new CustomEvent('cpm:calcular-redistribucion', {
+                    detail: { obraId, almacenId },
+                }),
+            );
         };
 
         return () => {
@@ -231,10 +250,13 @@ export function MapaLeaflet({
                 lineJoin: 'round',
             });
 
-            polyline.bindTooltip(`Despacho ${ruta.codigo}: ${almOrigen.nombre} -> ${almDestino.nombre}`, {
-                sticky: true,
-                className: 'cpm-leaflet-tooltip',
-            });
+            polyline.bindTooltip(
+                `Despacho ${ruta.codigo}: ${almOrigen.nombre} -> ${almDestino.nombre}`,
+                {
+                    sticky: true,
+                    className: 'cpm-leaflet-tooltip',
+                },
+            );
             routesLayer.addLayer(polyline);
 
             // Marcador de camión con SVG en el punto medio
@@ -284,7 +306,9 @@ export function MapaLeaflet({
 
             polyline.bindTooltip(
                 `Redistribución sugerida: ${almOrigen.nombre} -> ${almDestino.nombre}`,
-                { sticky: true },
+                {
+                    sticky: true,
+                },
             );
             routesLayer.addLayer(polyline);
         });
@@ -343,25 +367,33 @@ export function MapaLeaflet({
                 iconSize: [0, 0],
             });
 
-            const marker = L.marker([alm.coords.lat, alm.coords.lng], { icon: customIcon });
+            const marker = L.marker([alm.coords.lat, alm.coords.lng], {
+                icon: customIcon,
+            });
 
             // Tooltip en hover
-            marker.bindTooltip(`<strong>${obra.nombre}</strong><br/>${meta.label}`, {
-                offset: L.point(0, -32),
-                direction: 'top',
-            });
+            marker.bindTooltip(
+                `<strong>${obra.nombre}</strong><br/>${meta.label}`,
+                {
+                    offset: L.point(0, -32),
+                    direction: 'top',
+                },
+            );
 
             // Popup detallado interactivo con SVG Icons y predicción
             const stockAlm = stock.stock[alm.id] ?? {};
-            const itemsResumen = materiales.slice(0, 3).map((mat) => {
-                const cant = stockAlm[mat.id] ?? 0;
-                return `
+            const itemsResumen = materiales
+                .slice(0, 3)
+                .map((mat) => {
+                    const cant = stockAlm[mat.id] ?? 0;
+                    return `
                     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; padding: 2px 0;">
                         <span style="color: #6b7190; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;">${mat.nombre}</span>
                         <span style="font-weight: 700; font-family: monospace; color: #101233;">${formatCantidad(cant)} ${mat.unidad}</span>
                     </div>
                 `;
-            }).join('');
+                })
+                .join('');
 
             const popupHtml = `
                 <div style="padding: 12px 14px; min-width: 250px; font-family: sans-serif;">
@@ -422,9 +454,21 @@ export function MapaLeaflet({
 
             markersLayer.addLayer(marker);
         });
-    }, [almacenes, obras, stock, materiales, rutas, sugerencias, seleccionadaId, resaltarAlertaOrigenId, resaltarAlertaDestinoId, filtroEstado, onPinClick, obrasMap, almacenesMap]);
-
-
+    }, [
+        almacenes,
+        obras,
+        stock,
+        materiales,
+        rutas,
+        sugerencias,
+        seleccionadaId,
+        resaltarAlertaOrigenId,
+        resaltarAlertaDestinoId,
+        filtroEstado,
+        onPinClick,
+        obrasMap,
+        almacenesMap,
+    ]);
 
     // 4. Centrado suave al seleccionar una obra desde fuera del mapa
     useEffect(() => {
@@ -448,19 +492,27 @@ export function MapaLeaflet({
     };
 
     return (
-        <div className={cn('relative w-full rounded-2xl overflow-hidden border border-line bg-surface shadow-sm', className)}>
+        <div
+            className={cn(
+                'border-line bg-surface relative w-full overflow-hidden rounded-2xl border shadow-sm',
+                className,
+            )}
+        >
             {/* Contenedor del Mapa Leaflet */}
-            <div ref={mapContainerRef} className="w-full h-[420px] md:h-[460px] z-0" />
+            <div
+                ref={mapContainerRef}
+                className="z-0 h-[420px] w-full md:h-[460px]"
+            />
 
             {/* Barra de Controles Superiores Flotantes */}
             <div className="absolute top-3 left-3 z-[1000] flex flex-wrap items-center gap-2">
                 {/* Selector de Capa Callejero / Satélite */}
-                <div className="flex items-center bg-surface/95 backdrop-blur-sm p-1 rounded-xl shadow-md border border-line">
+                <div className="bg-surface/95 border-line flex items-center rounded-xl border p-1 shadow-md backdrop-blur-sm">
                     <button
                         type="button"
                         onClick={() => setTileMode('osm')}
                         className={cn(
-                            'px-2.5 py-1 text-xs font-semibold rounded-lg transition-all',
+                            'rounded-lg px-2.5 py-1 text-xs font-semibold transition-all',
                             tileMode === 'osm'
                                 ? 'bg-brand-500 text-white shadow-sm'
                                 : 'text-muted hover:text-ink hover:bg-soft',
@@ -472,7 +524,7 @@ export function MapaLeaflet({
                         type="button"
                         onClick={() => setTileMode('satellite')}
                         className={cn(
-                            'px-2.5 py-1 text-xs font-semibold rounded-lg transition-all',
+                            'rounded-lg px-2.5 py-1 text-xs font-semibold transition-all',
                             tileMode === 'satellite'
                                 ? 'bg-brand-500 text-white shadow-sm'
                                 : 'text-muted hover:text-ink hover:bg-soft',
@@ -486,7 +538,7 @@ export function MapaLeaflet({
                 <button
                     type="button"
                     onClick={handleRecenter}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-surface/95 backdrop-blur-sm text-ink hover:text-brand-600 rounded-xl shadow-md border border-line transition-all hover:bg-soft"
+                    className="bg-surface/95 text-ink hover:text-brand-600 border-line hover:bg-soft flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold shadow-md backdrop-blur-sm transition-all"
                     title="Restablecer vista a Huancayo y Valle del Mantaro"
                 >
                     <IconMapPin size={13} className="text-brand-500" />
@@ -494,12 +546,18 @@ export function MapaLeaflet({
                 </button>
 
                 {/* Filtro de Estado de Stock */}
-                <div className="hidden sm:flex items-center bg-surface/95 backdrop-blur-sm px-2 py-1 rounded-xl shadow-md border border-line text-xs">
-                    <span className="text-muted mr-1.5 font-medium">Filtro:</span>
+                <div className="bg-surface/95 border-line hidden items-center rounded-xl border px-2 py-1 text-xs shadow-md backdrop-blur-sm sm:flex">
+                    <span className="text-muted mr-1.5 font-medium">
+                        Filtro:
+                    </span>
                     <select
                         value={filtroEstado}
-                        onChange={(e) => setFiltroEstado(e.target.value as typeof filtroEstado)}
-                        className="bg-transparent font-semibold text-ink outline-none cursor-pointer text-xs"
+                        onChange={(e) =>
+                            setFiltroEstado(
+                                e.target.value as typeof filtroEstado,
+                            )
+                        }
+                        className="text-ink cursor-pointer bg-transparent text-xs font-semibold outline-none"
                     >
                         <option value="todos">Todos los almacenes</option>
                         <option value="optimo">Stock óptimo</option>
@@ -511,41 +569,41 @@ export function MapaLeaflet({
             </div>
 
             {/* Leyenda Flotante Inferior Derecha */}
-            <div className="absolute bottom-3 right-3 z-[1000]">
+            <div className="absolute right-3 bottom-3 z-[1000]">
                 {mostrarLeyenda ? (
-                    <div className="bg-surface/95 backdrop-blur-sm p-3 rounded-xl shadow-md border border-line text-[11px] space-y-1.5 max-w-[210px]">
-                        <div className="flex items-center justify-between font-bold text-ink pb-1 border-b border-line">
+                    <div className="bg-surface/95 border-line max-w-[210px] space-y-1.5 rounded-xl border p-3 text-[11px] shadow-md backdrop-blur-sm">
+                        <div className="text-ink border-line flex items-center justify-between border-b pb-1 font-bold">
                             <span>Simbología Operativa</span>
                             <button
                                 type="button"
                                 onClick={() => setMostrarLeyenda(false)}
-                                className="text-muted hover:text-ink text-xs px-1"
+                                className="text-muted hover:text-ink px-1 text-xs"
                             >
                                 x
                             </button>
                         </div>
-                        <div className="flex items-center gap-2 text-ink">
-                            <span className="w-2.5 h-2.5 rounded-full bg-ok inline-block shrink-0" />
+                        <div className="text-ink flex items-center gap-2">
+                            <span className="bg-ok inline-block h-2.5 w-2.5 shrink-0 rounded-full" />
                             <span>Stock óptimo</span>
                         </div>
-                        <div className="flex items-center gap-2 text-ink">
-                            <span className="w-2.5 h-2.5 rounded-full bg-warn inline-block shrink-0" />
+                        <div className="text-ink flex items-center gap-2">
+                            <span className="bg-warn inline-block h-2.5 w-2.5 shrink-0 rounded-full" />
                             <span>Stock bajo</span>
                         </div>
-                        <div className="flex items-center gap-2 text-ink">
-                            <span className="w-2.5 h-2.5 rounded-full bg-danger inline-block shrink-0" />
+                        <div className="text-ink flex items-center gap-2">
+                            <span className="bg-danger inline-block h-2.5 w-2.5 shrink-0 rounded-full" />
                             <span>Stock crítico</span>
                         </div>
-                        <div className="flex items-center gap-2 text-ink">
-                            <span className="w-2.5 h-2.5 rounded-full bg-sobrante inline-block shrink-0" />
+                        <div className="text-ink flex items-center gap-2">
+                            <span className="bg-sobrante inline-block h-2.5 w-2.5 shrink-0 rounded-full" />
                             <span>Sobrante por cierre</span>
                         </div>
-                        <div className="flex items-center gap-2 text-ink pt-1 border-t border-line/60">
-                            <span className="w-3.5 h-0.5 bg-indigo-600 inline-block shrink-0" />
+                        <div className="text-ink border-line/60 flex items-center gap-2 border-t pt-1">
+                            <span className="inline-block h-0.5 w-3.5 shrink-0 bg-indigo-600" />
                             <span>Despacho en tránsito</span>
                         </div>
-                        <div className="flex items-center gap-2 text-ink">
-                            <span className="w-3.5 h-0.5 border-b border-dashed border-sobrante inline-block shrink-0" />
+                        <div className="text-ink flex items-center gap-2">
+                            <span className="border-sobrante inline-block h-0.5 w-3.5 shrink-0 border-b border-dashed" />
                             <span>Redistribución sugerida</span>
                         </div>
                     </div>
@@ -553,7 +611,7 @@ export function MapaLeaflet({
                     <button
                         type="button"
                         onClick={() => setMostrarLeyenda(true)}
-                        className="bg-surface/95 backdrop-blur-sm px-2.5 py-1.5 rounded-xl shadow-md border border-line text-xs font-semibold text-ink hover:text-brand-600 transition-all"
+                        className="bg-surface/95 border-line text-ink hover:text-brand-600 rounded-xl border px-2.5 py-1.5 text-xs font-semibold shadow-md backdrop-blur-sm transition-all"
                     >
                         Mostrar simbología
                     </button>

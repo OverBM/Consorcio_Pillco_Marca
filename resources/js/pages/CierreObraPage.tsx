@@ -32,7 +32,11 @@ interface CierreObra {
 interface ExcedenteDb {
     id: number;
     cantidad: number | string;
-    material?: { id: number; nombre: string; unidad_medida?: { codigo: string } | null } | null;
+    material?: {
+        id: number;
+        nombre: string;
+        unidad_medida?: { codigo: string } | null;
+    } | null;
 }
 
 interface CierreObraPageProps {
@@ -64,8 +68,10 @@ export default function CierreObraPage({ obrasDb = [] }: CierreObraPageProps) {
         if (!obraId) return;
         setCargando(true);
         void consulta.get(`/api/v1/cierres-obra/${obraId}`, {
-            onSuccess: (res) => setDetalle((res as { data: DetalleCierre }).data),
-            onError: () => notify.error('No se pudo cargar el estado de cierre.'),
+            onSuccess: (res) =>
+                setDetalle((res as { data: DetalleCierre }).data),
+            onError: () =>
+                notify.error('No se pudo cargar el estado de cierre.'),
             onFinish: () => setCargando(false),
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -78,19 +84,30 @@ export default function CierreObraPage({ obrasDb = [] }: CierreObraPageProps) {
         }
         void accion.post(`/api/v1/cierres-obra/${obraId}/${etapa}`, {
             onSuccess: () => {
-                notify.success(etapa === 'iniciar' ? 'Proceso de cierre iniciado.' : 'Obra liquidada y cerrada.');
+                notify.success(
+                    etapa === 'iniciar'
+                        ? 'Proceso de cierre iniciado.'
+                        : 'Obra liquidada y cerrada.',
+                );
                 void consulta.get(`/api/v1/cierres-obra/${obraId}`, {
-                    onSuccess: (res) => setDetalle((res as { data: DetalleCierre }).data),
+                    onSuccess: (res) =>
+                        setDetalle((res as { data: DetalleCierre }).data),
                 });
                 refrescarProps('obrasDb');
             },
             onError: (errors: Record<string, string>) => {
-                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo ejecutar la acción.');
+                notify.error(
+                    Object.values(errors).flat().join(' ') ||
+                        'No se pudo ejecutar la acción.',
+                );
             },
         });
     };
 
-    const excedentes = (detalle?.excedentes ?? []).map((e) => ({ ...e, id: String(e.id) }));
+    const excedentes = (detalle?.excedentes ?? []).map((e) => ({
+        ...e,
+        id: String(e.id),
+    }));
     const estadoCierre = detalle?.cierre?.estado ?? 'sin_iniciar';
 
     return (
@@ -100,13 +117,15 @@ export default function CierreObraPage({ obrasDb = [] }: CierreObraPageProps) {
                 subtitle="Procedimiento formal de culminación, desmovilización y transferencia de saldos a otras obras"
             />
 
-            <Card className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <Card className="flex flex-col items-start justify-between gap-3 p-4 sm:flex-row sm:items-center">
                 <div className="flex items-center gap-3">
-                    <span className="text-xs font-mono uppercase text-muted">Obra:</span>
+                    <span className="text-muted font-mono text-xs uppercase">
+                        Obra:
+                    </span>
                     <select
                         value={obraId}
                         onChange={(e) => setObraId(e.target.value)}
-                        className="rounded-field border border-line bg-canvas px-3 py-1.5 text-xs text-ink outline-none"
+                        className="rounded-field border-line bg-canvas text-ink border px-3 py-1.5 text-xs outline-none"
                     >
                         {obrasDb.map((o) => (
                             <option key={o.id} value={String(o.id)}>
@@ -115,64 +134,126 @@ export default function CierreObraPage({ obrasDb = [] }: CierreObraPageProps) {
                         ))}
                     </select>
                 </div>
-                <Badge tone={estadoCierre === 'cerrado' ? 'ok' : estadoCierre === 'en_cierre' ? 'warn' : 'neutral'}>
+                <Badge
+                    tone={
+                        estadoCierre === 'cerrado'
+                            ? 'ok'
+                            : estadoCierre === 'en_cierre'
+                              ? 'warn'
+                              : 'neutral'
+                    }
+                >
                     {estadoCierre.replace('_', ' ')}
                 </Badge>
             </Card>
 
             {obrasDb.length === 0 ? (
-                <EmptyState title="Sin obras registradas" hint="Registra una obra para gestionar su cierre." />
+                <EmptyState
+                    title="Sin obras registradas"
+                    hint="Registra una obra para gestionar su cierre."
+                />
             ) : (
                 <div className="grid gap-4 lg:grid-cols-2">
-                    <Card title="Estado del Cierre" className="flex flex-col justify-between">
+                    <Card
+                        title="Estado del Cierre"
+                        className="flex flex-col justify-between"
+                    >
                         {cargando ? (
-                            <p className="text-xs text-muted">Cargando estado…</p>
+                            <p className="text-muted text-xs">
+                                Cargando estado…
+                            </p>
                         ) : (
                             <div className="space-y-3 text-xs">
-                                <div className="flex items-center justify-between rounded-lg border border-line bg-soft/40 p-3">
-                                    <span className="text-muted">Ejecución física 100%</span>
-                                    <span className="font-mono font-bold text-ink">
-                                        {detalle?.cierre?.fecha_ejecucion_100 ? formatFecha(detalle.cierre.fecha_ejecucion_100) : 'Pendiente'}
+                                <div className="border-line bg-soft/40 flex items-center justify-between rounded-lg border p-3">
+                                    <span className="text-muted">
+                                        Ejecución física 100%
+                                    </span>
+                                    <span className="text-ink font-mono font-bold">
+                                        {detalle?.cierre?.fecha_ejecucion_100
+                                            ? formatFecha(
+                                                  detalle.cierre
+                                                      .fecha_ejecucion_100,
+                                              )
+                                            : 'Pendiente'}
                                     </span>
                                 </div>
-                                <div className="flex items-center justify-between rounded-lg border border-line bg-soft/40 p-3">
-                                    <span className="text-muted">Recepción de obra</span>
-                                    <span className="font-mono font-bold text-ink">
-                                        {detalle?.cierre?.fecha_recepcion_obra ? formatFecha(detalle.cierre.fecha_recepcion_obra) : 'Pendiente'}
+                                <div className="border-line bg-soft/40 flex items-center justify-between rounded-lg border p-3">
+                                    <span className="text-muted">
+                                        Recepción de obra
+                                    </span>
+                                    <span className="text-ink font-mono font-bold">
+                                        {detalle?.cierre?.fecha_recepcion_obra
+                                            ? formatFecha(
+                                                  detalle.cierre
+                                                      .fecha_recepcion_obra,
+                                              )
+                                            : 'Pendiente'}
                                     </span>
                                 </div>
-                                <div className="flex items-center gap-2 rounded-lg border border-line bg-soft/40 p-3">
-                                    <IconBoxes size={16} className="text-brand-600" />
-                                    <span className="text-muted">Excedentes detectados:</span>
-                                    <span className="font-mono font-bold text-ink">{excedentes.length}</span>
+                                <div className="border-line bg-soft/40 flex items-center gap-2 rounded-lg border p-3">
+                                    <IconBoxes
+                                        size={16}
+                                        className="text-brand-600"
+                                    />
+                                    <span className="text-muted">
+                                        Excedentes detectados:
+                                    </span>
+                                    <span className="text-ink font-mono font-bold">
+                                        {excedentes.length}
+                                    </span>
                                 </div>
 
                                 <div className="flex flex-wrap gap-2 pt-2">
-                                    <Button variant="mint" disabled={accion.processing || estadoCierre === 'cerrado'} onClick={() => ejecutar('iniciar')}>
+                                    <Button
+                                        variant="mint"
+                                        disabled={
+                                            accion.processing ||
+                                            estadoCierre === 'cerrado'
+                                        }
+                                        onClick={() => ejecutar('iniciar')}
+                                    >
                                         <IconRepeat size={15} /> Iniciar Cierre
                                     </Button>
-                                    <Button variant="primary" disabled={accion.processing || estadoCierre === 'cerrado'} onClick={() => ejecutar('finalizar')}>
-                                        <IconCheckCircle size={15} /> Finalizar y Liquidar
+                                    <Button
+                                        variant="primary"
+                                        disabled={
+                                            accion.processing ||
+                                            estadoCierre === 'cerrado'
+                                        }
+                                        onClick={() => ejecutar('finalizar')}
+                                    >
+                                        <IconCheckCircle size={15} /> Finalizar
+                                        y Liquidar
                                     </Button>
                                 </div>
                             </div>
                         )}
                     </Card>
 
-                    <Card title={`Excedentes para Redistribución (${excedentes.length})`}>
+                    <Card
+                        title={`Excedentes para Redistribución (${excedentes.length})`}
+                    >
                         {excedentes.length === 0 ? (
-                            <EmptyState title="Sin excedentes" hint="Se detectan automáticamente al iniciar el cierre." />
+                            <EmptyState
+                                title="Sin excedentes"
+                                hint="Se detectan automáticamente al iniciar el cierre."
+                            />
                         ) : (
                             <DataTable
                                 emptyLabel="Sin excedentes registrados."
                                 columns={[
-                                    { key: 'material', header: 'Material', cell: (e) => e.material?.nombre ?? '—' },
+                                    {
+                                        key: 'material',
+                                        header: 'Material',
+                                        cell: (e) => e.material?.nombre ?? '—',
+                                    },
                                     {
                                         key: 'cantidad',
                                         header: 'Cantidad',
                                         align: 'right',
                                         mono: true,
-                                        cell: (e) => `${formatCantidad(Number(e.cantidad))} ${e.material?.unidad_medida?.codigo ?? ''}`,
+                                        cell: (e) =>
+                                            `${formatCantidad(Number(e.cantidad))} ${e.material?.unidad_medida?.codigo ?? ''}`,
                                     },
                                 ]}
                                 rows={excedentes}

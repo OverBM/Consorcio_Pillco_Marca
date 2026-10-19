@@ -103,7 +103,11 @@ const TEMA: Record<'mapa' | 'satelite', Tema> = {
 };
 
 /** Posición en % para el tooltip/popup del pin (el contenedor del mapa == caja del SVG). */
-function pinPos(p: { x: number; y: number }): { left: string; top: string; move: string } {
+function pinPos(p: { x: number; y: number }): {
+    left: string;
+    top: string;
+    move: string;
+} {
     const sx = (p.x / MAP_W) * 100;
     const sy = (p.y / MAP_H) * 100;
     const below = sy < 32;
@@ -123,7 +127,13 @@ function pinPos(p: { x: number; y: number }): { left: string; top: string; move:
     };
 }
 
-function BadgeEstado({ estado, mini }: { estado: StockEstado; mini?: boolean }) {
+function BadgeEstado({
+    estado,
+    mini,
+}: {
+    estado: StockEstado;
+    mini?: boolean;
+}) {
     const meta = ESTADO_META[estado];
     return (
         <span
@@ -159,14 +169,25 @@ export function MapaSchematic({
     onPinClick?: (obraId: string) => void;
     className?: string;
 }) {
-    const obrasPorId = useMemo(() => new Map(obras.map((o) => [o.id, o])), [obras]);
-    const almPorId = useMemo(() => new Map(almacenes.map((a) => [a.id, a])), [almacenes]);
+    const obrasPorId = useMemo(
+        () => new Map(obras.map((o) => [o.id, o])),
+        [obras],
+    );
+    const almPorId = useMemo(
+        () => new Map(almacenes.map((a) => [a.id, a])),
+        [almacenes],
+    );
 
     const estadoPorAlmacen = useMemo(() => {
         const out: Record<string, StockEstado> = {};
         for (const alm of almacenes) {
             const obra = obrasPorId.get(alm.obraId);
-            out[alm.id] = estadoDeAlmacen(alm, obra?.estado ?? 'cerrada', stock, materiales);
+            out[alm.id] = estadoDeAlmacen(
+                alm,
+                obra?.estado ?? 'cerrada',
+                stock,
+                materiales,
+            );
         }
         return out;
     }, [almacenes, obrasPorId, stock, materiales]);
@@ -193,10 +214,18 @@ export function MapaSchematic({
                     return {
                         material,
                         cantidad,
-                        estado: estadoDeStock(cantidad, material.stockMinimo, obra?.estado ?? 'cerrada'),
+                        estado: estadoDeStock(
+                            cantidad,
+                            material.stockMinimo,
+                            obra?.estado ?? 'cerrada',
+                        ),
                     };
                 })
-                .sort((a, b) => prioridad[b.estado] - prioridad[a.estado] || b.cantidad - a.cantidad);
+                .sort(
+                    (a, b) =>
+                        prioridad[b.estado] - prioridad[a.estado] ||
+                        b.cantidad - a.cantidad,
+                );
             out[alm.id] = items;
         }
         return out;
@@ -213,7 +242,7 @@ export function MapaSchematic({
         <div className={cn('relative', className)}>
             <div className="relative">
                 {/* Controles Mapa/Satélite */}
-                <div className="absolute left-3 top-3 z-10 flex overflow-hidden rounded-lg border border-line bg-surface/95 text-xs font-semibold shadow-card">
+                <div className="border-line bg-surface/95 shadow-card absolute top-3 left-3 z-10 flex overflow-hidden rounded-lg border text-xs font-semibold">
                     {(['mapa', 'satelite'] as const).map((v) => (
                         <button
                             key={v}
@@ -224,14 +253,16 @@ export function MapaSchematic({
                             }}
                             className={cn(
                                 'px-3 py-1.5 transition-colors',
-                                vista === v ? 'bg-brand-500 text-white' : 'cursor-pointer text-muted hover:text-ink',
+                                vista === v
+                                    ? 'bg-brand-500 text-white'
+                                    : 'text-muted hover:text-ink cursor-pointer',
                             )}
                         >
                             {v === 'mapa' ? 'Mapa' : 'Satélite'}
                         </button>
                     ))}
                 </div>
-                <div className="absolute right-3 top-3 z-10 flex cursor-pointer items-center gap-1.5 rounded-lg border border-line bg-surface/95 px-2.5 py-1.5 text-xs font-medium text-muted shadow-card">
+                <div className="border-line bg-surface/95 text-muted shadow-card absolute top-3 right-3 z-10 flex cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium">
                     <IconSearch size={13} />
                     Buscar distrito…
                 </div>
@@ -249,26 +280,66 @@ export function MapaSchematic({
                             <stop offset="100%" stopColor="#18241f" />
                         </radialGradient>
                         <radialGradient id="sat-2" cx="50%" cy="50%" r="50%">
-                            <stop offset="0%" stopColor="#3a4b3c" stopOpacity={0.85} />
-                            <stop offset="100%" stopColor="#3a4b3c" stopOpacity={0} />
+                            <stop
+                                offset="0%"
+                                stopColor="#3a4b3c"
+                                stopOpacity={0.85}
+                            />
+                            <stop
+                                offset="100%"
+                                stopColor="#3a4b3c"
+                                stopOpacity={0}
+                            />
                         </radialGradient>
                     </defs>
 
-                    <rect x={0} y={0} width={MAP_W} height={MAP_H} fill={t.bg} />
+                    <rect
+                        x={0}
+                        y={0}
+                        width={MAP_W}
+                        height={MAP_H}
+                        fill={t.bg}
+                    />
 
                     {/* Textura "satélite" simulada (sin tiles externos) */}
                     {vista === 'satelite' && (
                         <g opacity={0.9} pointerEvents="none">
-                            <ellipse cx={330} cy={250} rx={520} ry={240} fill="url(#sat-1)" />
-                            <ellipse cx={700} cy={140} rx={380} ry={200} fill="url(#sat-2)" />
+                            <ellipse
+                                cx={330}
+                                cy={250}
+                                rx={520}
+                                ry={240}
+                                fill="url(#sat-1)"
+                            />
+                            <ellipse
+                                cx={700}
+                                cy={140}
+                                rx={380}
+                                ry={200}
+                                fill="url(#sat-2)"
+                            />
                         </g>
                     )}
 
                     {/* Terreno: relieve de montañas + río Mantaro */}
-                    <g fill="none" stroke={t.hill} strokeWidth={2} strokeLinecap="round">
-                        <path d="M 90 70 C 240 40 330 60 420 120 C 560 214 700 240 900 200" opacity={0.7} />
-                        <path d="M 40 250 C 180 190 300 185 420 220 C 600 274 760 290 990 250" opacity={0.6} />
-                        <path d="M -10 380 C 160 320 320 310 500 352 C 680 394 840 400 1020 368" opacity={0.6} />
+                    <g
+                        fill="none"
+                        stroke={t.hill}
+                        strokeWidth={2}
+                        strokeLinecap="round"
+                    >
+                        <path
+                            d="M 90 70 C 240 40 330 60 420 120 C 560 214 700 240 900 200"
+                            opacity={0.7}
+                        />
+                        <path
+                            d="M 40 250 C 180 190 300 185 420 220 C 600 274 760 290 990 250"
+                            opacity={0.6}
+                        />
+                        <path
+                            d="M -10 380 C 160 320 320 310 500 352 C 680 394 840 400 1020 368"
+                            opacity={0.6}
+                        />
                     </g>
                     <path
                         d="M 330 20 C 420 88 470 140 560 205 C 610 238 660 268 712 322 C 780 392 872 424 990 428"
@@ -310,7 +381,11 @@ export function MapaSchematic({
                         fill={t.carreteraText}
                         fontWeight={600}
                         transform="rotate(-14 170 188)"
-                        style={{ paintOrder: 'stroke', stroke: t.halo, strokeWidth: 3 }}
+                        style={{
+                            paintOrder: 'stroke',
+                            stroke: t.halo,
+                            strokeWidth: 3,
+                        }}
                     >
                         CARRETERA CENTRAL
                     </text>
@@ -330,13 +405,22 @@ export function MapaSchematic({
                         fill={t.ffccText}
                         fontWeight={600}
                         transform="rotate(30 610 202)"
-                        style={{ paintOrder: 'stroke', stroke: t.halo, strokeWidth: 3 }}
+                        style={{
+                            paintOrder: 'stroke',
+                            stroke: t.halo,
+                            strokeWidth: 3,
+                        }}
                     >
                         FF.CC.
                     </text>
 
                     {/* Grid urbano Huancayo / El Tambo (decorativo) */}
-                    <g fill="none" stroke={t.grid} strokeWidth={1} opacity={0.8}>
+                    <g
+                        fill="none"
+                        stroke={t.grid}
+                        strokeWidth={1}
+                        opacity={0.8}
+                    >
                         <rect x={540} y={196} width={84} height={60} rx={4} />
                         <rect x={550} y={206} width={28} height={18} />
                         <rect x={586} y={206} width={30} height={18} />
@@ -346,11 +430,21 @@ export function MapaSchematic({
 
                     {/* Etiquetas de distritos */}
                     <g fill={t.distrito} fontSize={12} fontWeight={600}>
-                        <text x={200} y={66} textAnchor="middle">La Oroya</text>
-                        <text x={392} y={112} textAnchor="middle">Jauja</text>
-                        <text x={596} y={184} textAnchor="middle">Huancayo</text>
-                        <text x={236} y={204} textAnchor="middle">Chupaca</text>
-                        <text x={762} y={322} textAnchor="middle">Chilca</text>
+                        <text x={200} y={66} textAnchor="middle">
+                            La Oroya
+                        </text>
+                        <text x={392} y={112} textAnchor="middle">
+                            Jauja
+                        </text>
+                        <text x={596} y={184} textAnchor="middle">
+                            Huancayo
+                        </text>
+                        <text x={236} y={204} textAnchor="middle">
+                            Chupaca
+                        </text>
+                        <text x={762} y={322} textAnchor="middle">
+                            Chilca
+                        </text>
                     </g>
 
                     {/* Sugerencias de redistribución (sobrante → obras con déficit) */}
@@ -377,7 +471,13 @@ export function MapaSchematic({
                                     strokeLinecap="round"
                                     opacity={0.75}
                                 />
-                                <circle cx={mx} cy={my} r={5} fill="#7c3aed" className="cpm-pulse" />
+                                <circle
+                                    cx={mx}
+                                    cy={my}
+                                    r={5}
+                                    fill="#7c3aed"
+                                    className="cpm-pulse"
+                                />
                             </g>
                         );
                     })}
@@ -404,13 +504,26 @@ export function MapaSchematic({
                                     stroke={enTransito ? '#3f4df0' : '#9aa4ff'}
                                     strokeWidth={enTransito ? 3.5 : 3}
                                     strokeLinecap="round"
-                                    className={enTransito ? 'cpm-route-anim' : undefined}
-                                    strokeDasharray={enTransito ? undefined : '4 6'}
+                                    className={
+                                        enTransito
+                                            ? 'cpm-route-anim'
+                                            : undefined
+                                    }
+                                    strokeDasharray={
+                                        enTransito ? undefined : '4 6'
+                                    }
                                     opacity={enTransito ? 0.9 : 0.6}
                                 />
                                 {enTransito ? (
                                     <g className="cpm-pulse">
-                                        <circle cx={mx} cy={my} r={9} fill="#fff" stroke="#3f4df0" strokeWidth={3} />
+                                        <circle
+                                            cx={mx}
+                                            cy={my}
+                                            r={9}
+                                            fill="#fff"
+                                            stroke="#3f4df0"
+                                            strokeWidth={3}
+                                        />
                                         <text
                                             x={mx}
                                             y={my + 3.5}
@@ -430,7 +543,11 @@ export function MapaSchematic({
                                     fontSize={11}
                                     fontWeight={600}
                                     fill={t.rutaText}
-                                    style={{ paintOrder: 'stroke', stroke: t.halo, strokeWidth: 4 }}
+                                    style={{
+                                        paintOrder: 'stroke',
+                                        stroke: t.halo,
+                                        strokeWidth: 4,
+                                    }}
                                 >
                                     {r.codigo}
                                 </text>
@@ -441,7 +558,9 @@ export function MapaSchematic({
                     {/* Pines de almacenes */}
                     {almacenes.map((alm) => {
                         const obra = obrasPorId.get(alm.obraId);
-                        const hex = ESTADO_META[estadoPorAlmacen[alm.id] ?? 'inactivo'].hex;
+                        const hex =
+                            ESTADO_META[estadoPorAlmacen[alm.id] ?? 'inactivo']
+                                .hex;
                         const p = proyecto(alm);
                         const sel = seleccionadaId === obra?.id;
                         const esCentral = alm.tipo === 'central';
@@ -457,24 +576,59 @@ export function MapaSchematic({
                                     e.stopPropagation();
                                     onPinClick?.(alm.obraId);
                                     setHoverAlmId(null);
-                                    setOpenAlmId((prev) => (prev === alm.id ? null : alm.id));
+                                    setOpenAlmId((prev) =>
+                                        prev === alm.id ? null : alm.id,
+                                    );
                                 }}
                                 onMouseEnter={() => setHoverAlmId(alm.id)}
                                 onMouseLeave={() => setHoverAlmId(null)}
                             >
-                                {sel && <circle r={16} fill="none" stroke={hex} strokeWidth={2.5} className="cpm-ring" />}
-                                <circle r={16} fill="#ffffff" stroke={sel ? hex : '#cbd2e6'} strokeWidth={2} />
+                                {sel && (
+                                    <circle
+                                        r={16}
+                                        fill="none"
+                                        stroke={hex}
+                                        strokeWidth={2.5}
+                                        className="cpm-ring"
+                                    />
+                                )}
+                                <circle
+                                    r={16}
+                                    fill="#ffffff"
+                                    stroke={sel ? hex : '#cbd2e6'}
+                                    strokeWidth={2}
+                                />
                                 <circle r={8} fill={hex} />
                                 {esCentral ? (
-                                    <text textAnchor="middle" y={4.5} fontSize={10} fontWeight={800} fill="#ffffff">
+                                    <text
+                                        textAnchor="middle"
+                                        y={4.5}
+                                        fontSize={10}
+                                        fontWeight={800}
+                                        fill="#ffffff"
+                                    >
                                         C
                                     </text>
                                 ) : estaCerrada ? (
-                                    <text textAnchor="middle" y={4.5} fontSize={10} fontWeight={800} fill="#ffffff">
+                                    <text
+                                        textAnchor="middle"
+                                        y={4.5}
+                                        fontSize={10}
+                                        fontWeight={800}
+                                        fill="#ffffff"
+                                    >
                                         !
                                     </text>
                                 ) : null}
-                                {sel && <circle r={16} fill="none" stroke={hex} strokeWidth={6} opacity={0.12} />}
+                                {sel && (
+                                    <circle
+                                        r={16}
+                                        fill="none"
+                                        stroke={hex}
+                                        strokeWidth={6}
+                                        opacity={0.12}
+                                    />
+                                )}
                                 <title>{`${label} — ${ESTADO_META[estadoPorAlmacen[alm.id] ?? 'inactivo'].label}`}</title>
                                 <text
                                     x={haciaIzq ? -24 : 24}
@@ -483,7 +637,11 @@ export function MapaSchematic({
                                     fontSize={13}
                                     fontWeight={600}
                                     fill={t.pinLabel}
-                                    style={{ paintOrder: 'stroke', stroke: t.halo, strokeWidth: 4 }}
+                                    style={{
+                                        paintOrder: 'stroke',
+                                        stroke: t.halo,
+                                        strokeWidth: 4,
+                                    }}
                                 >
                                     {label}
                                 </text>
@@ -493,9 +651,15 @@ export function MapaSchematic({
                                     textAnchor={haciaIzq ? 'end' : 'start'}
                                     fontSize={11}
                                     fill={t.distrito}
-                                    style={{ paintOrder: 'stroke', stroke: t.halo, strokeWidth: 3 }}
+                                    style={{
+                                        paintOrder: 'stroke',
+                                        stroke: t.halo,
+                                        strokeWidth: 3,
+                                    }}
                                 >
-                                    {estaCerrada ? `${obra?.distrito} · cierre` : obra?.distrito}
+                                    {estaCerrada
+                                        ? `${obra?.distrito} · cierre`
+                                        : obra?.distrito}
                                 </text>
                             </g>
                         );
@@ -508,39 +672,59 @@ export function MapaSchematic({
                         role="tooltip"
                         style={{ left: hp.left, top: hp.top }}
                         className={cn(
-                            'pointer-events-none absolute z-30 w-64 overflow-hidden rounded-xl border border-line bg-surface/95 text-left shadow-pop',
+                            'border-line bg-surface/95 shadow-pop pointer-events-none absolute z-30 w-64 overflow-hidden rounded-xl border text-left',
                             hp.move,
                         )}
                     >
-                        <div className="flex items-center justify-between gap-2 border-b border-line px-3 py-2">
-                            <p className="truncate text-xs font-bold text-ink">
-                                {NOMBRE_CORTO[hoverAlm.obraId] ?? hoverAlm.nombre}
+                        <div className="border-line flex items-center justify-between gap-2 border-b px-3 py-2">
+                            <p className="text-ink truncate text-xs font-bold">
+                                {NOMBRE_CORTO[hoverAlm.obraId] ??
+                                    hoverAlm.nombre}
                             </p>
-                            <BadgeEstado estado={estadoPorAlmacen[hoverAlm.id] ?? 'inactivo'} mini />
+                            <BadgeEstado
+                                estado={
+                                    estadoPorAlmacen[hoverAlm.id] ?? 'inactivo'
+                                }
+                                mini
+                            />
                         </div>
                         <div className="space-y-1 px-3 py-2">
-                            {hoverItems.slice(0, 3).map(({ material, cantidad, estado }) => (
-                                <div key={material.id} className="flex items-center justify-between gap-2 py-0.5">
-                                    <span className="flex min-w-0 items-center gap-1.5 text-[11px] text-slate-600">
-                                        <span
-                                            className={cn('h-1.5 w-1.5 shrink-0 rounded-full', ESTADO_META[estado].dot)}
-                                        />
-                                        <span className="truncate">{material.nombre}</span>
-                                    </span>
-                                    <span className="shrink-0 text-[11px] font-semibold tabular-nums text-ink">
-                                        {formatCantidad(cantidad)}{' '}
-                                        <span className="font-normal text-muted">{material.unidad}</span>
-                                    </span>
-                                </div>
-                            ))}
+                            {hoverItems
+                                .slice(0, 3)
+                                .map(({ material, cantidad, estado }) => (
+                                    <div
+                                        key={material.id}
+                                        className="flex items-center justify-between gap-2 py-0.5"
+                                    >
+                                        <span className="flex min-w-0 items-center gap-1.5 text-[11px] text-slate-600">
+                                            <span
+                                                className={cn(
+                                                    'h-1.5 w-1.5 shrink-0 rounded-full',
+                                                    ESTADO_META[estado].dot,
+                                                )}
+                                            />
+                                            <span className="truncate">
+                                                {material.nombre}
+                                            </span>
+                                        </span>
+                                        <span className="text-ink shrink-0 text-[11px] font-semibold tabular-nums">
+                                            {formatCantidad(cantidad)}{' '}
+                                            <span className="text-muted font-normal">
+                                                {material.unidad}
+                                            </span>
+                                        </span>
+                                    </div>
+                                ))}
                             {hoverItems.length > 3 && (
-                                <p className="pt-1 text-[10px] font-medium text-muted">
+                                <p className="text-muted pt-1 text-[10px] font-medium">
                                     +{hoverItems.length - 3} materiales más
                                 </p>
                             )}
                         </div>
-                        <div className="flex items-center justify-between border-t border-line px-3 py-1.5 text-[10px] text-muted">
-                            <span className="truncate">{hoverObra?.distrito}</span>
+                        <div className="border-line text-muted flex items-center justify-between border-t px-3 py-1.5 text-[10px]">
+                            <span className="truncate">
+                                {hoverObra?.distrito}
+                            </span>
                             <span className="inline-flex shrink-0 items-center gap-1">
                                 <IconMapPin size={11} />
                                 Haz clic para el detalle
@@ -554,7 +738,7 @@ export function MapaSchematic({
                     <button
                         type="button"
                         aria-label="Cerrar detalle de almacén"
-                        className="fixed inset-0 z-30 bg-transparent border-0 cursor-default p-0"
+                        className="fixed inset-0 z-30 cursor-default border-0 bg-transparent p-0"
                         onClick={() => setOpenAlmId(null)}
                     />
                 )}
@@ -562,7 +746,7 @@ export function MapaSchematic({
                     <div
                         style={{ left: op.left, top: op.top }}
                         className={cn(
-                            'absolute z-40 max-h-[calc(100vh-3rem)] w-[26rem] max-w-[92%] overflow-y-auto rounded-2xl border border-line bg-surface text-left shadow-pop',
+                            'border-line bg-surface shadow-pop absolute z-40 max-h-[calc(100vh-3rem)] w-[26rem] max-w-[92%] overflow-y-auto rounded-2xl border text-left',
                             op.move,
                         )}
                     >
@@ -579,16 +763,23 @@ export function MapaSchematic({
             </div>
 
             {/* Leyenda */}
-            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted">
+            <div className="text-muted mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs">
                 <LegendItem color="#5468ff" label="Central" />
                 <LegendItem color="#10b981" label="Frente óptimo" />
                 <LegendItem color="#f59e0b" label="Stock bajo" />
                 <LegendItem color="#ea580c" label="Crítico" />
                 <LegendItem color="#7c3aed" label="Sobrante / cierre" />
                 <LegendItem line color="#3f4df0" label="En tránsito" />
-                <LegendItem line color="#7c3aed" dotted label="Redistribución sugerida" />
+                <LegendItem
+                    line
+                    color="#7c3aed"
+                    dotted
+                    label="Redistribución sugerida"
+                />
                 <span className="ml-auto hidden font-medium sm:inline">
-                    {vista === 'satelite' ? 'Vista satélite simulada · sin tiles externos' : 'Mapa esquemático · sin tiles externos'}
+                    {vista === 'satelite'
+                        ? 'Vista satélite simulada · sin tiles externos'
+                        : 'Mapa esquemático · sin tiles externos'}
                 </span>
             </div>
         </div>
@@ -610,10 +801,15 @@ function LegendItem({
         return (
             <span className="flex items-center gap-1.5">
                 <span
-                    className={cn('h-0.5 w-4 rounded-full', dotted && 'opacity-80')}
+                    className={cn(
+                        'h-0.5 w-4 rounded-full',
+                        dotted && 'opacity-80',
+                    )}
                     style={{
                         backgroundColor: color,
-                        backgroundImage: dotted ? 'repeating-linear-gradient(90deg, transparent 0 3px, #7c3aed 3px 7px)' : undefined,
+                        backgroundImage: dotted
+                            ? 'repeating-linear-gradient(90deg, transparent 0 3px, #7c3aed 3px 7px)'
+                            : undefined,
                     }}
                 />
                 {label}
@@ -622,7 +818,10 @@ function LegendItem({
     }
     return (
         <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} />
+            <span
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: color }}
+            />
             {label}
         </span>
     );

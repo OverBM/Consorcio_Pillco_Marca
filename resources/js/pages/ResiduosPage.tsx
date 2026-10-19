@@ -7,7 +7,15 @@ import { useHttp, usePage } from '@inertiajs/react';
 import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge } from '../components/ui';
-import { Field, Input, Select, Textarea, FormPanel, FormSection, SubmitButton } from '../components/form';
+import {
+    Field,
+    Input,
+    Select,
+    Textarea,
+    FormPanel,
+    FormSection,
+    SubmitButton,
+} from '../components/form';
 import { DataTable } from '../components/DataTable';
 import { EmptyState } from '../components/EmptyState';
 import { useNotifications } from '../components/notifications/NotificationProvider';
@@ -57,9 +65,14 @@ const DESTINOS = [
 
 const UNIDADES = ['M3', 'M2', 'TN', 'KG', 'UN', 'LT'];
 
-export default function ResiduosPage({ residuosDb = [], eorsDb = [] }: ResiduosPageProps) {
+export default function ResiduosPage({
+    residuosDb = [],
+    eorsDb = [],
+}: ResiduosPageProps) {
     const notify = useNotifications();
-    const { catalogos } = usePage().props as unknown as { catalogos?: Catalogos };
+    const { catalogos } = usePage().props as unknown as {
+        catalogos?: Catalogos;
+    };
     const obras = catalogos?.obras ?? [];
     const almacenes = catalogos?.almacenes ?? [];
     const materiales = catalogos?.materiales ?? [];
@@ -86,7 +99,10 @@ export default function ResiduosPage({ residuosDb = [], eorsDb = [] }: ResiduosP
         eors_id: '',
     });
 
-    const filas: ResiduoFila[] = useMemo(() => residuosDb.map((r) => ({ ...r, id: String(r.id) })), [residuosDb]);
+    const filas: ResiduoFila[] = useMemo(
+        () => residuosDb.map((r) => ({ ...r, id: String(r.id) })),
+        [residuosDb],
+    );
 
     const enviar = (event: FormEvent) => {
         event.preventDefault();
@@ -113,7 +129,9 @@ export default function ResiduosPage({ residuosDb = [], eorsDb = [] }: ResiduosP
             almacen_id: Number(crear.data.almacen_id),
             clase: crear.data.clase,
             descripcion: crear.data.descripcion.trim(),
-            material_id: crear.data.material_id ? Number(crear.data.material_id) : null,
+            material_id: crear.data.material_id
+                ? Number(crear.data.material_id)
+                : null,
             volumen: Number(crear.data.volumen),
             unidad: crear.data.unidad,
             destino: crear.data.destino,
@@ -137,7 +155,10 @@ export default function ResiduosPage({ residuosDb = [], eorsDb = [] }: ResiduosP
                 refrescarProps('residuosDb');
             },
             onError: (errors: Record<string, string>) => {
-                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar el residuo.');
+                notify.error(
+                    Object.values(errors).flat().join(' ') ||
+                        'No se pudo registrar el residuo.',
+                );
             },
         });
     };
@@ -153,22 +174,82 @@ export default function ResiduosPage({ residuosDb = [], eorsDb = [] }: ResiduosP
                 <div className="lg:col-span-2">
                     <Card title={`Residuos y Excedentes (${filas.length})`}>
                         {filas.length === 0 ? (
-                            <EmptyState title="Sin residuos registrados" hint="Registra el primer residuo con el panel lateral." />
+                            <EmptyState
+                                title="Sin residuos registrados"
+                                hint="Registra el primer residuo con el panel lateral."
+                            />
                         ) : (
                             <DataTable
                                 emptyLabel="Sin residuos registrados."
                                 columns={[
-                                    { key: 'descripcion', header: 'Descripción del Residuo / Material', cell: (r) => <span className="font-bold text-ink">{r.descripcion}</span> },
+                                    {
+                                        key: 'descripcion',
+                                        header: 'Descripción del Residuo / Material',
+                                        cell: (r) => (
+                                            <span className="text-ink font-bold">
+                                                {r.descripcion}
+                                            </span>
+                                        ),
+                                    },
                                     {
                                         key: 'clase',
                                         header: 'Clasificación',
                                         align: 'center',
-                                        cell: (r) => <Badge tone={r.clase === 'reutilizable' ? 'ok' : r.clase === 'no_peligroso' ? 'neutral' : 'danger'}>{r.clase.replace('_', ' ').toUpperCase()}</Badge>,
+                                        cell: (r) => (
+                                            <Badge
+                                                tone={
+                                                    r.clase === 'reutilizable'
+                                                        ? 'ok'
+                                                        : r.clase ===
+                                                            'no_peligroso'
+                                                          ? 'neutral'
+                                                          : 'danger'
+                                                }
+                                            >
+                                                {r.clase
+                                                    .replace('_', ' ')
+                                                    .toUpperCase()}
+                                            </Badge>
+                                        ),
                                     },
-                                    { key: 'volumen', header: 'Volumen', align: 'right', mono: true, cell: (r) => `${formatCantidad(Number(r.volumen))} ${r.unidad}` },
-                                    { key: 'destino', header: 'Destino / Aplicación', cell: (r) => r.destino ?? '—' },
-                                    { key: 'eors', header: 'Empresa EO-RS', cell: (r) => r.eors?.razon_social ?? 'Uso interno' },
-                                    { key: 'estado', header: 'Estado', align: 'center', cell: (r) => <Badge tone={r.estado === 'dispuesto' ? 'ok' : 'warn'}>{r.estado.replace('_', ' ').toUpperCase()}</Badge> },
+                                    {
+                                        key: 'volumen',
+                                        header: 'Volumen',
+                                        align: 'right',
+                                        mono: true,
+                                        cell: (r) =>
+                                            `${formatCantidad(Number(r.volumen))} ${r.unidad}`,
+                                    },
+                                    {
+                                        key: 'destino',
+                                        header: 'Destino / Aplicación',
+                                        cell: (r) => r.destino ?? '—',
+                                    },
+                                    {
+                                        key: 'eors',
+                                        header: 'Empresa EO-RS',
+                                        cell: (r) =>
+                                            r.eors?.razon_social ??
+                                            'Uso interno',
+                                    },
+                                    {
+                                        key: 'estado',
+                                        header: 'Estado',
+                                        align: 'center',
+                                        cell: (r) => (
+                                            <Badge
+                                                tone={
+                                                    r.estado === 'dispuesto'
+                                                        ? 'ok'
+                                                        : 'warn'
+                                                }
+                                            >
+                                                {r.estado
+                                                    .replace('_', ' ')
+                                                    .toUpperCase()}
+                                            </Badge>
+                                        ),
+                                    },
                                 ]}
                                 rows={filas}
                             />
@@ -176,10 +257,20 @@ export default function ResiduosPage({ residuosDb = [], eorsDb = [] }: ResiduosP
                     </Card>
                 </div>
 
-                <FormPanel title="Registrar Residuo" subtitle="Clasificación en fuente y acopio" onSubmit={enviar} className="text-xs">
+                <FormPanel
+                    title="Registrar Residuo"
+                    subtitle="Clasificación en fuente y acopio"
+                    onSubmit={enviar}
+                    className="text-xs"
+                >
                     <FormSection title="Ubicación" columns={1}>
                         <Field label="Obra" required>
-                            <Select value={crear.data.obra_id} onChange={(e) => crear.setData('obra_id', e.target.value)}>
+                            <Select
+                                value={crear.data.obra_id}
+                                onChange={(e) =>
+                                    crear.setData('obra_id', e.target.value)
+                                }
+                            >
                                 <option value="">Selecciona obra…</option>
                                 {obras.map((o) => (
                                     <option key={o.id} value={String(o.id)}>
@@ -189,7 +280,12 @@ export default function ResiduosPage({ residuosDb = [], eorsDb = [] }: ResiduosP
                             </Select>
                         </Field>
                         <Field label="Almacén de Acopio" required>
-                            <Select value={crear.data.almacen_id} onChange={(e) => crear.setData('almacen_id', e.target.value)}>
+                            <Select
+                                value={crear.data.almacen_id}
+                                onChange={(e) =>
+                                    crear.setData('almacen_id', e.target.value)
+                                }
+                            >
                                 <option value="">Selecciona almacén…</option>
                                 {almacenes.map((a) => (
                                     <option key={a.id} value={String(a.id)}>
@@ -202,7 +298,12 @@ export default function ResiduosPage({ residuosDb = [], eorsDb = [] }: ResiduosP
 
                     <FormSection title="Residuo" columns={1}>
                         <Field label="Clasificación" required>
-                            <Select value={crear.data.clase} onChange={(e) => crear.setData('clase', e.target.value)}>
+                            <Select
+                                value={crear.data.clase}
+                                onChange={(e) =>
+                                    crear.setData('clase', e.target.value)
+                                }
+                            >
                                 {CLASES.map((c) => (
                                     <option key={c.value} value={c.value}>
                                         {c.label}
@@ -211,11 +312,25 @@ export default function ResiduosPage({ residuosDb = [], eorsDb = [] }: ResiduosP
                             </Select>
                         </Field>
                         <Field label="Descripción" required>
-                            <Textarea value={crear.data.descripcion} onChange={(e) => crear.setData('descripcion', e.target.value)} rows={2} placeholder="Desmonte, retazos, envases…" />
+                            <Textarea
+                                value={crear.data.descripcion}
+                                onChange={(e) =>
+                                    crear.setData('descripcion', e.target.value)
+                                }
+                                rows={2}
+                                placeholder="Desmonte, retazos, envases…"
+                            />
                         </Field>
                         <Field label="Material Asociado">
-                            <Select value={crear.data.material_id} onChange={(e) => crear.setData('material_id', e.target.value)}>
-                                <option value="">Sin material específico</option>
+                            <Select
+                                value={crear.data.material_id}
+                                onChange={(e) =>
+                                    crear.setData('material_id', e.target.value)
+                                }
+                            >
+                                <option value="">
+                                    Sin material específico
+                                </option>
                                 {materiales.map((m) => (
                                     <option key={m.id} value={String(m.id)}>
                                         {m.nombre}
@@ -225,10 +340,23 @@ export default function ResiduosPage({ residuosDb = [], eorsDb = [] }: ResiduosP
                         </Field>
                         <div className="grid grid-cols-2 gap-3">
                             <Field label="Volumen" required>
-                                <Input type="number" min={0} step="0.001" value={crear.data.volumen} onChange={(e) => crear.setData('volumen', e.target.value)} />
+                                <Input
+                                    type="number"
+                                    min={0}
+                                    step="0.001"
+                                    value={crear.data.volumen}
+                                    onChange={(e) =>
+                                        crear.setData('volumen', e.target.value)
+                                    }
+                                />
                             </Field>
                             <Field label="Unidad" required>
-                                <Select value={crear.data.unidad} onChange={(e) => crear.setData('unidad', e.target.value)}>
+                                <Select
+                                    value={crear.data.unidad}
+                                    onChange={(e) =>
+                                        crear.setData('unidad', e.target.value)
+                                    }
+                                >
                                     {UNIDADES.map((u) => (
                                         <option key={u} value={u}>
                                             {u}
@@ -238,7 +366,12 @@ export default function ResiduosPage({ residuosDb = [], eorsDb = [] }: ResiduosP
                             </Field>
                         </div>
                         <Field label="Destino" required>
-                            <Select value={crear.data.destino} onChange={(e) => crear.setData('destino', e.target.value)}>
+                            <Select
+                                value={crear.data.destino}
+                                onChange={(e) =>
+                                    crear.setData('destino', e.target.value)
+                                }
+                            >
                                 {DESTINOS.map((d) => (
                                     <option key={d.value} value={d.value}>
                                         {d.label}
@@ -247,8 +380,15 @@ export default function ResiduosPage({ residuosDb = [], eorsDb = [] }: ResiduosP
                             </Select>
                         </Field>
                         <Field label="Empresa EO-RS">
-                            <Select value={crear.data.eors_id} onChange={(e) => crear.setData('eors_id', e.target.value)}>
-                                <option value="">Uso interno / sin EO-RS</option>
+                            <Select
+                                value={crear.data.eors_id}
+                                onChange={(e) =>
+                                    crear.setData('eors_id', e.target.value)
+                                }
+                            >
+                                <option value="">
+                                    Uso interno / sin EO-RS
+                                </option>
                                 {eorsDb.map((e) => (
                                     <option key={e.id} value={String(e.id)}>
                                         {e.razon_social}
@@ -258,7 +398,10 @@ export default function ResiduosPage({ residuosDb = [], eorsDb = [] }: ResiduosP
                         </Field>
                     </FormSection>
 
-                    <SubmitButton status={crear.processing ? 'submitting' : 'idle'} className="w-full">
+                    <SubmitButton
+                        status={crear.processing ? 'submitting' : 'idle'}
+                        className="w-full"
+                    >
                         <IconPlus size={15} />
                         Registrar Residuo
                     </SubmitButton>

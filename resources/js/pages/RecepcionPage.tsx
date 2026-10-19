@@ -8,7 +8,15 @@ import { useHttp } from '@inertiajs/react';
 import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge } from '../components/ui';
-import { Field, Input, Select, Textarea, FormPanel, FormSection, SubmitButton } from '../components/form';
+import {
+    Field,
+    Input,
+    Select,
+    Textarea,
+    FormPanel,
+    FormSection,
+    SubmitButton,
+} from '../components/form';
 import { DataTable } from '../components/DataTable';
 import { EmptyState } from '../components/EmptyState';
 import { useNotifications } from '../components/notifications/NotificationProvider';
@@ -38,8 +46,16 @@ interface RecepcionDb {
     estado: string;
     recibida_en: string;
     observaciones: string | null;
-    almacen?: { id: number; nombre: string; obra?: { nombre: string } | null } | null;
-    orden_compra?: { id: number; codigo: string; proveedor?: { razon_social: string } | null } | null;
+    almacen?: {
+        id: number;
+        nombre: string;
+        obra?: { nombre: string } | null;
+    } | null;
+    orden_compra?: {
+        id: number;
+        codigo: string;
+        proveedor?: { razon_social: string } | null;
+    } | null;
     almacenero?: { id: number; name: string } | null;
     detalles?: RecepcionDetalleDb[];
 }
@@ -72,7 +88,10 @@ interface LineaRecepcion {
     cantidad_recibida: number;
 }
 
-const ESTADO_META: Record<string, { tone: 'ok' | 'warn' | 'danger' | 'neutral'; label: string }> = {
+const ESTADO_META: Record<
+    string,
+    { tone: 'ok' | 'warn' | 'danger' | 'neutral'; label: string }
+> = {
     conforme: { tone: 'ok', label: 'Conforme' },
     en_verificacion: { tone: 'warn', label: 'En verificación' },
     observada: { tone: 'danger', label: 'Observada' },
@@ -83,7 +102,10 @@ function unidadDe(material?: MaterialRef | null): string {
 }
 
 function totalRecibido(rec: { detalles?: RecepcionDetalleDb[] }): number {
-    return (rec.detalles ?? []).reduce((acc, d) => acc + Number(d.cantidad_recibida), 0);
+    return (rec.detalles ?? []).reduce(
+        (acc, d) => acc + Number(d.cantidad_recibida),
+        0,
+    );
 }
 
 function primerMaterial(rec: { detalles?: RecepcionDetalleDb[] }): string {
@@ -91,12 +113,16 @@ function primerMaterial(rec: { detalles?: RecepcionDetalleDb[] }): string {
     if (!primero) return '—';
 
     const extra = (rec.detalles ?? []).length - 1;
-    const nombre = primero.material?.nombre ?? `Material #${primero.material_id}`;
+    const nombre =
+        primero.material?.nombre ?? `Material #${primero.material_id}`;
 
     return extra > 0 ? `${nombre} (+${extra})` : nombre;
 }
 
-export default function RecepcionPage({ recepcionesDb = [], ordenesDb = [] }: RecepcionPageProps) {
+export default function RecepcionPage({
+    recepcionesDb = [],
+    ordenesDb = [],
+}: RecepcionPageProps) {
     const notify = useNotifications();
 
     const http = useHttp<{
@@ -116,7 +142,9 @@ export default function RecepcionPage({ recepcionesDb = [], ordenesDb = [] }: Re
     const [seleccion, setSeleccion] = useState('');
 
     const ordenes = ordenesDb;
-    const almacenDestino = ordenes.find((o) => String(o.id) === http.data.orden_compra_id)?.almacen_destino_id;
+    const almacenDestino = ordenes.find(
+        (o) => String(o.id) === http.data.orden_compra_id,
+    )?.almacen_destino_id;
 
     const reiniciar = () => {
         http.setData('almacen_id', '');
@@ -155,7 +183,12 @@ export default function RecepcionPage({ recepcionesDb = [], ordenesDb = [] }: Re
         http.setData(
             'detalles',
             http.data.detalles.map((linea, i) =>
-                i === indice ? { ...linea, cantidad_recibida: valor === '' ? 0 : Number(valor) } : linea,
+                i === indice
+                    ? {
+                          ...linea,
+                          cantidad_recibida: valor === '' ? 0 : Number(valor),
+                      }
+                    : linea,
             ),
         );
     };
@@ -169,13 +202,17 @@ export default function RecepcionPage({ recepcionesDb = [], ordenesDb = [] }: Re
         }
 
         if (http.data.detalles.length === 0) {
-            notify.error('La orden seleccionada no tiene materiales para recepcionar.');
+            notify.error(
+                'La orden seleccionada no tiene materiales para recepcionar.',
+            );
             return;
         }
 
         void http.post('/api/v1/recepciones', {
             onSuccess: () => {
-                notify.success('Recepción registrada conforme y stock actualizado.');
+                notify.success(
+                    'Recepción registrada conforme y stock actualizado.',
+                );
                 reiniciar();
                 refrescarProps('recepcionesDb', 'ordenesDb');
             },
@@ -194,9 +231,15 @@ export default function RecepcionPage({ recepcionesDb = [], ordenesDb = [] }: Re
             />
 
             <div className="grid gap-6 lg:grid-cols-3">
-                <Card title={`Recepciones Registradas (${recepcionesDb.length})`} className="lg:col-span-2">
+                <Card
+                    title={`Recepciones Registradas (${recepcionesDb.length})`}
+                    className="lg:col-span-2"
+                >
                     {recepcionesDb.length === 0 ? (
-                        <EmptyState title="Sin recepciones registradas" hint="Registra un ingreso contra una Orden de Compra." />
+                        <EmptyState
+                            title="Sin recepciones registradas"
+                            hint="Registra un ingreso contra una Orden de Compra."
+                        />
                     ) : (
                         <DataTable
                             emptyLabel="Sin recepciones."
@@ -207,25 +250,64 @@ export default function RecepcionPage({ recepcionesDb = [], ordenesDb = [] }: Re
                                     header: 'Origen (OC / Proveedor)',
                                     cell: (r) => (
                                         <div>
-                                            <p className="text-xs font-semibold text-ink">{r.orden_compra?.codigo ?? `OC #${r.orden_compra_id}`}</p>
-                                            <p className="text-[11px] text-muted">{r.orden_compra?.proveedor?.razon_social ?? '—'}</p>
+                                            <p className="text-ink text-xs font-semibold">
+                                                {r.orden_compra?.codigo ??
+                                                    `OC #${r.orden_compra_id}`}
+                                            </p>
+                                            <p className="text-muted text-[11px]">
+                                                {r.orden_compra?.proveedor
+                                                    ?.razon_social ?? '—'}
+                                            </p>
                                         </div>
                                     ),
                                 },
-                                { key: 'material', header: 'Material', cell: (r) => <span className="text-xs font-bold text-ink">{primerMaterial(r)}</span> },
-                                { key: 'cantidad', header: 'Recibido', align: 'right', mono: true, cell: (r) => formatCantidad(totalRecibido(r)) },
-                                { key: 'destino', header: 'Almacén Destino', cell: (r) => r.almacen?.nombre ?? '—' },
-                                { key: 'fecha', header: 'Fecha', cell: (r) => formatFs(r.recibida_en) },
+                                {
+                                    key: 'material',
+                                    header: 'Material',
+                                    cell: (r) => (
+                                        <span className="text-ink text-xs font-bold">
+                                            {primerMaterial(r)}
+                                        </span>
+                                    ),
+                                },
+                                {
+                                    key: 'cantidad',
+                                    header: 'Recibido',
+                                    align: 'right',
+                                    mono: true,
+                                    cell: (r) =>
+                                        formatCantidad(totalRecibido(r)),
+                                },
+                                {
+                                    key: 'destino',
+                                    header: 'Almacén Destino',
+                                    cell: (r) => r.almacen?.nombre ?? '—',
+                                },
+                                {
+                                    key: 'fecha',
+                                    header: 'Fecha',
+                                    cell: (r) => formatFs(r.recibida_en),
+                                },
                                 {
                                     key: 'estado',
                                     header: 'Estado',
                                     cell: (r) => {
-                                        const meta = ESTADO_META[r.estado] ?? { tone: 'neutral' as const, label: r.estado };
-                                        return <Badge tone={meta.tone}>{meta.label}</Badge>;
+                                        const meta = ESTADO_META[r.estado] ?? {
+                                            tone: 'neutral' as const,
+                                            label: r.estado,
+                                        };
+                                        return (
+                                            <Badge tone={meta.tone}>
+                                                {meta.label}
+                                            </Badge>
+                                        );
                                     },
                                 },
                             ]}
-                            rows={recepcionesDb.map((r) => ({ ...r, id: String(r.id) }))}
+                            rows={recepcionesDb.map((r) => ({
+                                ...r,
+                                id: String(r.id),
+                            }))}
                         />
                     )}
                 </Card>
@@ -236,13 +318,26 @@ export default function RecepcionPage({ recepcionesDb = [], ordenesDb = [] }: Re
                     onSubmit={enviar}
                     className="text-xs"
                 >
-                    <FormSection title="Orden de compra y documentación" columns={1}>
+                    <FormSection
+                        title="Orden de compra y documentación"
+                        columns={1}
+                    >
                         <Field label="Orden de Compra" required>
-                            <Select value={seleccion} onChange={(e) => seleccionarOrden(e.target.value)}>
-                                <option value="">Selecciona una OC emitida…</option>
+                            <Select
+                                value={seleccion}
+                                onChange={(e) =>
+                                    seleccionarOrden(e.target.value)
+                                }
+                            >
+                                <option value="">
+                                    Selecciona una OC emitida…
+                                </option>
                                 {ordenes.map((oc) => (
                                     <option key={oc.id} value={String(oc.id)}>
-                                        {oc.codigo} · {oc.proveedor?.razon_social ?? 'Proveedor'} ({oc.estado})
+                                        {oc.codigo} ·{' '}
+                                        {oc.proveedor?.razon_social ??
+                                            'Proveedor'}{' '}
+                                        ({oc.estado})
                                     </option>
                                 ))}
                             </Select>
@@ -251,33 +346,68 @@ export default function RecepcionPage({ recepcionesDb = [], ordenesDb = [] }: Re
                         <Field label="Guía de Remisión" hint="Opcional">
                             <Input
                                 value={http.data.guia_remision}
-                                onChange={(e) => http.setData('guia_remision', e.target.value)}
+                                onChange={(e) =>
+                                    http.setData(
+                                        'guia_remision',
+                                        e.target.value,
+                                    )
+                                }
                                 placeholder="GR-001-09823"
                             />
                         </Field>
                     </FormSection>
 
                     {http.data.detalles.length > 0 && (
-                        <FormSection title="Materiales y cantidades recibidas" columns={1}>
+                        <FormSection
+                            title="Materiales y cantidades recibidas"
+                            columns={1}
+                        >
                             <div className="space-y-2">
                                 {http.data.detalles.map((linea, i) => {
                                     const detalle = ordenes
-                                        .find((o) => String(o.id) === http.data.orden_compra_id)
-                                        ?.detalles?.find((d) => d.id === linea.orden_compra_detalle_id);
+                                        .find(
+                                            (o) =>
+                                                String(o.id) ===
+                                                http.data.orden_compra_id,
+                                        )
+                                        ?.detalles?.find(
+                                            (d) =>
+                                                d.id ===
+                                                linea.orden_compra_detalle_id,
+                                        );
                                     return (
-                                        <div key={linea.orden_compra_detalle_id} className="rounded-lg border border-line p-2.5">
-                                            <p className="text-xs font-bold text-ink">{detalle?.material?.nombre ?? `Material #${linea.material_id}`}</p>
-                                            <p className="text-[11px] text-muted">
-                                                Ordenado: {formatCantidad(linea.cantidad_ordenada)} {unidadDe(detalle?.material)}
+                                        <div
+                                            key={linea.orden_compra_detalle_id}
+                                            className="border-line rounded-lg border p-2.5"
+                                        >
+                                            <p className="text-ink text-xs font-bold">
+                                                {detalle?.material?.nombre ??
+                                                    `Material #${linea.material_id}`}
+                                            </p>
+                                            <p className="text-muted text-[11px]">
+                                                Ordenado:{' '}
+                                                {formatCantidad(
+                                                    linea.cantidad_ordenada,
+                                                )}{' '}
+                                                {unidadDe(detalle?.material)}
                                             </p>
                                             <div className="mt-2 flex items-center gap-2">
-                                                <span className="text-[11px] font-semibold text-muted">Recibido</span>
+                                                <span className="text-muted text-[11px] font-semibold">
+                                                    Recibido
+                                                </span>
                                                 <Input
                                                     type="number"
                                                     min={0}
                                                     step="0.001"
-                                                    value={linea.cantidad_recibida}
-                                                    onChange={(e) => actualizarCantidad(i, e.target.value)}
+                                                    value={
+                                                        linea.cantidad_recibida
+                                                    }
+                                                    onChange={(e) =>
+                                                        actualizarCantidad(
+                                                            i,
+                                                            e.target.value,
+                                                        )
+                                                    }
                                                     className="!py-1.5"
                                                 />
                                             </div>
@@ -292,30 +422,44 @@ export default function RecepcionPage({ recepcionesDb = [], ordenesDb = [] }: Re
                         <Field label="Comentarios / incidencias">
                             <Textarea
                                 value={http.data.observaciones}
-                                onChange={(e) => http.setData('observaciones', e.target.value)}
+                                onChange={(e) =>
+                                    http.setData(
+                                        'observaciones',
+                                        e.target.value,
+                                    )
+                                }
                                 placeholder="Anotaciones de la verificación física…"
                                 rows={2}
                             />
                         </Field>
                         {almacenDestino && (
-                            <p className="text-[11px] text-muted">
-                                Las existencias ingresarán al almacén destino de la orden (#{almacenDestino}).
+                            <p className="text-muted text-[11px]">
+                                Las existencias ingresarán al almacén destino de
+                                la orden (#{almacenDestino}).
                             </p>
                         )}
                     </FormSection>
 
-                    <SubmitButton status={http.processing ? 'submitting' : 'idle'} className="w-full">
+                    <SubmitButton
+                        status={http.processing ? 'submitting' : 'idle'}
+                        className="w-full"
+                    >
                         <IconPlus size={15} />
                         Registrar Recepción Conforme
                     </SubmitButton>
                 </FormPanel>
             </div>
 
-            <Card title="Trazabilidad" subtitle="El ingreso se refleja de inmediato en el kardex y la Matriz de Stock">
-                <div className="flex items-center gap-2 text-xs text-muted">
+            <Card
+                title="Trazabilidad"
+                subtitle="El ingreso se refleja de inmediato en el kardex y la Matriz de Stock"
+            >
+                <div className="text-muted flex items-center gap-2 text-xs">
                     <IconInbox size={15} className="text-brand-500" />
                     <span>
-                        Cada recepción conforme aumenta el saldo del almacén destino y registra un movimiento de ingreso en el kardex.
+                        Cada recepción conforme aumenta el saldo del almacén
+                        destino y registra un movimiento de ingreso en el
+                        kardex.
                     </span>
                 </div>
             </Card>

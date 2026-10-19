@@ -7,7 +7,15 @@ import { useHttp, usePage } from '@inertiajs/react';
 import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge } from '../components/ui';
-import { Field, Input, Select, Textarea, FormPanel, FormSection, SubmitButton } from '../components/form';
+import {
+    Field,
+    Input,
+    Select,
+    Textarea,
+    FormPanel,
+    FormSection,
+    SubmitButton,
+} from '../components/form';
 import { DataTable } from '../components/DataTable';
 import { EmptyState } from '../components/EmptyState';
 import { useNotifications } from '../components/notifications/NotificationProvider';
@@ -25,7 +33,11 @@ interface MermaDb {
     estado: string;
     created_at: string;
     almacen?: { id: number; nombre: string } | null;
-    material?: { id: number; nombre: string; unidad_medida?: { codigo: string } | null } | null;
+    material?: {
+        id: number;
+        nombre: string;
+        unidad_medida?: { codigo: string } | null;
+    } | null;
 }
 
 interface MermasPageProps {
@@ -44,7 +56,9 @@ const CAUSAS = [
 
 export default function MermasPage({ mermasDb = [] }: MermasPageProps) {
     const notify = useNotifications();
-    const { catalogos } = usePage().props as unknown as { catalogos?: Catalogos };
+    const { catalogos } = usePage().props as unknown as {
+        catalogos?: Catalogos;
+    };
     const almacenes = catalogos?.almacenes ?? [];
     const materiales = catalogos?.materiales ?? [];
 
@@ -54,11 +68,20 @@ export default function MermasPage({ mermasDb = [] }: MermasPageProps) {
         cantidad: string;
         causa: string;
         justificacion: string;
-    }>({ almacen_id: '', material_id: '', cantidad: '', causa: 'deterioro', justificacion: '' });
+    }>({
+        almacen_id: '',
+        material_id: '',
+        cantidad: '',
+        causa: 'deterioro',
+        justificacion: '',
+    });
 
     const [busqueda, setBusqueda] = useState('');
 
-    const filas: MermaFila[] = useMemo(() => mermasDb.map((m) => ({ ...m, id: String(m.id) })), [mermasDb]);
+    const filas: MermaFila[] = useMemo(
+        () => mermasDb.map((m) => ({ ...m, id: String(m.id) })),
+        [mermasDb],
+    );
 
     const filtradas = useMemo(
         () =>
@@ -101,11 +124,20 @@ export default function MermasPage({ mermasDb = [] }: MermasPageProps) {
         void crear.post('/api/v1/mermas', {
             onSuccess: () => {
                 notify.success('Merma registrada y stock ajustado.');
-                crear.setData({ almacen_id: '', material_id: '', cantidad: '', causa: 'deterioro', justificacion: '' });
+                crear.setData({
+                    almacen_id: '',
+                    material_id: '',
+                    cantidad: '',
+                    causa: 'deterioro',
+                    justificacion: '',
+                });
                 refrescarProps('mermasDb');
             },
             onError: (errors: Record<string, string>) => {
-                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar la merma.');
+                notify.error(
+                    Object.values(errors).flat().join(' ') ||
+                        'No se pudo registrar la merma.',
+                );
             },
         });
     };
@@ -121,20 +153,29 @@ export default function MermasPage({ mermasDb = [] }: MermasPageProps) {
                 <div className="lg:col-span-2">
                     <Card className="p-4">
                         <div className="relative">
-                            <IconSearch size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+                            <IconSearch
+                                size={16}
+                                className="text-muted absolute top-1/2 left-3 -translate-y-1/2"
+                            />
                             <input
                                 type="text"
                                 placeholder="Buscar por material, almacén o causa…"
                                 value={busqueda}
                                 onChange={(e) => setBusqueda(e.target.value)}
-                                className="w-full rounded-lg border border-line bg-canvas py-1.5 pl-9 pr-3 text-xs text-ink focus:outline-none focus:ring-2 focus:ring-brand-500"
+                                className="border-line bg-canvas text-ink focus:ring-brand-500 w-full rounded-lg border py-1.5 pr-3 pl-9 text-xs focus:ring-2 focus:outline-none"
                             />
                         </div>
                     </Card>
 
-                    <Card className="mt-4" title={`Registro de Mermas (${filtradas.length})`}>
+                    <Card
+                        className="mt-4"
+                        title={`Registro de Mermas (${filtradas.length})`}
+                    >
                         {filas.length === 0 ? (
-                            <EmptyState title="Sin mermas registradas" hint="Registra la primera baja con el panel lateral." />
+                            <EmptyState
+                                title="Sin mermas registradas"
+                                hint="Registra la primera baja con el panel lateral."
+                            />
                         ) : (
                             <DataTable
                                 emptyLabel="No hay mermas que coincidan con la búsqueda."
@@ -144,22 +185,69 @@ export default function MermasPage({ mermasDb = [] }: MermasPageProps) {
                                         header: 'Material y Cantidad',
                                         cell: (m) => (
                                             <div>
-                                                <p className="font-bold text-ink text-xs">{m.material?.nombre ?? `Material #${m.material_id}`}</p>
-                                                <p className="font-mono text-[11px] font-bold text-danger">
-                                                    -{formatCantidad(Number(m.cantidad))} {m.material?.unidad_medida?.codigo ?? ''}
+                                                <p className="text-ink text-xs font-bold">
+                                                    {m.material?.nombre ??
+                                                        `Material #${m.material_id}`}
+                                                </p>
+                                                <p className="text-danger font-mono text-[11px] font-bold">
+                                                    -
+                                                    {formatCantidad(
+                                                        Number(m.cantidad),
+                                                    )}{' '}
+                                                    {m.material?.unidad_medida
+                                                        ?.codigo ?? ''}
                                                 </p>
                                             </div>
                                         ),
                                     },
-                                    { key: 'almacen', header: 'Almacén', cell: (m) => m.almacen?.nombre ?? `Almacén #${m.almacen_id}` },
-                                    { key: 'causa', header: 'Clasificación', cell: (m) => <Badge tone={m.causa === 'robo' ? 'danger' : 'warn'}>{m.causa.toUpperCase()}</Badge> },
+                                    {
+                                        key: 'almacen',
+                                        header: 'Almacén',
+                                        cell: (m) =>
+                                            m.almacen?.nombre ??
+                                            `Almacén #${m.almacen_id}`,
+                                    },
+                                    {
+                                        key: 'causa',
+                                        header: 'Clasificación',
+                                        cell: (m) => (
+                                            <Badge
+                                                tone={
+                                                    m.causa === 'robo'
+                                                        ? 'danger'
+                                                        : 'warn'
+                                                }
+                                            >
+                                                {m.causa.toUpperCase()}
+                                            </Badge>
+                                        ),
+                                    },
                                     {
                                         key: 'justificacion',
                                         header: 'Justificación',
-                                        cell: (m) => <span className="block max-w-64 truncate text-xs text-muted" title={m.justificacion}>{m.justificacion}</span>,
+                                        cell: (m) => (
+                                            <span
+                                                className="text-muted block max-w-64 truncate text-xs"
+                                                title={m.justificacion}
+                                            >
+                                                {m.justificacion}
+                                            </span>
+                                        ),
                                     },
-                                    { key: 'fecha', header: 'Fecha', mono: true, cell: (m) => formatFs(m.created_at) },
-                                    { key: 'estado', header: 'Estado', align: 'center', cell: (m) => <Badge tone="ok">{m.estado}</Badge> },
+                                    {
+                                        key: 'fecha',
+                                        header: 'Fecha',
+                                        mono: true,
+                                        cell: (m) => formatFs(m.created_at),
+                                    },
+                                    {
+                                        key: 'estado',
+                                        header: 'Estado',
+                                        align: 'center',
+                                        cell: (m) => (
+                                            <Badge tone="ok">{m.estado}</Badge>
+                                        ),
+                                    },
                                 ]}
                                 rows={filtradas}
                             />
@@ -167,32 +255,69 @@ export default function MermasPage({ mermasDb = [] }: MermasPageProps) {
                     </Card>
                 </div>
 
-                <FormPanel title="Registrar Merma" subtitle="Baja directa sobre el stock del almacén" onSubmit={enviar} className="text-xs">
+                <FormPanel
+                    title="Registrar Merma"
+                    subtitle="Baja directa sobre el stock del almacén"
+                    onSubmit={enviar}
+                    className="text-xs"
+                >
                     <FormSection title="Ubicación" columns={1}>
                         <Field label="Almacén" required>
-                            <Select value={crear.data.almacen_id} onChange={(e) => crear.setData('almacen_id', e.target.value)}>
+                            <Select
+                                value={crear.data.almacen_id}
+                                onChange={(e) =>
+                                    crear.setData('almacen_id', e.target.value)
+                                }
+                            >
                                 <option value="">Selecciona almacén…</option>
                                 {almacenes.map((a) => (
-                                    <option key={a.id} value={String(a.id)}>{a.nombre}</option>
+                                    <option key={a.id} value={String(a.id)}>
+                                        {a.nombre}
+                                    </option>
                                 ))}
                             </Select>
                         </Field>
                         <Field label="Material" required>
-                            <Select value={crear.data.material_id} onChange={(e) => crear.setData('material_id', e.target.value)}>
+                            <Select
+                                value={crear.data.material_id}
+                                onChange={(e) =>
+                                    crear.setData('material_id', e.target.value)
+                                }
+                            >
                                 <option value="">Selecciona material…</option>
                                 {materiales.map((m) => (
-                                    <option key={m.id} value={String(m.id)}>{m.nombre} ({m.unidad?.codigo ?? ''})</option>
+                                    <option key={m.id} value={String(m.id)}>
+                                        {m.nombre} ({m.unidad?.codigo ?? ''})
+                                    </option>
                                 ))}
                             </Select>
                         </Field>
                         <div className="grid grid-cols-2 gap-3">
                             <Field label="Cantidad" required>
-                                <Input type="number" min={0} step="0.001" value={crear.data.cantidad} onChange={(e) => crear.setData('cantidad', e.target.value)} />
+                                <Input
+                                    type="number"
+                                    min={0}
+                                    step="0.001"
+                                    value={crear.data.cantidad}
+                                    onChange={(e) =>
+                                        crear.setData(
+                                            'cantidad',
+                                            e.target.value,
+                                        )
+                                    }
+                                />
                             </Field>
                             <Field label="Clasificación" required>
-                                <Select value={crear.data.causa} onChange={(e) => crear.setData('causa', e.target.value)}>
+                                <Select
+                                    value={crear.data.causa}
+                                    onChange={(e) =>
+                                        crear.setData('causa', e.target.value)
+                                    }
+                                >
                                     {CAUSAS.map((c) => (
-                                        <option key={c.value} value={c.value}>{c.label}</option>
+                                        <option key={c.value} value={c.value}>
+                                            {c.label}
+                                        </option>
                                     ))}
                                 </Select>
                             </Field>
@@ -203,14 +328,22 @@ export default function MermasPage({ mermasDb = [] }: MermasPageProps) {
                         <Field label="Causa o incidente" required>
                             <Textarea
                                 value={crear.data.justificacion}
-                                onChange={(e) => crear.setData('justificacion', e.target.value)}
+                                onChange={(e) =>
+                                    crear.setData(
+                                        'justificacion',
+                                        e.target.value,
+                                    )
+                                }
                                 rows={3}
                                 placeholder="Detallar condiciones ambientales, manipulación o motivo del deterioro…"
                             />
                         </Field>
                     </FormSection>
 
-                    <SubmitButton status={crear.processing ? 'submitting' : 'idle'} className="w-full">
+                    <SubmitButton
+                        status={crear.processing ? 'submitting' : 'idle'}
+                        className="w-full"
+                    >
                         <IconTrash size={15} />
                         Registrar y Procesar Baja
                     </SubmitButton>

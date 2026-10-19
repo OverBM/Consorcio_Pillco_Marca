@@ -1,4 +1,12 @@
-import { useRef, useState, type FormEvent, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react';
+import {
+    useRef,
+    useState,
+    type FormEvent,
+    type InputHTMLAttributes,
+    type ReactNode,
+    type SelectHTMLAttributes,
+    type TextareaHTMLAttributes,
+} from 'react';
 import { cn } from '../utils/cn';
 import { IconAlert, IconCheck, IconX } from './icons';
 
@@ -25,7 +33,10 @@ export function Field({
             </span>
             {children}
             {error ? (
-                <p role="alert" className="mt-1 text-xs font-medium text-danger">
+                <p
+                    role="alert"
+                    className="text-danger mt-1 text-xs font-medium"
+                >
                     {error}
                 </p>
             ) : hint ? (
@@ -44,7 +55,8 @@ export function Input({ className, invalid, ...props }: InputProps) {
             aria-invalid={invalid || undefined}
             className={cn(
                 'field',
-                invalid && 'border-danger focus:border-danger focus:ring-danger-soft',
+                invalid &&
+                    'border-danger focus:border-danger focus:ring-danger-soft',
                 className,
             )}
             {...props}
@@ -55,13 +67,19 @@ export function Input({ className, invalid, ...props }: InputProps) {
 interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
     invalid?: boolean;
 }
-export function Select({ className, invalid, children, ...props }: SelectProps) {
+export function Select({
+    className,
+    invalid,
+    children,
+    ...props
+}: SelectProps) {
     return (
         <select
             aria-invalid={invalid || undefined}
             className={cn(
                 'field cursor-pointer',
-                invalid && 'border-danger focus:border-danger focus:ring-danger-soft',
+                invalid &&
+                    'border-danger focus:border-danger focus:ring-danger-soft',
                 className,
             )}
             {...props}
@@ -80,7 +98,8 @@ export function TextArea({ className, invalid, ...props }: TextAreaProps) {
             aria-invalid={invalid || undefined}
             className={cn(
                 'field min-h-24 resize-y',
-                invalid && 'border-danger focus:border-danger focus:ring-danger-soft',
+                invalid &&
+                    'border-danger focus:border-danger focus:ring-danger-soft',
                 className,
             )}
             {...props}
@@ -94,8 +113,15 @@ export function Button({
     variant = 'primary',
     className,
     ...props
-}: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'secondary' | 'danger' }) {
-    const base = variant === 'primary' ? 'btn-primary' : variant === 'danger' ? 'btn-danger' : 'btn-secondary';
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
+    variant?: 'primary' | 'secondary' | 'danger';
+}) {
+    const base =
+        variant === 'primary'
+            ? 'btn-primary'
+            : variant === 'danger'
+              ? 'btn-danger'
+              : 'btn-secondary';
     return (
         <button className={cn(base, className)} {...props}>
             {children}
@@ -147,12 +173,16 @@ export function FileUpload({
                 onClick={() => inputRef.current?.click()}
                 aria-invalid={marcado || undefined}
                 className={cn(
-                    'flex w-full cursor-pointer items-center justify-between gap-2 rounded-field border border-dashed bg-soft/60 px-3 py-2.5 text-sm transition-colors hover:text-ink',
-                    marcado ? 'border-danger text-danger' : 'border-line text-muted hover:border-brand-400',
+                    'rounded-field bg-soft/60 hover:text-ink flex w-full cursor-pointer items-center justify-between gap-2 border border-dashed px-3 py-2.5 text-sm transition-colors',
+                    marcado
+                        ? 'border-danger text-danger'
+                        : 'border-line text-muted hover:border-brand-400',
                 )}
             >
                 {nombre ? (
-                    <span className="truncate font-medium text-ink">{nombre}</span>
+                    <span className="text-ink truncate font-medium">
+                        {nombre}
+                    </span>
                 ) : (
                     <span>Subir foto / PDF de evidencia</span>
                 )}
@@ -160,7 +190,7 @@ export function FileUpload({
                     <span
                         role="button"
                         tabIndex={0}
-                        className="rounded p-1 text-muted hover:bg-danger-soft hover:text-danger"
+                        className="text-muted hover:bg-danger-soft hover:text-danger rounded p-1"
                         aria-label="Quitar adjunto"
                         onClick={(e) => {
                             e.stopPropagation();
@@ -176,7 +206,10 @@ export function FileUpload({
                 ) : null}
             </button>
             {error ? (
-                <p role="alert" className="mt-1 text-xs font-medium text-danger">
+                <p
+                    role="alert"
+                    className="text-danger mt-1 text-xs font-medium"
+                >
                     {error}
                 </p>
             ) : hint ? (
@@ -207,9 +240,25 @@ export type SubmitStatus = 'idle' | 'submitting' | 'success' | 'error';
 
 function Spinner({ className }: { className?: string }) {
     return (
-        <svg className={cn('h-4 w-4 animate-spin', className)} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+        <svg
+            className={cn('h-4 w-4 animate-spin', className)}
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden="true"
+        >
+            <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+            />
+            <path
+                className="opacity-90"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+            />
         </svg>
     );
 }
@@ -275,15 +324,29 @@ export function FormPanel({
     const Tag = as as 'form';
 
     return (
-        <Tag onSubmit={onSubmit} noValidate className={cn('card p-5', className)}>
+        <Tag
+            onSubmit={onSubmit}
+            noValidate
+            className={cn('card p-5', className)}
+        >
             {(title || subtitle) && (
                 <header className="mb-4">
-                    {title && <h3 className="font-display text-base font-semibold text-ink">{title}</h3>}
-                    {subtitle && <p className="mt-0.5 text-xs text-muted">{subtitle}</p>}
+                    {title && (
+                        <h3 className="font-display text-ink text-base font-semibold">
+                            {title}
+                        </h3>
+                    )}
+                    {subtitle && (
+                        <p className="text-muted mt-0.5 text-xs">{subtitle}</p>
+                    )}
                 </header>
             )}
             <div className="space-y-5">{children}</div>
-            {actions && <div className="mt-5 flex flex-wrap justify-end gap-2">{actions}</div>}
+            {actions && (
+                <div className="mt-5 flex flex-wrap justify-end gap-2">
+                    {actions}
+                </div>
+            )}
         </Tag>
     );
 }
@@ -310,8 +373,16 @@ export function FormSection({
         <fieldset className="min-w-0 space-y-3">
             {(title || description) && (
                 <legend className="mb-1 w-full">
-                    {title && <span className="text-xs font-bold tracking-wide text-ink uppercase">{title}</span>}
-                    {description && <span className="mt-0.5 block text-xs text-muted">{description}</span>}
+                    {title && (
+                        <span className="text-ink text-xs font-bold tracking-wide uppercase">
+                            {title}
+                        </span>
+                    )}
+                    {description && (
+                        <span className="text-muted mt-0.5 block text-xs">
+                            {description}
+                        </span>
+                    )}
                 </legend>
             )}
             <div className={cn('grid gap-4', grid)}>{children}</div>

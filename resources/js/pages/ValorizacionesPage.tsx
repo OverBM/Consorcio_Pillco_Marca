@@ -7,7 +7,14 @@ import { useHttp, usePage } from '@inertiajs/react';
 import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge, Button } from '../components/ui';
-import { Field, Input, Select, FormPanel, FormSection, SubmitButton } from '../components/form';
+import {
+    Field,
+    Input,
+    Select,
+    FormPanel,
+    FormSection,
+    SubmitButton,
+} from '../components/form';
 import { DataTable } from '../components/DataTable';
 import { EmptyState } from '../components/EmptyState';
 import { useNotifications } from '../components/notifications/NotificationProvider';
@@ -30,9 +37,13 @@ interface ValorizacionesPageProps {
     valorizacionesDb?: ValorizacionDb[];
 }
 
-export default function ValorizacionesPage({ valorizacionesDb = [] }: ValorizacionesPageProps) {
+export default function ValorizacionesPage({
+    valorizacionesDb = [],
+}: ValorizacionesPageProps) {
     const notify = useNotifications();
-    const { catalogos } = usePage().props as unknown as { catalogos?: Catalogos };
+    const { catalogos } = usePage().props as unknown as {
+        catalogos?: Catalogos;
+    };
     const obras = catalogos?.obras ?? [];
 
     const [obraFiltro, setObraFiltro] = useState('todas');
@@ -44,12 +55,23 @@ export default function ValorizacionesPage({ valorizacionesDb = [] }: Valorizaci
         valor_planificado: string;
         valor_ganado: string;
         costo_real: string;
-    }>({ obra_id: '', periodo: '', valor_planificado: '', valor_ganado: '', costo_real: '' });
+    }>({
+        obra_id: '',
+        periodo: '',
+        valor_planificado: '',
+        valor_ganado: '',
+        costo_real: '',
+    });
 
     const aprobar = useHttp<Record<string, never>>({});
 
     const filas = useMemo(() => {
-        const base = obraFiltro === 'todas' ? valorizacionesDb : valorizacionesDb.filter((v) => String(v.obra_id) === obraFiltro);
+        const base =
+            obraFiltro === 'todas'
+                ? valorizacionesDb
+                : valorizacionesDb.filter(
+                      (v) => String(v.obra_id) === obraFiltro,
+                  );
         return base.map((v) => {
             const pv = Number(v.valor_planificado || 0);
             const ev = Number(v.valor_ganado || 0);
@@ -84,11 +106,20 @@ export default function ValorizacionesPage({ valorizacionesDb = [] }: Valorizaci
         void crear.post('/api/v1/valorizaciones', {
             onSuccess: () => {
                 notify.success('Valorización mensual registrada.');
-                crear.setData({ obra_id: '', periodo: '', valor_planificado: '', valor_ganado: '', costo_real: '' });
+                crear.setData({
+                    obra_id: '',
+                    periodo: '',
+                    valor_planificado: '',
+                    valor_ganado: '',
+                    costo_real: '',
+                });
                 refrescarProps('valorizacionesDb');
             },
             onError: (errors: Record<string, string>) => {
-                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar la valorización.');
+                notify.error(
+                    Object.values(errors).flat().join(' ') ||
+                        'No se pudo registrar la valorización.',
+                );
             },
         });
     };
@@ -101,7 +132,10 @@ export default function ValorizacionesPage({ valorizacionesDb = [] }: Valorizaci
                 refrescarProps('valorizacionesDb');
             },
             onError: (errors: Record<string, string>) => {
-                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo aprobar la valorización.');
+                notify.error(
+                    Object.values(errors).flat().join(' ') ||
+                        'No se pudo aprobar la valorización.',
+                );
             },
             onFinish: () => setAprobandoId(null),
         });
@@ -115,43 +149,101 @@ export default function ValorizacionesPage({ valorizacionesDb = [] }: Valorizaci
             />
 
             <div className="grid gap-6 lg:grid-cols-3">
-                <div className="lg:col-span-2 space-y-4">
-                    <Card className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                        <span className="text-xs font-mono uppercase text-muted">Obra en Consulta:</span>
+                <div className="space-y-4 lg:col-span-2">
+                    <Card className="flex flex-col items-start justify-between gap-3 p-4 sm:flex-row sm:items-center">
+                        <span className="text-muted font-mono text-xs uppercase">
+                            Obra en Consulta:
+                        </span>
                         <select
                             value={obraFiltro}
                             onChange={(e) => setObraFiltro(e.target.value)}
-                            className="rounded-field border border-line bg-canvas px-3 py-1.5 text-xs text-ink outline-none"
+                            className="rounded-field border-line bg-canvas text-ink border px-3 py-1.5 text-xs outline-none"
                         >
                             <option value="todas">Todas las obras</option>
                             {obras.map((o) => (
-                                <option key={o.id} value={String(o.id)}>{o.nombre}</option>
+                                <option key={o.id} value={String(o.id)}>
+                                    {o.nombre}
+                                </option>
                             ))}
                         </select>
                     </Card>
 
                     <Card title={`Valorizaciones (${filas.length})`}>
                         {valorizacionesDb.length === 0 ? (
-                            <EmptyState title="Sin valorizaciones" hint="Registra el primer periodo con el panel lateral." />
+                            <EmptyState
+                                title="Sin valorizaciones"
+                                hint="Registra el primer periodo con el panel lateral."
+                            />
                         ) : (
                             <DataTable
                                 emptyLabel="Sin valorizaciones registradas."
                                 columns={[
-                                    { key: 'periodo', header: 'Periodo', mono: true, cell: (v) => formatFecha(v.periodo) },
-                                    { key: 'ev', header: 'Valor Ganado (EV)', align: 'right', mono: true, cell: (v) => formatMoneda(v.ev) },
-                                    { key: 'spi', header: 'SPI', align: 'right', mono: true, cell: (v) => v.spi.toFixed(3) },
-                                    { key: 'cpi', header: 'CPI', align: 'right', mono: true, cell: (v) => v.cpi.toFixed(3) },
-                                    { key: 'estado', header: 'Estado', cell: (v) => <Badge tone={v.estado === 'aprobada' ? 'ok' : 'warn'}>{v.estado}</Badge> },
+                                    {
+                                        key: 'periodo',
+                                        header: 'Periodo',
+                                        mono: true,
+                                        cell: (v) => formatFecha(v.periodo),
+                                    },
+                                    {
+                                        key: 'ev',
+                                        header: 'Valor Ganado (EV)',
+                                        align: 'right',
+                                        mono: true,
+                                        cell: (v) => formatMoneda(v.ev),
+                                    },
+                                    {
+                                        key: 'spi',
+                                        header: 'SPI',
+                                        align: 'right',
+                                        mono: true,
+                                        cell: (v) => v.spi.toFixed(3),
+                                    },
+                                    {
+                                        key: 'cpi',
+                                        header: 'CPI',
+                                        align: 'right',
+                                        mono: true,
+                                        cell: (v) => v.cpi.toFixed(3),
+                                    },
+                                    {
+                                        key: 'estado',
+                                        header: 'Estado',
+                                        cell: (v) => (
+                                            <Badge
+                                                tone={
+                                                    v.estado === 'aprobada'
+                                                        ? 'ok'
+                                                        : 'warn'
+                                                }
+                                            >
+                                                {v.estado}
+                                            </Badge>
+                                        ),
+                                    },
                                     {
                                         key: 'accion',
                                         header: 'Acción',
                                         align: 'right',
                                         cell: (v) =>
                                             v.estado === 'aprobada' ? (
-                                                <span className="text-[11px] font-mono text-ok">Aprobada</span>
+                                                <span className="text-ok font-mono text-[11px]">
+                                                    Aprobada
+                                                </span>
                                             ) : (
-                                                <Button size="sm" variant="mint" disabled={aprobandoId === v.id} onClick={() => aprobarValorizacion(v.id)}>
-                                                    <IconCheck size={13} /> Aprobar
+                                                <Button
+                                                    size="sm"
+                                                    variant="mint"
+                                                    disabled={
+                                                        aprobandoId === v.id
+                                                    }
+                                                    onClick={() =>
+                                                        aprobarValorizacion(
+                                                            v.id,
+                                                        )
+                                                    }
+                                                >
+                                                    <IconCheck size={13} />{' '}
+                                                    Aprobar
                                                 </Button>
                                             ),
                                     },
@@ -162,34 +254,85 @@ export default function ValorizacionesPage({ valorizacionesDb = [] }: Valorizaci
                     </Card>
                 </div>
 
-                <FormPanel title="Registrar Valorización" subtitle="Periodo mensual (PV / EV / AC)" onSubmit={enviar} className="text-xs">
+                <FormPanel
+                    title="Registrar Valorización"
+                    subtitle="Periodo mensual (PV / EV / AC)"
+                    onSubmit={enviar}
+                    className="text-xs"
+                >
                     <FormSection title="Periodo" columns={1}>
                         <Field label="Obra" required>
-                            <Select value={crear.data.obra_id} onChange={(e) => crear.setData('obra_id', e.target.value)}>
+                            <Select
+                                value={crear.data.obra_id}
+                                onChange={(e) =>
+                                    crear.setData('obra_id', e.target.value)
+                                }
+                            >
                                 <option value="">Selecciona obra…</option>
                                 {obras.map((o) => (
-                                    <option key={o.id} value={String(o.id)}>{o.nombre}</option>
+                                    <option key={o.id} value={String(o.id)}>
+                                        {o.nombre}
+                                    </option>
                                 ))}
                             </Select>
                         </Field>
                         <Field label="Periodo (fecha de corte)" required>
-                            <Input type="date" value={crear.data.periodo} onChange={(e) => crear.setData('periodo', e.target.value)} />
+                            <Input
+                                type="date"
+                                value={crear.data.periodo}
+                                onChange={(e) =>
+                                    crear.setData('periodo', e.target.value)
+                                }
+                            />
                         </Field>
                     </FormSection>
 
                     <FormSection title="Valores del Periodo (S/)" columns={1}>
                         <Field label="Valor Planificado (PV)" required>
-                            <Input type="number" min={0} step="0.01" value={crear.data.valor_planificado} onChange={(e) => crear.setData('valor_planificado', e.target.value)} />
+                            <Input
+                                type="number"
+                                min={0}
+                                step="0.01"
+                                value={crear.data.valor_planificado}
+                                onChange={(e) =>
+                                    crear.setData(
+                                        'valor_planificado',
+                                        e.target.value,
+                                    )
+                                }
+                            />
                         </Field>
                         <Field label="Valor Ganado (EV)" required>
-                            <Input type="number" min={0} step="0.01" value={crear.data.valor_ganado} onChange={(e) => crear.setData('valor_ganado', e.target.value)} />
+                            <Input
+                                type="number"
+                                min={0}
+                                step="0.01"
+                                value={crear.data.valor_ganado}
+                                onChange={(e) =>
+                                    crear.setData(
+                                        'valor_ganado',
+                                        e.target.value,
+                                    )
+                                }
+                            />
                         </Field>
                         <Field label="Costo Real (AC)" required>
-                            <Input type="number" min={0} step="0.01" value={crear.data.costo_real} onChange={(e) => crear.setData('costo_real', e.target.value)} />
+                            <Input
+                                type="number"
+                                min={0}
+                                step="0.01"
+                                value={crear.data.costo_real}
+                                onChange={(e) =>
+                                    crear.setData('costo_real', e.target.value)
+                                }
+                            />
                         </Field>
                     </FormSection>
 
-                    <SubmitButton status={crear.processing ? 'submitting' : 'idle'} className="w-full">
+                    <SubmitButton
+                        status={crear.processing ? 'submitting' : 'idle'}
+                        className="w-full"
+                    >
                         <IconPlus size={15} />
                         Registrar Valorización
                     </SubmitButton>

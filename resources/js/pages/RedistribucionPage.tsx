@@ -12,7 +12,14 @@ import { Field, Input, Select } from '../components/form';
 import { DataTable } from '../components/DataTable';
 import { EmptyState } from '../components/EmptyState';
 import { useNotifications } from '../components/notifications/NotificationProvider';
-import { IconBoxes, IconMapPin, IconPlus, IconSave, IconTrash, IconTruck } from '../components/icons';
+import {
+    IconBoxes,
+    IconMapPin,
+    IconPlus,
+    IconSave,
+    IconTrash,
+    IconTruck,
+} from '../components/icons';
 import { formatCantidad, formatKm, formatMoneda } from '../utils/format';
 
 interface ExcedenteDb {
@@ -26,7 +33,11 @@ interface ExcedenteDb {
     detectado_en?: string | null;
     obra?: { id: number; nombre: string } | null;
     almacen?: { id: number; nombre: string } | null;
-    material?: { id: number; nombre: string; unidad_medida?: { codigo: string } | null } | null;
+    material?: {
+        id: number;
+        nombre: string;
+        unidad_medida?: { codigo: string } | null;
+    } | null;
 }
 
 interface TransferenciaAhp {
@@ -150,38 +161,62 @@ export default function RedistribucionPage({
     const [creando, setCreando] = useState(false);
     const [editando, setEditando] = useState<ExcedenteFila | null>(null);
     const [porEliminar, setPorEliminar] = useState<ExcedenteFila | null>(null);
-    const [porRedistribuir, setPorRedistribuir] = useState<ExcedenteFila | null>(null);
+    const [porRedistribuir, setPorRedistribuir] =
+        useState<ExcedenteFila | null>(null);
     const [destinoId, setDestinoId] = useState('');
     const [cantidadDestino, setCantidadDestino] = useState('');
     const [sugerencias, setSugerencias] = useState<SugerenciaAhp[]>([]);
 
     const form = useHttp<FormularioExcedente>({ ...VACIO });
     const eliminar = useHttp<Record<string, never>>({});
-    const sugerir = useHttp<Record<string, never>, { data?: { sugerencias?: SugerenciaAhp[] } }>({});
-    const transferir = useHttp<{ almacen_destino_id: string; cantidad: string }>({ almacen_destino_id: '', cantidad: '' });
+    const sugerir = useHttp<
+        Record<string, never>,
+        { data?: { sugerencias?: SugerenciaAhp[] } }
+    >({});
+    const transferir = useHttp<{
+        almacen_destino_id: string;
+        cantidad: string;
+    }>({ almacen_destino_id: '', cantidad: '' });
 
     const excedentes: ExcedenteFila[] = useMemo(
         () => excedentesDb.map((e) => ({ ...e, id: String(e.id), dbId: e.id })),
         [excedentesDb],
     );
 
-    const totalSobrante = excedentes.reduce((acc, e) => acc + Number(e.cantidad || 0), 0);
-    const ahorroPotencial = transferenciasAhpDb.reduce((acc, t) => acc + Number(t.ahorroEstimadoSoles || 0), 0);
+    const totalSobrante = excedentes.reduce(
+        (acc, e) => acc + Number(e.cantidad || 0),
+        0,
+    );
+    const ahorroPotencial = transferenciasAhpDb.reduce(
+        (acc, t) => acc + Number(t.ahorroEstimadoSoles || 0),
+        0,
+    );
 
     const transferencias = useMemo(
-        () => transferenciasAhpDb.map((t, idx) => ({ ...t, id: `AHP-${idx + 1}` })),
+        () =>
+            transferenciasAhpDb.map((t, idx) => ({
+                ...t,
+                id: `AHP-${idx + 1}`,
+            })),
         [transferenciasAhpDb],
     );
 
     const almacenesDestino = useMemo(
-        () => almacenesDb.filter((a) => !porRedistribuir || a.id !== porRedistribuir.almacen_id),
+        () =>
+            almacenesDb.filter(
+                (a) => !porRedistribuir || a.id !== porRedistribuir.almacen_id,
+            ),
         [almacenesDb, porRedistribuir],
     );
 
-    const refrescar = () => refrescarProps('excedentesDb', 'transferenciasAhpDb');
+    const refrescar = () =>
+        refrescarProps('excedentesDb', 'transferenciasAhpDb');
 
     const abrirCreacion = () => {
-        form.setData({ ...VACIO, obra_origen_id: obrasDb[0] ? String(obrasDb[0].id) : '' });
+        form.setData({
+            ...VACIO,
+            obra_origen_id: obrasDb[0] ? String(obrasDb[0].id) : '',
+        });
         form.clearErrors();
         setEditando(null);
         setCreando(true);
@@ -210,8 +245,15 @@ export default function RedistribucionPage({
         event.preventDefault();
 
         const cantidad = Number(form.data.cantidad);
-        if (!form.data.obra_origen_id || !form.data.almacen_id || !form.data.material_id || !(cantidad > 0)) {
-            notify.error('Selecciona obra, almacén, material e ingresa una cantidad mayor a cero.');
+        if (
+            !form.data.obra_origen_id ||
+            !form.data.almacen_id ||
+            !form.data.material_id ||
+            !(cantidad > 0)
+        ) {
+            notify.error(
+                'Selecciona obra, almacén, material e ingresa una cantidad mayor a cero.',
+            );
             return;
         }
 
@@ -287,7 +329,9 @@ export default function RedistribucionPage({
 
         const cantidad = Number(cantidadDestino);
         if (!destinoId || !(cantidad > 0)) {
-            notify.error('Selecciona el almacén destino e ingresa una cantidad válida.');
+            notify.error(
+                'Selecciona el almacén destino e ingresa una cantidad válida.',
+            );
             return;
         }
 
@@ -296,16 +340,24 @@ export default function RedistribucionPage({
             cantidad,
         }));
 
-        void transferir.post(`/api/v1/excedentes/${porRedistribuir.dbId}/transferencia`, {
-            onSuccess: () => {
-                notify.success('Transferencia sugerida generada desde el excedente.');
-                setPorRedistribuir(null);
-                refrescar();
+        void transferir.post(
+            `/api/v1/excedentes/${porRedistribuir.dbId}/transferencia`,
+            {
+                onSuccess: () => {
+                    notify.success(
+                        'Transferencia sugerida generada desde el excedente.',
+                    );
+                    setPorRedistribuir(null);
+                    refrescar();
+                },
+                onError: (errors: Record<string, string>) => {
+                    notify.error(
+                        Object.values(errors).flat().join(' ') ||
+                            'No se pudo generar la transferencia.',
+                    );
+                },
             },
-            onError: (errors: Record<string, string>) => {
-                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo generar la transferencia.');
-            },
-        });
+        );
     };
 
     return (
@@ -322,41 +374,62 @@ export default function RedistribucionPage({
             />
 
             <div className="grid gap-4 sm:grid-cols-3">
-                <Card className="p-4 bg-surface border-line">
+                <Card className="bg-surface border-line p-4">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-mono uppercase text-muted">Excedentes Detectados</span>
-                        <div className="p-2 rounded-lg bg-soft text-ink">
+                        <span className="text-muted font-mono text-xs uppercase">
+                            Excedentes Detectados
+                        </span>
+                        <div className="bg-soft text-ink rounded-lg p-2">
                             <IconBoxes size={16} />
                         </div>
                     </div>
-                    <p className="mt-2 text-2xl font-bold font-mono text-brand-600">{excedentes.length} lotes</p>
-                    <span className="text-xs text-muted">Saldos disponibles para redistribución</span>
+                    <p className="text-brand-600 mt-2 font-mono text-2xl font-bold">
+                        {excedentes.length} lotes
+                    </p>
+                    <span className="text-muted text-xs">
+                        Saldos disponibles para redistribución
+                    </span>
                 </Card>
 
-                <Card className="p-4 bg-surface border-line">
+                <Card className="bg-surface border-line p-4">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-mono uppercase text-muted">Volumen Sobrante</span>
-                        <div className="p-2 rounded-lg bg-soft text-ink">
+                        <span className="text-muted font-mono text-xs uppercase">
+                            Volumen Sobrante
+                        </span>
+                        <div className="bg-soft text-ink rounded-lg p-2">
                             <IconMapPin size={16} />
                         </div>
                     </div>
-                    <p className="mt-2 text-2xl font-bold font-mono text-ink">{formatCantidad(totalSobrante)}</p>
-                    <span className="text-xs text-muted">Unidades acumuladas en obras de origen</span>
+                    <p className="text-ink mt-2 font-mono text-2xl font-bold">
+                        {formatCantidad(totalSobrante)}
+                    </p>
+                    <span className="text-muted text-xs">
+                        Unidades acumuladas en obras de origen
+                    </span>
                 </Card>
 
-                <Card className="p-4 bg-surface border-line">
+                <Card className="bg-surface border-line p-4">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-mono uppercase text-muted">Ahorro Estimado (AHP)</span>
-                        <div className="p-2 rounded-lg bg-soft text-ink">
+                        <span className="text-muted font-mono text-xs uppercase">
+                            Ahorro Estimado (AHP)
+                        </span>
+                        <div className="bg-soft text-ink rounded-lg p-2">
                             <IconTruck size={16} />
                         </div>
                     </div>
-                    <p className="mt-2 text-2xl font-bold font-mono text-ok">{formatMoneda(ahorroPotencial)}</p>
-                    <span className="text-xs text-muted">Evita nuevas órdenes de compra</span>
+                    <p className="text-ok mt-2 font-mono text-2xl font-bold">
+                        {formatMoneda(ahorroPotencial)}
+                    </p>
+                    <span className="text-muted text-xs">
+                        Evita nuevas órdenes de compra
+                    </span>
                 </Card>
             </div>
 
-            <Card title="Transferencias Sugeridas por el Motor AHP" className="p-5">
+            <Card
+                title="Transferencias Sugeridas por el Motor AHP"
+                className="p-5"
+            >
                 {transferencias.length === 0 ? (
                     <EmptyState
                         title="Sin transferencias sugeridas"
@@ -366,14 +439,26 @@ export default function RedistribucionPage({
                     <DataTable
                         emptyLabel="Sin transferencias sugeridas."
                         columns={[
-                            { key: 'material', header: 'Material', cell: (t) => <span className="font-bold text-ink">{t.materialNombre}</span> },
+                            {
+                                key: 'material',
+                                header: 'Material',
+                                cell: (t) => (
+                                    <span className="text-ink font-bold">
+                                        {t.materialNombre}
+                                    </span>
+                                ),
+                            },
                             {
                                 key: 'origen',
                                 header: 'Almacén Origen',
                                 cell: (t) => (
                                     <div>
-                                        <p className="text-xs font-semibold text-ink">{t.almacenOrigenNombre}</p>
-                                        <p className="text-[11px] text-muted">{t.obraOrigenNombre}</p>
+                                        <p className="text-ink text-xs font-semibold">
+                                            {t.almacenOrigenNombre}
+                                        </p>
+                                        <p className="text-muted text-[11px]">
+                                            {t.obraOrigenNombre}
+                                        </p>
                                     </div>
                                 ),
                             },
@@ -382,7 +467,8 @@ export default function RedistribucionPage({
                                 header: 'Cantidad',
                                 align: 'right',
                                 mono: true,
-                                cell: (t) => `${formatCantidad(Number(t.cantidadSugerida))} ${t.unidad}`,
+                                cell: (t) =>
+                                    `${formatCantidad(Number(t.cantidadSugerida))} ${t.unidad}`,
                             },
                             {
                                 key: 'ruta',
@@ -391,14 +477,40 @@ export default function RedistribucionPage({
                                 mono: true,
                                 cell: (t) => (
                                     <div>
-                                        <span className="font-bold text-ink">{formatKm(t.distanciaKm)}</span>
-                                        <span className="block text-[11px] text-muted">~{t.tiempoEstimadoMin} min</span>
+                                        <span className="text-ink font-bold">
+                                            {formatKm(t.distanciaKm)}
+                                        </span>
+                                        <span className="text-muted block text-[11px]">
+                                            ~{t.tiempoEstimadoMin} min
+                                        </span>
                                     </div>
                                 ),
                             },
-                            { key: 'puntaje', header: 'Puntaje AHP', align: 'right', mono: true, cell: (t) => t.puntajeAhp.toFixed(1) },
-                            { key: 'prioridad', header: 'Prioridad', align: 'center', cell: (t) => <Badge tone={tonoPrioridad(t.prioridad)}>{t.prioridad}</Badge> },
-                            { key: 'ahorro', header: 'Ahorro Est.', align: 'right', mono: true, cell: (t) => formatMoneda(Number(t.ahorroEstimadoSoles)) },
+                            {
+                                key: 'puntaje',
+                                header: 'Puntaje AHP',
+                                align: 'right',
+                                mono: true,
+                                cell: (t) => t.puntajeAhp.toFixed(1),
+                            },
+                            {
+                                key: 'prioridad',
+                                header: 'Prioridad',
+                                align: 'center',
+                                cell: (t) => (
+                                    <Badge tone={tonoPrioridad(t.prioridad)}>
+                                        {t.prioridad}
+                                    </Badge>
+                                ),
+                            },
+                            {
+                                key: 'ahorro',
+                                header: 'Ahorro Est.',
+                                align: 'right',
+                                mono: true,
+                                cell: (t) =>
+                                    formatMoneda(Number(t.ahorroEstimadoSoles)),
+                            },
                         ]}
                         rows={transferencias}
                     />
@@ -407,37 +519,88 @@ export default function RedistribucionPage({
 
             <Card title="Inventario de Excedentes Detectados" className="p-5">
                 {excedentes.length === 0 ? (
-                    <EmptyState title="Sin excedentes registrados" hint="Se detectan automáticamente al iniciar el cierre de una obra." />
+                    <EmptyState
+                        title="Sin excedentes registrados"
+                        hint="Se detectan automáticamente al iniciar el cierre de una obra."
+                    />
                 ) : (
                     <DataTable
                         emptyLabel="Sin excedentes registrados."
                         columns={[
-                            { key: 'material', header: 'Material', cell: (e) => e.material?.nombre ?? `Material #${e.material_id}` },
+                            {
+                                key: 'material',
+                                header: 'Material',
+                                cell: (e) =>
+                                    e.material?.nombre ??
+                                    `Material #${e.material_id}`,
+                            },
                             {
                                 key: 'cantidad',
                                 header: 'Cantidad',
                                 align: 'right',
                                 mono: true,
-                                cell: (e) => `${formatCantidad(Number(e.cantidad))} ${e.material?.unidad_medida?.codigo ?? ''}`,
+                                cell: (e) =>
+                                    `${formatCantidad(Number(e.cantidad))} ${e.material?.unidad_medida?.codigo ?? ''}`,
                             },
-                            { key: 'almacen', header: 'Almacén', cell: (e) => e.almacen?.nombre ?? `Almacén #${e.almacen_id}` },
-                            { key: 'obra', header: 'Obra Origen', cell: (e) => e.obra?.nombre ?? `Obra #${e.obra_origen_id}` },
-                            { key: 'origen', header: 'Procedencia', cell: (e) => <Badge tone="violet">{e.origen}</Badge> },
-                            { key: 'estado', header: 'Estado', align: 'center', cell: (e) => <Badge tone={tonoEstado(e.estado)}>{e.estado}</Badge> },
+                            {
+                                key: 'almacen',
+                                header: 'Almacén',
+                                cell: (e) =>
+                                    e.almacen?.nombre ??
+                                    `Almacén #${e.almacen_id}`,
+                            },
+                            {
+                                key: 'obra',
+                                header: 'Obra Origen',
+                                cell: (e) =>
+                                    e.obra?.nombre ??
+                                    `Obra #${e.obra_origen_id}`,
+                            },
+                            {
+                                key: 'origen',
+                                header: 'Procedencia',
+                                cell: (e) => (
+                                    <Badge tone="violet">{e.origen}</Badge>
+                                ),
+                            },
+                            {
+                                key: 'estado',
+                                header: 'Estado',
+                                align: 'center',
+                                cell: (e) => (
+                                    <Badge tone={tonoEstado(e.estado)}>
+                                        {e.estado}
+                                    </Badge>
+                                ),
+                            },
                             {
                                 key: 'acciones',
                                 header: 'Acciones',
                                 align: 'right',
                                 cell: (e) => (
                                     <div className="flex items-center justify-end gap-2">
-                                        <Button variant="mint" size="sm" onClick={() => abrirRedistribucion(e)}>
+                                        <Button
+                                            variant="mint"
+                                            size="sm"
+                                            onClick={() =>
+                                                abrirRedistribucion(e)
+                                            }
+                                        >
                                             <IconTruck size={13} />
                                             Redistribuir
                                         </Button>
-                                        <Button variant="secondary" size="sm" onClick={() => abrirEdicion(e)}>
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            onClick={() => abrirEdicion(e)}
+                                        >
                                             Editar
                                         </Button>
-                                        <Button variant="danger" size="sm" onClick={() => setPorEliminar(e)}>
+                                        <Button
+                                            variant="danger"
+                                            size="sm"
+                                            onClick={() => setPorEliminar(e)}
+                                        >
                                             Eliminar
                                         </Button>
                                     </div>
@@ -451,14 +614,28 @@ export default function RedistribucionPage({
 
             <Card title="Parámetros del Motor de Optimización" className="p-5">
                 {parametrosDb.length === 0 ? (
-                    <EmptyState title="Sin parámetros configurados" hint="Configure los pesos AHP y el radio geográfico en Parámetros del Sistema." />
+                    <EmptyState
+                        title="Sin parámetros configurados"
+                        hint="Configure los pesos AHP y el radio geográfico en Parámetros del Sistema."
+                    />
                 ) : (
                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                         {parametrosDb.map((p) => (
-                            <div key={p.id} className="rounded-lg border border-line bg-soft/40 p-3">
-                                <p className="font-mono text-[11px] uppercase text-muted">{p.clave}</p>
-                                <p className="mt-1 text-sm font-bold text-ink">{p.valor}</p>
-                                {p.descripcion && <p className="mt-0.5 text-[11px] text-muted">{p.descripcion}</p>}
+                            <div
+                                key={p.id}
+                                className="border-line bg-soft/40 rounded-lg border p-3"
+                            >
+                                <p className="text-muted font-mono text-[11px] uppercase">
+                                    {p.clave}
+                                </p>
+                                <p className="text-ink mt-1 text-sm font-bold">
+                                    {p.valor}
+                                </p>
+                                {p.descripcion && (
+                                    <p className="text-muted mt-0.5 text-[11px]">
+                                        {p.descripcion}
+                                    </p>
+                                )}
                             </div>
                         ))}
                     </div>
@@ -468,32 +645,60 @@ export default function RedistribucionPage({
             <Modal
                 open={creando || Boolean(editando)}
                 onClose={cerrarFormulario}
-                title={editando ? 'Modificar Excedente Detectado' : 'Nuevo Excedente Detectado'}
+                title={
+                    editando
+                        ? 'Modificar Excedente Detectado'
+                        : 'Nuevo Excedente Detectado'
+                }
             >
                 <form onSubmit={guardar} className="space-y-4">
                     <Field label="Obra de Origen" required>
-                        <Select value={form.data.obra_origen_id} onChange={(e) => form.setData('obra_origen_id', e.target.value)} required>
+                        <Select
+                            value={form.data.obra_origen_id}
+                            onChange={(e) =>
+                                form.setData('obra_origen_id', e.target.value)
+                            }
+                            required
+                        >
                             <option value="">Selecciona obra…</option>
                             {obrasDb.map((o) => (
-                                <option key={o.id} value={String(o.id)}>{o.nombre}</option>
+                                <option key={o.id} value={String(o.id)}>
+                                    {o.nombre}
+                                </option>
                             ))}
                         </Select>
                     </Field>
 
                     <Field label="Almacén" required>
-                        <Select value={form.data.almacen_id} onChange={(e) => form.setData('almacen_id', e.target.value)} required>
+                        <Select
+                            value={form.data.almacen_id}
+                            onChange={(e) =>
+                                form.setData('almacen_id', e.target.value)
+                            }
+                            required
+                        >
                             <option value="">Selecciona almacén…</option>
                             {almacenesDb.map((a) => (
-                                <option key={a.id} value={String(a.id)}>{a.nombre}</option>
+                                <option key={a.id} value={String(a.id)}>
+                                    {a.nombre}
+                                </option>
                             ))}
                         </Select>
                     </Field>
 
                     <Field label="Material" required>
-                        <Select value={form.data.material_id} onChange={(e) => form.setData('material_id', e.target.value)} required>
+                        <Select
+                            value={form.data.material_id}
+                            onChange={(e) =>
+                                form.setData('material_id', e.target.value)
+                            }
+                            required
+                        >
                             <option value="">Selecciona material…</option>
                             {materialesDb.map((m) => (
-                                <option key={m.id} value={String(m.id)}>{m.nombre}</option>
+                                <option key={m.id} value={String(m.id)}>
+                                    {m.nombre}
+                                </option>
                             ))}
                         </Select>
                     </Field>
@@ -505,34 +710,60 @@ export default function RedistribucionPage({
                                 min="0.001"
                                 step="0.001"
                                 value={form.data.cantidad}
-                                onChange={(e) => form.setData('cantidad', e.target.value)}
+                                onChange={(e) =>
+                                    form.setData('cantidad', e.target.value)
+                                }
                                 required
                             />
                         </Field>
                         <Field label="Procedencia" required>
-                            <Select value={form.data.origen} onChange={(e) => form.setData('origen', e.target.value)}>
+                            <Select
+                                value={form.data.origen}
+                                onChange={(e) =>
+                                    form.setData('origen', e.target.value)
+                                }
+                            >
                                 {ORIGENES.map((o) => (
-                                    <option key={o.value} value={o.value}>{o.label}</option>
+                                    <option key={o.value} value={o.value}>
+                                        {o.label}
+                                    </option>
                                 ))}
                             </Select>
                         </Field>
                     </div>
 
                     <Field label="Estado" required>
-                        <Select value={form.data.estado} onChange={(e) => form.setData('estado', e.target.value)}>
+                        <Select
+                            value={form.data.estado}
+                            onChange={(e) =>
+                                form.setData('estado', e.target.value)
+                            }
+                        >
                             {ESTADOS.map((e) => (
-                                <option key={e.value} value={e.value}>{e.label}</option>
+                                <option key={e.value} value={e.value}>
+                                    {e.label}
+                                </option>
                             ))}
                         </Select>
                     </Field>
 
                     <div className="flex justify-end gap-2 pt-2">
-                        <Button variant="secondary" type="button" onClick={cerrarFormulario}>
+                        <Button
+                            variant="secondary"
+                            type="button"
+                            onClick={cerrarFormulario}
+                        >
                             Cancelar
                         </Button>
-                        <Button variant="mint" type="submit" disabled={form.processing}>
+                        <Button
+                            variant="mint"
+                            type="submit"
+                            disabled={form.processing}
+                        >
                             <IconSave size={14} />
-                            {editando ? 'Guardar Cambios' : 'Registrar Excedente'}
+                            {editando
+                                ? 'Guardar Cambios'
+                                : 'Registrar Excedente'}
                         </Button>
                     </div>
                 </form>
@@ -545,33 +776,50 @@ export default function RedistribucionPage({
             >
                 {porRedistribuir && (
                     <div className="space-y-4">
-                        <div className="rounded-lg border border-line bg-soft/40 p-3 text-xs">
-                            <p className="font-bold text-ink">{porRedistribuir.material?.nombre ?? `Material #${porRedistribuir.material_id}`}</p>
-                            <p className="mt-0.5 text-muted">
-                                Origen: {porRedistribuir.almacen?.nombre ?? `Almacén #${porRedistribuir.almacen_id}`} ·{' '}
-                                {formatCantidad(Number(porRedistribuir.cantidad))}{' '}
-                                {porRedistribuir.material?.unidad_medida?.codigo ?? ''}
+                        <div className="border-line bg-soft/40 rounded-lg border p-3 text-xs">
+                            <p className="text-ink font-bold">
+                                {porRedistribuir.material?.nombre ??
+                                    `Material #${porRedistribuir.material_id}`}
+                            </p>
+                            <p className="text-muted mt-0.5">
+                                Origen:{' '}
+                                {porRedistribuir.almacen?.nombre ??
+                                    `Almacén #${porRedistribuir.almacen_id}`}{' '}
+                                ·{' '}
+                                {formatCantidad(
+                                    Number(porRedistribuir.cantidad),
+                                )}{' '}
+                                {porRedistribuir.material?.unidad_medida
+                                    ?.codigo ?? ''}
                             </p>
                         </div>
 
                         {sugerencias.length > 0 && (
                             <div className="space-y-2">
-                                <p className="text-xs font-bold text-ink">Receptores sugeridos (AHP)</p>
+                                <p className="text-ink text-xs font-bold">
+                                    Receptores sugeridos (AHP)
+                                </p>
                                 <div className="space-y-2">
                                     {sugerencias.slice(0, 3).map((s, idx) => (
                                         <button
                                             key={idx}
                                             type="button"
                                             onClick={() => aplicarSugerencia(s)}
-                                            className="w-full rounded-lg border border-line bg-surface p-2.5 text-left text-xs transition-colors hover:bg-soft cursor-pointer"
+                                            className="border-line bg-surface hover:bg-soft w-full cursor-pointer rounded-lg border p-2.5 text-left text-xs transition-colors"
                                         >
-                                            <span className="block font-semibold text-ink">
-                                                {s.almacenDestinoNombre ?? `Almacén #${s.almacenDestinoId}`}
+                                            <span className="text-ink block font-semibold">
+                                                {s.almacenDestinoNombre ??
+                                                    `Almacén #${s.almacenDestinoId}`}
                                             </span>
-                                            <span className="block text-[11px] text-muted">
+                                            <span className="text-muted block text-[11px]">
                                                 {s.obraDestinoNombre ?? ''}
-                                                {s.distanciaKm !== undefined ? ` · ${formatKm(Number(s.distanciaKm))}` : ''}
-                                                {s.cantidadSugerida !== undefined ? ` · ${formatCantidad(Number(s.cantidadSugerida))} ${s.unidad ?? ''}` : ''}
+                                                {s.distanciaKm !== undefined
+                                                    ? ` · ${formatKm(Number(s.distanciaKm))}`
+                                                    : ''}
+                                                {s.cantidadSugerida !==
+                                                undefined
+                                                    ? ` · ${formatCantidad(Number(s.cantidadSugerida))} ${s.unidad ?? ''}`
+                                                    : ''}
                                             </span>
                                         </button>
                                     ))}
@@ -580,12 +828,17 @@ export default function RedistribucionPage({
                         )}
 
                         <Field label="Almacén Destino" required>
-                            <Select value={destinoId} onChange={(e) => setDestinoId(e.target.value)}>
+                            <Select
+                                value={destinoId}
+                                onChange={(e) => setDestinoId(e.target.value)}
+                            >
                                 <option value="">Selecciona almacén…</option>
                                 {almacenesDestino.map((a) => (
                                     <option key={a.id} value={String(a.id)}>
                                         {a.nombre}
-                                        {a.obra?.nombre ? ` — ${a.obra.nombre}` : ''}
+                                        {a.obra?.nombre
+                                            ? ` — ${a.obra.nombre}`
+                                            : ''}
                                     </option>
                                 ))}
                             </Select>
@@ -597,15 +850,26 @@ export default function RedistribucionPage({
                                 min="0.001"
                                 step="0.001"
                                 value={cantidadDestino}
-                                onChange={(e) => setCantidadDestino(e.target.value)}
+                                onChange={(e) =>
+                                    setCantidadDestino(e.target.value)
+                                }
                             />
                         </Field>
 
                         <div className="flex justify-end gap-2 pt-2">
-                            <Button variant="secondary" type="button" onClick={() => setPorRedistribuir(null)}>
+                            <Button
+                                variant="secondary"
+                                type="button"
+                                onClick={() => setPorRedistribuir(null)}
+                            >
                                 Cancelar
                             </Button>
-                            <Button variant="mint" type="button" onClick={confirmarRedistribucion} disabled={transferir.processing}>
+                            <Button
+                                variant="mint"
+                                type="button"
+                                onClick={confirmarRedistribucion}
+                                disabled={transferir.processing}
+                            >
                                 <IconTruck size={14} />
                                 Generar Transferencia
                             </Button>
@@ -614,19 +878,35 @@ export default function RedistribucionPage({
                 )}
             </Modal>
 
-            <Modal open={Boolean(porEliminar)} onClose={() => setPorEliminar(null)} title="Eliminar Excedente">
+            <Modal
+                open={Boolean(porEliminar)}
+                onClose={() => setPorEliminar(null)}
+                title="Eliminar Excedente"
+            >
                 {porEliminar && (
                     <div className="space-y-4">
-                        <p className="text-sm text-ink">
+                        <p className="text-ink text-sm">
                             ¿Confirmas la eliminación del excedente de{' '}
-                            <span className="font-bold">{porEliminar.material?.nombre ?? `material #${porEliminar.material_id}`}</span>? Esta
-                            acción no se puede deshacer.
+                            <span className="font-bold">
+                                {porEliminar.material?.nombre ??
+                                    `material #${porEliminar.material_id}`}
+                            </span>
+                            ? Esta acción no se puede deshacer.
                         </p>
                         <div className="flex justify-end gap-2">
-                            <Button variant="secondary" type="button" onClick={() => setPorEliminar(null)}>
+                            <Button
+                                variant="secondary"
+                                type="button"
+                                onClick={() => setPorEliminar(null)}
+                            >
                                 Cancelar
                             </Button>
-                            <Button variant="danger" type="button" onClick={confirmarEliminar} disabled={eliminar.processing}>
+                            <Button
+                                variant="danger"
+                                type="button"
+                                onClick={confirmarEliminar}
+                                disabled={eliminar.processing}
+                            >
                                 <IconTrash size={14} />
                                 Eliminar
                             </Button>

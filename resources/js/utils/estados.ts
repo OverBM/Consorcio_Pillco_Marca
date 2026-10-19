@@ -4,7 +4,12 @@
 import type { Almacen, EstadoObra, Material } from '../types';
 import type { StockState } from '../types/stock';
 
-export type StockEstado = 'optimo' | 'bajo' | 'critico' | 'sobrante' | 'inactivo';
+export type StockEstado =
+    | 'optimo'
+    | 'bajo'
+    | 'critico'
+    | 'sobrante'
+    | 'inactivo';
 
 export interface EstadoMeta {
     label: string;
@@ -49,7 +54,11 @@ export const ESTADO_META: Record<StockEstado, EstadoMeta> = {
     },
 };
 
-export function estadoDeStock(cantidad: number, minimo: number, obraEstado: EstadoObra): StockEstado {
+export function estadoDeStock(
+    cantidad: number,
+    minimo: number,
+    obraEstado: EstadoObra,
+): StockEstado {
     if (obraEstado === 'cerrada' || obraEstado === 'en-cierre') {
         if (cantidad >= minimo * 2) {
             return 'sobrante';
@@ -85,7 +94,11 @@ export function estadoDeAlmacen(
     let peor: StockEstado = 'optimo';
     for (const material of materiales) {
         const cantidad = stock.stock[alm.id]?.[material.id] ?? 0;
-        const estado = estadoDeStock(cantidad, material.stockMinimo, obraEstado);
+        const estado = estadoDeStock(
+            cantidad,
+            material.stockMinimo,
+            obraEstado,
+        );
         if (prioridad[estado] > prioridad[peor]) {
             peor = estado;
         }

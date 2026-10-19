@@ -1,4 +1,9 @@
-import type { Auth, Catalogos, Contexto, NotificacionesFeed } from '@/types/auth';
+import type {
+    Auth,
+    Catalogos,
+    Contexto,
+    NotificacionesFeed,
+} from '@/types/auth';
 
 declare module 'react' {
     interface InputHTMLAttributes<T> {

@@ -6,7 +6,14 @@ import { useHttp, usePage } from '@inertiajs/react';
 import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge } from '../components/ui';
-import { Field, Input, Select, FormPanel, FormSection, SubmitButton } from '../components/form';
+import {
+    Field,
+    Input,
+    Select,
+    FormPanel,
+    FormSection,
+    SubmitButton,
+} from '../components/form';
 import { DataTable } from '../components/DataTable';
 import { EmptyState } from '../components/EmptyState';
 import { useNotifications } from '../components/notifications/NotificationProvider';
@@ -32,7 +39,9 @@ interface PartidasPageProps {
 
 export default function PartidasPage({ partidasDb = [] }: PartidasPageProps) {
     const notify = useNotifications();
-    const { catalogos } = usePage().props as unknown as { catalogos?: Catalogos };
+    const { catalogos } = usePage().props as unknown as {
+        catalogos?: Catalogos;
+    };
     const obras = catalogos?.obras ?? [];
 
     const [obraFiltro, setObraFiltro] = useState('todas');
@@ -45,21 +54,40 @@ export default function PartidasPage({ partidasDb = [] }: PartidasPageProps) {
         metrado: string;
         costo_unitario: string;
         avance_pct: string;
-    }>({ obra_id: '', codigo: '', descripcion: '', unidad: '', metrado: '', costo_unitario: '', avance_pct: '' });
+    }>({
+        obra_id: '',
+        codigo: '',
+        descripcion: '',
+        unidad: '',
+        metrado: '',
+        costo_unitario: '',
+        avance_pct: '',
+    });
 
     const filtradas = useMemo(() => {
-        const base = obraFiltro === 'todas' ? partidasDb : partidasDb.filter((p) => String(p.obra_id) === obraFiltro);
+        const base =
+            obraFiltro === 'todas'
+                ? partidasDb
+                : partidasDb.filter((p) => String(p.obra_id) === obraFiltro);
         return base.map((p) => ({ ...p, id: String(p.id) }));
     }, [partidasDb, obraFiltro]);
 
     const enviar = (event: FormEvent) => {
         event.preventDefault();
 
-        if (!crear.data.obra_id || !crear.data.codigo.trim() || !crear.data.descripcion.trim() || !crear.data.unidad.trim()) {
+        if (
+            !crear.data.obra_id ||
+            !crear.data.codigo.trim() ||
+            !crear.data.descripcion.trim() ||
+            !crear.data.unidad.trim()
+        ) {
             notify.error('Completa obra, código, descripción y unidad.');
             return;
         }
-        if (Number(crear.data.metrado) <= 0 || Number(crear.data.costo_unitario) < 0) {
+        if (
+            Number(crear.data.metrado) <= 0 ||
+            Number(crear.data.costo_unitario) < 0
+        ) {
             notify.error('Verifica el metrado y el costo unitario.');
             return;
         }
@@ -77,11 +105,22 @@ export default function PartidasPage({ partidasDb = [] }: PartidasPageProps) {
         void crear.post('/api/v1/partidas', {
             onSuccess: () => {
                 notify.success('Partida registrada en la EDT.');
-                crear.setData({ obra_id: '', codigo: '', descripcion: '', unidad: '', metrado: '', costo_unitario: '', avance_pct: '' });
+                crear.setData({
+                    obra_id: '',
+                    codigo: '',
+                    descripcion: '',
+                    unidad: '',
+                    metrado: '',
+                    costo_unitario: '',
+                    avance_pct: '',
+                });
                 refrescarProps('partidasDb');
             },
             onError: (errors: Record<string, string>) => {
-                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar la partida.');
+                notify.error(
+                    Object.values(errors).flat().join(' ') ||
+                        'No se pudo registrar la partida.',
+                );
             },
         });
     };
@@ -94,13 +133,15 @@ export default function PartidasPage({ partidasDb = [] }: PartidasPageProps) {
             />
 
             <div className="grid gap-6 lg:grid-cols-3">
-                <div className="lg:col-span-2 space-y-4">
-                    <Card className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                        <span className="text-xs font-mono uppercase text-muted">Obra en Consulta:</span>
+                <div className="space-y-4 lg:col-span-2">
+                    <Card className="flex flex-col items-start justify-between gap-3 p-4 sm:flex-row sm:items-center">
+                        <span className="text-muted font-mono text-xs uppercase">
+                            Obra en Consulta:
+                        </span>
                         <select
                             value={obraFiltro}
                             onChange={(e) => setObraFiltro(e.target.value)}
-                            className="rounded-field border border-line bg-canvas px-3 py-1.5 text-xs text-ink outline-none"
+                            className="rounded-field border-line bg-canvas text-ink border px-3 py-1.5 text-xs outline-none"
                         >
                             <option value="todas">Todas las obras</option>
                             {obras.map((o) => (
@@ -113,34 +154,69 @@ export default function PartidasPage({ partidasDb = [] }: PartidasPageProps) {
 
                     <Card title={`Partidas (${filtradas.length})`}>
                         {partidasDb.length === 0 ? (
-                            <EmptyState title="Sin partidas registradas" hint="Registra la primera partida con el panel lateral." />
+                            <EmptyState
+                                title="Sin partidas registradas"
+                                hint="Registra la primera partida con el panel lateral."
+                            />
                         ) : (
                             <DataTable
                                 emptyLabel="No hay partidas para la obra seleccionada."
                                 columns={[
-                                    { key: 'codigo', header: 'Ítem / Código', mono: true },
-                                    { key: 'descripcion', header: 'Descripción de la Partida' },
-                                    { key: 'unidad', header: 'Unidad', align: 'center', mono: true },
-                                    { key: 'metrado', header: 'Metrado', align: 'right', mono: true, cell: (p) => formatNum(Number(p.metrado)) },
+                                    {
+                                        key: 'codigo',
+                                        header: 'Ítem / Código',
+                                        mono: true,
+                                    },
+                                    {
+                                        key: 'descripcion',
+                                        header: 'Descripción de la Partida',
+                                    },
+                                    {
+                                        key: 'unidad',
+                                        header: 'Unidad',
+                                        align: 'center',
+                                        mono: true,
+                                    },
+                                    {
+                                        key: 'metrado',
+                                        header: 'Metrado',
+                                        align: 'right',
+                                        mono: true,
+                                        cell: (p) =>
+                                            formatNum(Number(p.metrado)),
+                                    },
                                     {
                                         key: 'parcial',
                                         header: 'Costo Total (S/)',
                                         align: 'right',
                                         mono: true,
-                                        cell: (p) => formatMoneda(Number(p.metrado) * Number(p.costo_unitario)),
+                                        cell: (p) =>
+                                            formatMoneda(
+                                                Number(p.metrado) *
+                                                    Number(p.costo_unitario),
+                                            ),
                                     },
                                     {
                                         key: 'avance',
                                         header: 'Avance %',
                                         align: 'right',
                                         cell: (p) => {
-                                            const avance = Number(p.avance_pct || 0);
+                                            const avance = Number(
+                                                p.avance_pct || 0,
+                                            );
                                             return (
                                                 <div className="flex items-center justify-end gap-2">
-                                                    <div className="w-16 h-1.5 bg-soft rounded-full overflow-hidden">
-                                                        <div className="h-full bg-ok rounded-full" style={{ width: `${Math.min(100, avance)}%` }} />
+                                                    <div className="bg-soft h-1.5 w-16 overflow-hidden rounded-full">
+                                                        <div
+                                                            className="bg-ok h-full rounded-full"
+                                                            style={{
+                                                                width: `${Math.min(100, avance)}%`,
+                                                            }}
+                                                        />
                                                     </div>
-                                                    <span className="font-mono font-bold text-xs text-ink">{avance}%</span>
+                                                    <span className="text-ink font-mono text-xs font-bold">
+                                                        {avance}%
+                                                    </span>
                                                 </div>
                                             );
                                         },
@@ -148,7 +224,12 @@ export default function PartidasPage({ partidasDb = [] }: PartidasPageProps) {
                                     {
                                         key: 'obra',
                                         header: 'Obra',
-                                        cell: (p) => <Badge tone="neutral">{p.obra?.nombre ?? `#${p.obra_id}`}</Badge>,
+                                        cell: (p) => (
+                                            <Badge tone="neutral">
+                                                {p.obra?.nombre ??
+                                                    `#${p.obra_id}`}
+                                            </Badge>
+                                        ),
                                     },
                                 ]}
                                 rows={filtradas}
@@ -157,42 +238,104 @@ export default function PartidasPage({ partidasDb = [] }: PartidasPageProps) {
                     </Card>
                 </div>
 
-                <FormPanel title="Registrar Partida" subtitle="Nueva partida de la EDT contractual" onSubmit={enviar} className="text-xs">
+                <FormPanel
+                    title="Registrar Partida"
+                    subtitle="Nueva partida de la EDT contractual"
+                    onSubmit={enviar}
+                    className="text-xs"
+                >
                     <FormSection title="Clasificación" columns={1}>
                         <Field label="Obra" required>
-                            <Select value={crear.data.obra_id} onChange={(e) => crear.setData('obra_id', e.target.value)}>
+                            <Select
+                                value={crear.data.obra_id}
+                                onChange={(e) =>
+                                    crear.setData('obra_id', e.target.value)
+                                }
+                            >
                                 <option value="">Selecciona obra…</option>
                                 {obras.map((o) => (
-                                    <option key={o.id} value={String(o.id)}>{o.nombre}</option>
+                                    <option key={o.id} value={String(o.id)}>
+                                        {o.nombre}
+                                    </option>
                                 ))}
                             </Select>
                         </Field>
                         <Field label="Código (Ítem)" required>
-                            <Input value={crear.data.codigo} onChange={(e) => crear.setData('codigo', e.target.value)} placeholder="01.02.01" />
+                            <Input
+                                value={crear.data.codigo}
+                                onChange={(e) =>
+                                    crear.setData('codigo', e.target.value)
+                                }
+                                placeholder="01.02.01"
+                            />
                         </Field>
                         <Field label="Descripción" required>
-                            <Input value={crear.data.descripcion} onChange={(e) => crear.setData('descripcion', e.target.value)} />
+                            <Input
+                                value={crear.data.descripcion}
+                                onChange={(e) =>
+                                    crear.setData('descripcion', e.target.value)
+                                }
+                            />
                         </Field>
                         <Field label="Unidad" required>
-                            <Input value={crear.data.unidad} onChange={(e) => crear.setData('unidad', e.target.value)} placeholder="M3, M2, KG" />
+                            <Input
+                                value={crear.data.unidad}
+                                onChange={(e) =>
+                                    crear.setData('unidad', e.target.value)
+                                }
+                                placeholder="M3, M2, KG"
+                            />
                         </Field>
                     </FormSection>
 
                     <FormSection title="Metrado y Costo" columns={1}>
                         <div className="grid grid-cols-2 gap-3">
                             <Field label="Metrado" required>
-                                <Input type="number" min={0} step="0.001" value={crear.data.metrado} onChange={(e) => crear.setData('metrado', e.target.value)} />
+                                <Input
+                                    type="number"
+                                    min={0}
+                                    step="0.001"
+                                    value={crear.data.metrado}
+                                    onChange={(e) =>
+                                        crear.setData('metrado', e.target.value)
+                                    }
+                                />
                             </Field>
                             <Field label="Costo Unit. (S/)" required>
-                                <Input type="number" min={0} step="0.0001" value={crear.data.costo_unitario} onChange={(e) => crear.setData('costo_unitario', e.target.value)} />
+                                <Input
+                                    type="number"
+                                    min={0}
+                                    step="0.0001"
+                                    value={crear.data.costo_unitario}
+                                    onChange={(e) =>
+                                        crear.setData(
+                                            'costo_unitario',
+                                            e.target.value,
+                                        )
+                                    }
+                                />
                             </Field>
                         </div>
-                        <Field label="Avance %" hint="Opcional, por defecto 0%.">
-                            <Input type="number" min={0} max={100} value={crear.data.avance_pct} onChange={(e) => crear.setData('avance_pct', e.target.value)} />
+                        <Field
+                            label="Avance %"
+                            hint="Opcional, por defecto 0%."
+                        >
+                            <Input
+                                type="number"
+                                min={0}
+                                max={100}
+                                value={crear.data.avance_pct}
+                                onChange={(e) =>
+                                    crear.setData('avance_pct', e.target.value)
+                                }
+                            />
                         </Field>
                     </FormSection>
 
-                    <SubmitButton status={crear.processing ? 'submitting' : 'idle'} className="w-full">
+                    <SubmitButton
+                        status={crear.processing ? 'submitting' : 'idle'}
+                        className="w-full"
+                    >
                         <IconPlus size={15} />
                         Registrar Partida
                     </SubmitButton>

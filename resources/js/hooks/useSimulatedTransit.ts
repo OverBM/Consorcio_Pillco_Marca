@@ -36,7 +36,10 @@ export function useSimulatedTransit({
 
         let raf: number;
         const tick = (now: number) => {
-            const avance = Math.min(1, desde + ((now - t0) / duracion) * (objetivo - desde));
+            const avance = Math.min(
+                1,
+                desde + ((now - t0) / duracion) * (objetivo - desde),
+            );
             setPct(avance);
             if (avance < 1) {
                 raf = requestAnimationFrame(tick);
@@ -53,7 +56,11 @@ export function useSimulatedTransit({
 
 /** Breakpoint 'md' (768px) para menú responsive sin librerías extra. */
 export function useMediaQuery(query: string): boolean {
-    const [match, setMatch] = useState(() => (typeof window !== 'undefined' ? window.matchMedia(query).matches : false));
+    const [match, setMatch] = useState(() =>
+        typeof window !== 'undefined'
+            ? window.matchMedia(query).matches
+            : false,
+    );
 
     useEffect(() => {
         const mq = window.matchMedia(query);
