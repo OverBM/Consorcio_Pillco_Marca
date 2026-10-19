@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Domain\Inventario\StockService;
 use App\Http\Controllers\Controller;
+use App\Models\Auditoria;
 use App\Models\ConfirmacionRecepcionDestino;
 use App\Models\Transferencia;
 use App\Models\TransferenciaDetalle;
+use App\Support\NotificadorOperativo;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -101,6 +103,15 @@ class TransferenciaController extends Controller
             return $transferencia;
         });
 
+        NotificadorOperativo::aRoles(
+            ['jefe_logistica_compras'],
+            'transferencia_pendiente',
+            'Transferencia pendiente de aprobación',
+            "La transferencia {$transferencia->codigo} espera aprobación para reservar stock.",
+            'transferencia',
+            $transferencia->id,
+        );
+
         return response()->json([
             'success' => true,
             'message' => 'Transferencia registrada exitosamente.',
@@ -131,6 +142,10 @@ class TransferenciaController extends Controller
                 'aprobada_en' => now(),
             ]);
         });
+
+        Auditoria::registrar('aprobar_transferencia', 'transferencias', $transferencia->id, null, [
+            'estado' => 'aprobada',
+        ]);
 
         return response()->json([
             'success' => true,

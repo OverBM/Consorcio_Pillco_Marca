@@ -37,6 +37,8 @@ class ComprasProveedoresApiTest extends TestCase
             'activo' => true,
         ]);
 
+        $this->actingAsConRol($this->usuario);
+
         $programa = Programa::create([
             'codigo' => 'PRG-01',
             'nombre' => 'Programa Junin Central',

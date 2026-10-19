@@ -199,7 +199,7 @@ class AhpOptimizationEvmWebTest extends TestCase
             'activo' => true,
         ]);
 
-        $this->actingAs($user);
+        $this->actingAsConRol($user);
 
         $responsePanel = $this->get('/panel');
         $responsePanel->assertStatus(200);
@@ -231,6 +231,8 @@ class AhpOptimizationEvmWebTest extends TestCase
             'password' => Hash::make('password123'),
             'activo' => true,
         ]);
+
+        $this->asignarRol($user);
 
         // Intento con credenciales erróneas
         $responseBadLogin = $this->post('/login', [

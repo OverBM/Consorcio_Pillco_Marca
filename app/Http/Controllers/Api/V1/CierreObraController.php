@@ -8,6 +8,7 @@ use App\Models\CierreObra;
 use App\Models\ExcedenteDetectado;
 use App\Models\Obra;
 use App\Models\StockAlmacen;
+use App\Support\NotificadorOperativo;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -77,6 +78,22 @@ class CierreObraController extends Controller
 
             return $cierre;
         });
+
+        $excedentes = ExcedenteDetectado::query()
+            ->where('obra_origen_id', $obra->id)
+            ->where('estado', 'detectado')
+            ->count();
+
+        if ($excedentes > 0) {
+            NotificadorOperativo::aRoles(
+                ['jefe_logistica_compras', 'planificacion_administracion'],
+                'excedente_detectado',
+                'Excedentes disponibles para redistribución',
+                "La obra {$obra->codigo} registró {$excedentes} excedente(s) tras iniciar el cierre.",
+                'obra',
+                $obra->id,
+            );
+        }
 
         return response()->json([
             'success' => true,

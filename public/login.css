@@ -49,7 +49,7 @@
   gap: clamp(38px, 7vw, 100px);
   align-items: center;
 }
-.login-intro { max-width: 650px; }
+.login-intro { max-width: 650px; min-width: 0; }
 .login-intro .eyebrow { margin-bottom: 21px; }
 .login-title {
   margin: 0;
@@ -82,6 +82,7 @@
 .login-side-code:hover, .login-return-link:hover { text-decoration: underline; text-underline-offset: 4px; }
 .login-panel {
   width: 100%;
+  min-width: 0;
   padding: clamp(27px, 3.7vw, 43px);
   border-radius: var(--radius-card);
   background: var(--color-white);
@@ -106,7 +107,15 @@
 }
 .login-field input::placeholder { color: var(--color-smoke); opacity: 1; }
 .login-field input:disabled { cursor: not-allowed; opacity: 1; }
+.password-policy { margin: 2px 0 0; padding: 0; display: grid; gap: 5px; list-style: none; }
+.password-policy[hidden] { display: none; }
+.password-policy-item { display: flex; align-items: center; gap: 7px; color: #b91c1c; font-family: var(--font-mono); font-size: 10px; letter-spacing: .01em; }
+.password-policy-item::before { content: ""; width: 6px; height: 6px; flex: 0 0 auto; border-radius: 50%; background: #b91c1c; }
+.password-policy-item.is-met { color: #15803d; }
+.password-policy-item.is-met::before { background: #15803d; }
 .login-submit { width: 100%; margin-top: 21px; justify-content: space-between; }
+.login-register { margin: 18px 0 0; color: var(--color-slate); font-size: 12px; text-align: center; }
+.login-register .text-link { font-size: 12px; }
 .login-submit:disabled { cursor: not-allowed; transform: none; background: var(--color-slate); color: var(--color-white); opacity: 1; }
 .login-return-link { margin-top: 18px; display: inline-flex; font-size: 11px; font-weight: 600; text-decoration: none; }
 .login-footer { padding-top: 15px; display: flex; justify-content: space-between; gap: 12px; border-top: 1px solid var(--color-ash); color: var(--color-smoke); font-family: var(--font-mono); font-size: 8px; letter-spacing: .03em; }
@@ -126,12 +135,18 @@
 }
 
 @media (max-width: 520px) {
-  .login-section-kicker { font-size: 8px; }
+  .login-section-kicker { font-size: 8px; flex-wrap: wrap; }
   .login-layout { padding-top: 29px; }
-  .login-title { font-size: clamp(65px, 15.4vw, 82px); }
+  .login-title { font-size: clamp(60px, 15.4vw, 82px); }
   .login-panel { border-radius: 21px; }
   .login-panel-index { margin-top: 29px; }
   .login-side-note { gap: 11px; padding: 14px 12px; font-size: 10px; }
   .login-side-code { font-size: 7px; }
   .login-footer { font-size: 7px; }
+}
+
+@media (max-width: 380px) {
+  .login-nav { width: min(100% - 20px, 640px); padding: 8px 10px; }
+  .login-title { font-size: clamp(52px, 16vw, 64px); }
+  .login-submit { font-size: 11px; }
 }

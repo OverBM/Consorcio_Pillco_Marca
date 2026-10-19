@@ -66,7 +66,7 @@ function crearContextoOperativo(): array
 test('el usuario autenticado fija su obra activa en la sesión', function () {
     ['usuario' => $usuario, 'obraA' => $obraA] = crearContextoOperativo();
 
-    $response = $this->actingAs($usuario)
+    $response = $this->actingAsConRol($usuario)
         ->from('/panel')
         ->post('/contexto', ['obra_activa_id' => $obraA->id]);
 
@@ -77,7 +77,7 @@ test('el usuario autenticado fija su obra activa en la sesión', function () {
 test('el usuario no puede activar una obra sin acceso', function () {
     ['usuario' => $usuario, 'obraC' => $obraC] = crearContextoOperativo();
 
-    $response = $this->actingAs($usuario)
+    $response = $this->actingAsConRol($usuario)
         ->from('/panel')
         ->post('/contexto', ['obra_activa_id' => $obraC->id]);
 
@@ -88,7 +88,7 @@ test('el usuario no puede activar una obra sin acceso', function () {
 test('activar un almacén deriva la obra activa', function () {
     ['usuario' => $usuario, 'obraA' => $obraA, 'almacenA' => $almacenA] = crearContextoOperativo();
 
-    $response = $this->actingAs($usuario)
+    $response = $this->actingAsConRol($usuario)
         ->from('/panel')
         ->post('/contexto', ['almacen_activo_id' => $almacenA->id]);
 
@@ -100,7 +100,7 @@ test('activar un almacén deriva la obra activa', function () {
 test('un almacén que no pertenece a la obra activa es rechazado', function () {
     ['usuario' => $usuario, 'obraB' => $obraB, 'almacenA' => $almacenA] = crearContextoOperativo();
 
-    $response = $this->actingAs($usuario)
+    $response = $this->actingAsConRol($usuario)
         ->from('/panel')
         ->post('/contexto', [
             'obra_activa_id' => $obraB->id,

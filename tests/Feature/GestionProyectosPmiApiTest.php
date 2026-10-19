@@ -39,6 +39,8 @@ class GestionProyectosPmiApiTest extends TestCase
             'activo' => true,
         ]);
 
+        $this->actingAsConRol($this->usuario);
+
         $programa = Programa::create([
             'codigo' => 'PRG-PMI-01',
             'nombre' => 'Programa Infraestructura Vial Junín',
@@ -106,6 +108,12 @@ class GestionProyectosPmiApiTest extends TestCase
 
     public function test_gestion_ciclo_de_vida_fases_e_hitos_pmi(): void
     {
+        // 0. Aprobar la fase previa obligatoria (secuencia de fases)
+        $this->postJson("/api/v1/proyectos/{$this->obra->id}/fases", [
+            'fase' => 'inicio',
+            'estado' => 'aprobada',
+        ])->assertStatus(200);
+
         // 1. Gestionar fase
         $faseResp = $this->postJson("/api/v1/proyectos/{$this->obra->id}/fases", [
             'fase' => 'planificacion',

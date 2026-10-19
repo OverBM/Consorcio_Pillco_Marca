@@ -4,7 +4,8 @@
 // Datos desde props `recepcionesDb`/`ordenesDb`; escritura con `useHttp`.
 
 import { useState, type FormEvent } from 'react';
-import { router, useHttp } from '@inertiajs/react';
+import { useHttp } from '@inertiajs/react';
+import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge } from '../components/ui';
 import { Field, Input, Select, Textarea, FormPanel, FormSection, SubmitButton } from '../components/form';
@@ -176,7 +177,7 @@ export default function RecepcionPage({ recepcionesDb = [], ordenesDb = [] }: Re
             onSuccess: () => {
                 notify.success('Recepción registrada conforme y stock actualizado.');
                 reiniciar();
-                router.reload({ only: ['recepcionesDb', 'ordenesDb'] });
+                refrescarProps('recepcionesDb', 'ordenesDb');
             },
             onError: (errors) => {
                 const mensaje = Object.values(errors).flat().join(' ');

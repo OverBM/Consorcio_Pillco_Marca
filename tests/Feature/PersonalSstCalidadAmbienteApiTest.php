@@ -41,6 +41,8 @@ class PersonalSstCalidadAmbienteApiTest extends TestCase
             'activo' => true,
         ]);
 
+        $this->actingAsConRol($this->usuario);
+
         $programa = Programa::create([
             'codigo' => 'PRG-SST-01',
             'nombre' => 'Programa Junín Central',

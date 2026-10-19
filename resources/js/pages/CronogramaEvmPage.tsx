@@ -3,7 +3,8 @@
 // contra `/api/v1/proyectos/{obraId}/hitos`.
 
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { router, useHttp } from '@inertiajs/react';
+import { useHttp } from '@inertiajs/react';
+import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge } from '../components/ui';
 import { Field, Input, Select, FormPanel, FormSection, SubmitButton } from '../components/form';
@@ -101,7 +102,7 @@ export default function CronogramaEvmPage({ obrasDb = [], evmData, hitosDb = [] 
             onSuccess: () => {
                 notify.success('Hito registrado en el cronograma.');
                 crear.setData({ nombre: '', fecha_planificada: '', estado: 'pendiente' });
-                router.reload({ only: ['hitosDb'] });
+                refrescarProps('hitosDb');
             },
             onError: (errors: Record<string, string>) => {
                 notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar el hito.');

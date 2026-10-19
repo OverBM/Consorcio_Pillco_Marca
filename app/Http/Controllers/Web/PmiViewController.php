@@ -3,9 +3,14 @@
 namespace App\Http\Controllers\Web;
 
 use App\Domain\Optimization\AhpOptimizationService;
+use App\Domain\Project\EvaluadorCriteriosFase;
 use App\Domain\Project\EvmProjectService;
+use App\Enums\FaseCicloVida;
 use App\Http\Controllers\Controller;
+use App\Models\Almacen;
 use App\Models\ExcedenteDetectado;
+use App\Models\FaseCriterio;
+use App\Models\FaseRequisito;
 use App\Models\Hito;
 use App\Models\Material;
 use App\Models\Obra;
@@ -24,7 +29,8 @@ class PmiViewController extends Controller
 {
     public function __construct(
         protected EvmProjectService $evmService,
-        protected AhpOptimizationService $ahpService
+        protected AhpOptimizationService $ahpService,
+        protected EvaluadorCriteriosFase $evaluadorFases
     ) {}
 
     public function programa(): Response
@@ -70,6 +76,9 @@ class PmiViewController extends Controller
             'excedentesDb' => $excedentes,
             'parametrosDb' => $parametros,
             'transferenciasAhpDb' => $transferenciasSugeridas,
+            'obrasDb' => Obra::orderBy('nombre')->get(['id', 'nombre']),
+            'almacenesDb' => Almacen::with('obra:id,nombre')->orderBy('nombre')->get(['id', 'nombre', 'obra_id']),
+            'materialesDb' => Material::with('unidadMedida')->orderBy('nombre')->get(['id', 'nombre', 'unidad_medida_id']),
         ]);
     }
 
@@ -78,9 +87,37 @@ class PmiViewController extends Controller
         $obras = Obra::all();
         $fases = ObraFase::with('obra')->get();
 
+        $requisitos = FaseRequisito::query()->activos()->orderBy('orden')->get();
+        $criterios = FaseCriterio::query()->activos()->orderBy('orden')->get();
+
+        $evaluaciones = [];
+        foreach ($obras as $obra) {
+            foreach (FaseCicloVida::cases() as $fase) {
+                $evaluaciones[(string) $obra->id][$fase->value] = $this->evaluadorFases->evaluar(
+                    $obra,
+                    $fase,
+                    $criterios->where('fase', $fase->value)->values()
+                );
+            }
+        }
+
         return Inertia::render('CicloVidaPage', [
             'obrasDb' => $obras,
             'fasesDb' => $fases,
+            'fasesCatalogo' => FaseCicloVida::secuencia(),
+            'requisitosDb' => $requisitos,
+            'criteriosDb' => $criterios,
+            'evaluacionesDb' => $evaluaciones,
+        ]);
+    }
+
+    public function fases(): Response
+    {
+        return Inertia::render('FasesAdminPage', [
+            'fasesCatalogo' => FaseCicloVida::secuencia(),
+            'requisitosDb' => FaseRequisito::query()->orderBy('orden')->get(),
+            'criteriosDb' => FaseCriterio::query()->orderBy('orden')->get(),
+            'tiposCriterioDb' => FaseCriterio::tiposSoportados(),
         ]);
     }
 

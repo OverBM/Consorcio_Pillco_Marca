@@ -1,7 +1,10 @@
 <?php
 
 use App\Models\Usuario;
+use Illuminate\Cookie\Middleware\EncryptCookies;
+use Illuminate\Foundation\Http\Kernel;
 use Illuminate\Http\Request;
+use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
@@ -46,7 +49,7 @@ test('un Bearer inválido deja la identidad nula y no bloquea la llamada', funct
 test('la sesión web resuelve el usuario autenticado', function () {
     $usuario = crearUsuarioAutenticable();
 
-    $response = $this->actingAs($usuario)->getJson('/api/v1/_test_identidad');
+    $response = $this->actingAsConRol($usuario)->getJson('/api/v1/_test_identidad');
 
     $response->assertOk()->assertJson(['id' => $usuario->id]);
 });
@@ -55,4 +58,15 @@ test('sin credenciales la identidad es nula y la llamada sigue funcionando', fun
     $response = $this->getJson('/api/v1/_test_identidad');
 
     $response->assertOk()->assertJson(['id' => null]);
+});
+
+test('el grupo api descifra la cookie de sesión antes de iniciarla (EncryptCookies antes de StartSession)', function () {
+    $api = app(Kernel::class)->getMiddlewareGroups()['api'];
+
+    $encrypt = array_search(EncryptCookies::class, $api, true);
+    $start = array_search(StartSession::class, $api, true);
+
+    expect($encrypt)->not->toBeFalse()
+        ->and($start)->not->toBeFalse()
+        ->and($encrypt)->toBeLessThan($start);
 });

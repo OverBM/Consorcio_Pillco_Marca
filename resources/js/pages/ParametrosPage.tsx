@@ -1,16 +1,17 @@
 // Parámetros y Constantes del Sistema.
-// Excepción documentada: escribe mediante el POST web `admin.parametros.update`
-// con CSRF (no usa la API JSON) y refresca los props con Inertia.
+// CRUD vía `useHttp` contra `/api/v1/parametros` y refresco con Inertia.
+// El POST web `admin.parametros.update` se conserva para integraciones existentes.
 
 import { useMemo, useState, type FormEvent } from 'react';
-import { useForm } from '@inertiajs/react';
+import { useHttp } from '@inertiajs/react';
+import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge, Button, Modal } from '../components/ui';
-import { Field, Input } from '../components/form';
+import { Field, Input, Select } from '../components/form';
 import { DataTable } from '../components/DataTable';
 import { EmptyState } from '../components/EmptyState';
 import { useNotifications } from '../components/notifications/NotificationProvider';
-import { IconSave } from '../components/icons';
+import { IconPlus, IconSave, IconTrash } from '../components/icons';
 
 type Categoria = 'ahp' | 'geo' | 'stock' | 'general';
 
@@ -23,6 +24,7 @@ interface ParametroDb {
 }
 
 interface ParametroFila {
+    dbId: number | string;
     id: string;
     categoria: Categoria;
     clave: string;
@@ -34,6 +36,15 @@ interface ParametroFila {
 interface ParametrosPageProps {
     parametrosDb?: ParametroDb[];
 }
+
+const TIPOS = [
+    { value: 'texto', label: 'Texto' },
+    { value: 'numero', label: 'Número' },
+    { value: 'booleano', label: 'Booleano' },
+    { value: 'json', label: 'JSON' },
+];
+
+const VACIO = { clave: '', valor: '', tipo: 'texto', descripcion: '' };
 
 const TABS: Array<{ id: 'todas' | Categoria; label: string }> = [
     { id: 'todas', label: 'Todos los Parámetros' },
@@ -62,6 +73,7 @@ export default function ParametrosPage({ parametrosDb = [] }: ParametrosPageProp
     const parametros: ParametroFila[] = useMemo(
         () =>
             parametrosDb.map((p, idx) => ({
+                dbId: p.id ?? idx + 1,
                 id: String(p.id ?? idx + 1),
                 categoria: inferirCategoria(p.clave),
                 clave: p.clave,
@@ -74,28 +86,90 @@ export default function ParametrosPage({ parametrosDb = [] }: ParametrosPageProp
 
     const [categoriaActiva, setCategoriaActiva] = useState<'todas' | Categoria>('todas');
     const [editando, setEditando] = useState<ParametroFila | null>(null);
+    const [creando, setCreando] = useState(false);
+    const [porEliminar, setPorEliminar] = useState<ParametroFila | null>(null);
 
-    const form = useForm<{ clave: string; valor: string }>({ clave: '', valor: '' });
+    const form = useHttp<typeof VACIO>({ ...VACIO });
+    const eliminar = useHttp({});
 
-    const abrirEdicion = (param: ParametroFila) => {
-        form.setData({ clave: param.clave, valor: param.valor });
-        setEditando(param);
+    const abrirCreacion = () => {
+        form.setData({ ...VACIO });
+        form.clearErrors();
+        setCreando(true);
+        setEditando(null);
     };
 
-    const guardarEdicion = (event: FormEvent) => {
+    const abrirEdicion = (param: ParametroFila) => {
+        form.setData({
+            clave: param.clave,
+            valor: param.valor,
+            tipo: param.tipo,
+            descripcion: param.descripcion,
+        });
+        form.clearErrors();
+        setEditando(param);
+        setCreando(false);
+    };
+
+    const cerrarFormulario = () => {
+        setCreando(false);
+        setEditando(null);
+    };
+
+    const refrescar = () => refrescarProps('parametrosDb');
+
+    const guardar = (event: FormEvent) => {
         event.preventDefault();
-        if (!editando) {
+
+        const payload = {
+            clave: form.data.clave.trim(),
+            valor: form.data.valor.trim(),
+            tipo: form.data.tipo,
+            descripcion: form.data.descripcion.trim() || null,
+        };
+
+        if (!payload.clave || payload.valor === '') {
+            notify.error('Completa la clave y el valor del parámetro.');
             return;
         }
 
-        form.post('/admin/parametros', {
-            preserveScroll: true,
+        form.transform(() => payload);
+
+        const opciones = {
             onSuccess: () => {
-                notify.success(`Parámetro "${form.data.clave}" actualizado correctamente.`);
-                setEditando(null);
+                notify.success(
+                    editando
+                        ? `Parámetro "${payload.clave}" actualizado correctamente.`
+                        : `Parámetro "${payload.clave}" creado correctamente.`,
+                );
+                cerrarFormulario();
+                refrescar();
             },
             onError: (errors: Record<string, string>) => {
-                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo actualizar el parámetro.');
+                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo guardar el parámetro.');
+            },
+        };
+
+        if (editando) {
+            form.put(`/api/v1/parametros/${editando.dbId}`, opciones);
+        } else {
+            form.post('/api/v1/parametros', opciones);
+        }
+    };
+
+    const confirmarEliminar = () => {
+        if (!porEliminar) {
+            return;
+        }
+
+        eliminar.delete(`/api/v1/parametros/${porEliminar.dbId}`, {
+            onSuccess: () => {
+                notify.success(`Parámetro "${porEliminar.clave}" eliminado.`);
+                setPorEliminar(null);
+                refrescar();
+            },
+            onError: (errors: Record<string, string>) => {
+                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo eliminar el parámetro.');
             },
         });
     };
@@ -111,20 +185,26 @@ export default function ParametrosPage({ parametrosDb = [] }: ParametrosPageProp
                 subtitle="Configuración técnica de algoritmos de optimización, matrices de distancias geodésicas y reglas de negocio"
             />
 
-            <div className="flex flex-wrap gap-2 border-b border-line pb-3">
-                {TABS.map((tab) => (
-                    <button
-                        key={tab.id}
-                        onClick={() => setCategoriaActiva(tab.id)}
-                        className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                            categoriaActiva === tab.id
-                                ? 'btn-primary shadow-sm'
-                                : 'bg-surface text-muted hover:text-ink hover:bg-soft border border-line'
-                        }`}
-                    >
-                        {tab.label}
-                    </button>
-                ))}
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-3">
+                <div className="flex flex-wrap gap-2">
+                    {TABS.map((tab) => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setCategoriaActiva(tab.id)}
+                            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                                categoriaActiva === tab.id
+                                    ? 'btn-primary shadow-sm'
+                                    : 'bg-surface text-muted hover:text-ink hover:bg-soft border border-line'
+                            }`}
+                        >
+                            {tab.label}
+                        </button>
+                    ))}
+                </div>
+                <Button variant="mint" size="sm" onClick={abrirCreacion}>
+                    <IconPlus size={14} />
+                    Nuevo parámetro
+                </Button>
             </div>
 
             <Card className="p-5">
@@ -169,12 +249,17 @@ export default function ParametrosPage({ parametrosDb = [] }: ParametrosPageProp
                             { key: 'descripcion', header: 'Descripción e Impacto', cell: (r) => <p className="text-xs text-ink leading-relaxed">{r.descripcion}</p> },
                             {
                                 key: 'acciones',
-                                header: 'Acción',
+                                header: 'Acciones',
                                 align: 'right',
                                 cell: (r) => (
-                                    <Button variant="secondary" size="sm" onClick={() => abrirEdicion(r)}>
-                                        Editar
-                                    </Button>
+                                    <div className="flex items-center justify-end gap-2">
+                                        <Button variant="secondary" size="sm" onClick={() => abrirEdicion(r)}>
+                                            Editar
+                                        </Button>
+                                        <Button variant="danger" size="sm" onClick={() => setPorEliminar(r)}>
+                                            Eliminar
+                                        </Button>
+                                    </div>
                                 ),
                             },
                         ]}
@@ -183,39 +268,78 @@ export default function ParametrosPage({ parametrosDb = [] }: ParametrosPageProp
                 )}
             </Card>
 
-            <Modal open={Boolean(editando)} onClose={() => setEditando(null)} title="Modificar Parámetro del Sistema">
-                {editando && (
-                    <form onSubmit={guardarEdicion} className="space-y-4">
-                        <div className="bg-canvas p-3 rounded-lg border border-line text-xs space-y-2">
-                            <div>
-                                <span className="text-muted block font-mono">Clave:</span>
-                                <span className="font-bold font-mono text-ink text-sm">{editando.clave}</span>
-                            </div>
-                            <div>
-                                <span className="text-muted block">Descripción:</span>
-                                <p className="text-ink">{editando.descripcion}</p>
-                            </div>
-                        </div>
+            <Modal
+                open={creando || Boolean(editando)}
+                onClose={cerrarFormulario}
+                title={editando ? 'Modificar Parámetro del Sistema' : 'Nuevo Parámetro del Sistema'}
+            >
+                <form onSubmit={guardar} className="space-y-4">
+                    <Field label="Clave" required hint="Identificador único, por ejemplo geo.radio_busqueda_m">
+                        <Input
+                            value={form.data.clave}
+                            onChange={(e) => form.setData('clave', e.target.value)}
+                            placeholder="modulo.clave"
+                            disabled={Boolean(editando)}
+                            required
+                        />
+                    </Field>
 
-                        <Field label="Nuevo Valor Configurado" required>
-                            <Input
-                                value={form.data.valor}
-                                onChange={(e) => form.setData('valor', e.target.value)}
-                                placeholder="Ingrese el nuevo valor"
-                                required
-                            />
-                        </Field>
+                    <Field label="Valor" required>
+                        <Input
+                            value={form.data.valor}
+                            onChange={(e) => form.setData('valor', e.target.value)}
+                            placeholder="Ingrese el valor"
+                            required
+                        />
+                    </Field>
 
-                        <div className="flex justify-end gap-2 pt-2">
-                            <Button variant="secondary" type="button" onClick={() => setEditando(null)}>
+                    <Field label="Tipo" required>
+                        <Select value={form.data.tipo} onChange={(e) => form.setData('tipo', e.target.value)}>
+                            {TIPOS.map((tipo) => (
+                                <option key={tipo.value} value={tipo.value}>
+                                    {tipo.label}
+                                </option>
+                            ))}
+                        </Select>
+                    </Field>
+
+                    <Field label="Descripción" hint="Impacto o uso del parámetro dentro del sistema">
+                        <Input
+                            value={form.data.descripcion}
+                            onChange={(e) => form.setData('descripcion', e.target.value)}
+                            placeholder="Describe el parámetro"
+                        />
+                    </Field>
+
+                    <div className="flex justify-end gap-2 pt-2">
+                        <Button variant="secondary" type="button" onClick={cerrarFormulario}>
+                            Cancelar
+                        </Button>
+                        <Button variant="mint" type="submit" disabled={form.processing}>
+                            <IconSave size={14} />
+                            {editando ? 'Guardar Cambios' : 'Crear Parámetro'}
+                        </Button>
+                    </div>
+                </form>
+            </Modal>
+
+            <Modal open={Boolean(porEliminar)} onClose={() => setPorEliminar(null)} title="Eliminar Parámetro">
+                {porEliminar && (
+                    <div className="space-y-4">
+                        <p className="text-sm text-ink">
+                            ¿Confirmas la eliminación del parámetro{' '}
+                            <span className="font-mono font-bold">{porEliminar.clave}</span>? Esta acción no se puede deshacer.
+                        </p>
+                        <div className="flex justify-end gap-2">
+                            <Button variant="secondary" type="button" onClick={() => setPorEliminar(null)}>
                                 Cancelar
                             </Button>
-                            <Button variant="mint" type="submit" disabled={form.processing}>
-                                <IconSave size={14} />
-                                Guardar Cambios
+                            <Button variant="danger" type="button" onClick={confirmarEliminar} disabled={eliminar.processing}>
+                                <IconTrash size={14} />
+                                Eliminar
                             </Button>
                         </div>
-                    </form>
+                    </div>
                 )}
             </Modal>
         </div>

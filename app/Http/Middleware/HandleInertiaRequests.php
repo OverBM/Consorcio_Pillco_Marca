@@ -6,6 +6,7 @@ use App\Models\Almacen;
 use App\Models\Material;
 use App\Models\Obra;
 use App\Models\Usuario;
+use App\Support\NotificacionesFeed;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -45,6 +46,7 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => fn () => $this->usuarioPayload($request),
             ],
+            'notificacionesFeed' => fn () => $this->notificacionesPayload($request),
             'contexto' => [
                 'obra_activa_id' => $request->session()->get('obra_activa_id'),
                 'almacen_activo_id' => $request->session()->get('almacen_activo_id'),
@@ -89,6 +91,22 @@ class HandleInertiaRequests extends Middleware
                     ->values(),
             ],
         ];
+    }
+
+    /**
+     * Build the shared notification feed payload.
+     *
+     * @return array{items: list<array<string, mixed>>, sin_leer: int}
+     */
+    private function notificacionesPayload(Request $request): array
+    {
+        $usuario = $request->user();
+
+        if (! $usuario instanceof Usuario) {
+            return ['items' => [], 'sin_leer' => 0];
+        }
+
+        return NotificacionesFeed::paraUsuario($usuario);
     }
 
     /**

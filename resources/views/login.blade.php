@@ -12,6 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/styles.css" />
     <link rel="stylesheet" href="/login.css" />
+    <script src="/login.js" defer></script>
   </head>
   <body class="login-page">
     <a class="skip-link" href="#login-main">Saltar al contenido</a>
@@ -60,10 +61,19 @@
             </div>
             <div class="login-field">
               <label for="login-password">Contraseña</label>
-              <input id="login-password" name="password" type="password" value="" placeholder="••••••••" autocomplete="current-password" required />
+              <input id="login-password" name="password" type="password" value="" placeholder="••••••••" autocomplete="current-password" required aria-describedby="password-policy" />
+              <ul class="password-policy" id="password-policy" hidden>
+                @foreach (\App\Support\PasswordPolicy::labels() as $reglaClave => $reglaEtiqueta)
+                  <li class="password-policy-item" data-rule="{{ $reglaClave }}">{{ $reglaEtiqueta }}</li>
+                @endforeach
+              </ul>
             </div>
             <button class="button button-dark login-submit" type="submit" style="width: 100%; margin-top: 1rem;">Ingresar al Panel <span aria-hidden="true">↗</span></button>
           </form>
+
+          <p class="login-register">
+            ¿No tienes acceso todavía? <a class="text-link" href="/registro">Solicita tu registro <span aria-hidden="true">↗</span></a>
+          </p>
         </section>
       </div>
       <div class="login-footer"><span>CONSORCIO PILLCO MARCA</span><span>OPERACIONES · INVENTARIOS</span></div>

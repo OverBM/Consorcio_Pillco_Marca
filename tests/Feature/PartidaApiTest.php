@@ -8,6 +8,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 test('el endpoint de partidas registra una nueva partida de la EDT', function () {
+    $this->actingAsConRol($this->usuarioConRol());
+
     $programa = Programa::create([
         'nombre' => 'Programa de Prueba',
         'estado' => 'activo',
@@ -40,6 +42,8 @@ test('el endpoint de partidas registra una nueva partida de la EDT', function ()
 });
 
 test('el endpoint de partidas lista las partidas de una obra', function () {
+    $this->actingAsConRol($this->usuarioConRol());
+
     $programa = Programa::create([
         'nombre' => 'Programa de Prueba',
         'estado' => 'activo',

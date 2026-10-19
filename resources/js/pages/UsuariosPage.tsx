@@ -2,12 +2,14 @@
 // Lista `usuariosDb` y crea/edita vía `useHttp` contra `/api/v1/usuarios`.
 
 import { useMemo, useState, type FormEvent } from 'react';
-import { router, useHttp, usePage } from '@inertiajs/react';
+import { Deferred, useHttp, usePage } from '@inertiajs/react';
+import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge, Button, Modal } from '../components/ui';
 import { Field, Input, Select, FormPanel, FormSection, SubmitButton } from '../components/form';
 import { DataTable } from '../components/DataTable';
 import { EmptyState } from '../components/EmptyState';
+import { SkeletonTable } from '../components/Skeleton';
 import { useNotifications } from '../components/notifications/NotificationProvider';
 import type { Catalogos } from '../types';
 import { IconPlus, IconSave } from '../components/icons';
@@ -104,7 +106,7 @@ export default function UsuariosPage({ usuariosDb = [], rolesDb = [] }: Usuarios
                     rol_codigo: rolesDb[0]?.codigo ?? '',
                     obra_id: obras[0] ? String(obras[0].id) : '',
                 });
-                router.reload({ only: ['usuariosDb'] });
+                refrescarProps('usuariosDb');
             },
             onError: (errors: Record<string, string>) => {
                 notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar el usuario.');
@@ -153,7 +155,7 @@ export default function UsuariosPage({ usuariosDb = [], rolesDb = [] }: Usuarios
             onSuccess: () => {
                 notify.success('Usuario actualizado exitosamente.');
                 setEditando(null);
-                router.reload({ only: ['usuariosDb'] });
+                refrescarProps('usuariosDb');
             },
             onError: (errors: Record<string, string>) => {
                 notify.error(Object.values(errors).flat().join(' ') || 'No se pudo actualizar el usuario.');
@@ -171,6 +173,7 @@ export default function UsuariosPage({ usuariosDb = [], rolesDb = [] }: Usuarios
             <div className="grid gap-6 lg:grid-cols-3">
                 <div className="lg:col-span-2">
                     <Card title={`Usuarios Registrados (${filas.length})`}>
+                        <Deferred data="usuariosDb" fallback={<SkeletonTable />}>
                         {filas.length === 0 ? (
                             <EmptyState title="Sin usuarios registrados" hint="Registra el primer usuario con el panel lateral." />
                         ) : (
@@ -201,6 +204,7 @@ export default function UsuariosPage({ usuariosDb = [], rolesDb = [] }: Usuarios
                                 rows={filas}
                             />
                         )}
+                        </Deferred>
                     </Card>
                 </div>
 

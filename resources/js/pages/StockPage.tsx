@@ -44,6 +44,7 @@ interface KardexMov {
 
 interface StockPageProps {
     stockDb?: StockDbRow[];
+    almacenesDb?: AlmacenResumen[];
 }
 
 type FiltroEstado = 'todos' | 'optimo' | 'bajo' | 'critico' | 'reservado';
@@ -75,7 +76,7 @@ interface AlmacenResumen {
     nombre: string;
 }
 
-export default function StockPage({ stockDb = [] }: StockPageProps) {
+export default function StockPage({ stockDb = [], almacenesDb = [] }: StockPageProps) {
     const [busqueda, setBusqueda] = useState('');
     const [almFiltro, setAlmFiltro] = useState('todos');
     const [estadoFiltro, setEstadoFiltro] = useState<FiltroEstado>('todos');
@@ -87,13 +88,16 @@ export default function StockPage({ stockDb = [] }: StockPageProps) {
 
     const almacenes: AlmacenResumen[] = useMemo(() => {
         const mapa = new Map<string, AlmacenResumen>();
+        for (const a of almacenesDb) {
+            mapa.set(a.id, a);
+        }
         for (const r of stockDb) {
             if (!mapa.has(r.almacenId)) {
                 mapa.set(r.almacenId, { id: r.almacenId, nombre: r.almacenNombre });
             }
         }
         return Array.from(mapa.values());
-    }, [stockDb]);
+    }, [almacenesDb, stockDb]);
 
     const materiales: MaterialResumen[] = useMemo(() => {
         const mapa = new Map<string, MaterialResumen>();

@@ -28,6 +28,24 @@ export type Auth = {
     user: User | null;
 };
 
+export type NotificacionFeedItem = {
+    id: string;
+    origen: 'notificacion' | 'alerta';
+    tipo: string;
+    titulo: string;
+    cuerpo: string | null;
+    severidad: string | null;
+    referencia_tipo: string | null;
+    referencia_id: number | null;
+    leida: boolean;
+    fecha: string | null;
+};
+
+export type NotificacionesFeed = {
+    items: NotificacionFeedItem[];
+    sin_leer: number;
+};
+
 export type CatalogoObra = {
     id: number;
     codigo: string;

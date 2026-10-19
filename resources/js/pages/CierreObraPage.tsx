@@ -3,7 +3,8 @@
 // finalización vía `/iniciar` y `/finalizar` con `useHttp`.
 
 import { useEffect, useState } from 'react';
-import { router, useHttp } from '@inertiajs/react';
+import { useHttp } from '@inertiajs/react';
+import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge, Button } from '../components/ui';
 import { DataTable } from '../components/DataTable';
@@ -81,7 +82,7 @@ export default function CierreObraPage({ obrasDb = [] }: CierreObraPageProps) {
                 consulta.get(`/api/v1/cierres-obra/${obraId}`, {
                     onSuccess: (res) => setDetalle((res as { data: DetalleCierre }).data),
                 });
-                router.reload({ only: ['obrasDb'] });
+                refrescarProps('obrasDb');
             },
             onError: (errors: Record<string, string>) => {
                 notify.error(Object.values(errors).flat().join(' ') || 'No se pudo ejecutar la acción.');

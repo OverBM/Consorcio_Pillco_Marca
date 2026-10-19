@@ -20,29 +20,7 @@
     <a class="skip-link" href="#contenido">Saltar al contenido</a>
     <p class="sr-only" id="ambient-video-hint">Video sin sonido. Toca o haz clic para pausar o reanudar; también puedes enfocarlo y usar Espacio o Enter.</p>
 
-    <header class="site-header" id="inicio">
-      <div class="nav-pill">
-        <a class="brand" href="#inicio" aria-label="Consorcio Pillco Marca, inicio">
-          <img src="/assets/brand-mark.svg" alt="" width="44" height="44" />
-          <span class="brand-name"><span>CONSORCIO</span><strong>PILLCO MARCA</strong></span>
-        </a>
-
-        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation">
-          <span class="menu-toggle-label">Menú</span>
-          <span class="menu-toggle-icon" aria-hidden="true"><i></i><i></i></span>
-        </button>
-
-        <nav class="primary-navigation" id="primary-navigation" aria-label="Navegación principal">
-          <a href="#empresa">Nosotros</a>
-          <a href="#servicios">Servicios</a>
-          <a href="#proyectos">Proyectos</a>
-          <a href="#sistema">Sistema</a>
-          <a class="login-nav-link" href="/login">Acceso interno <span aria-hidden="true">↗</span></a>
-        </nav>
-
-        <a class="button button-dark nav-cta" href="#contacto">Conversemos <span aria-hidden="true">↗</span></a>
-      </div>
-    </header>
+    @include('partials.site-header')
 
     <main id="contenido">
       <section class="hero page-shell" aria-labelledby="hero-title">
@@ -218,13 +196,10 @@
       </section>
     </main>
 
-    <footer class="site-footer">
-      <div class="footer-inner page-shell">
-        <a class="brand brand-footer" href="#inicio" aria-label="Consorcio Pillco Marca, volver al inicio"><img src="/assets/brand-mark.svg" alt="" width="40" height="40" /><span class="brand-name"><span>CONSORCIO</span><strong>PILLCO MARCA</strong></span></a>
-        <p>CONSTRUIR CON VISIÓN. GESTIONAR CON ORDEN.</p>
-        <a class="footer-top" href="#inicio">Volver arriba <span aria-hidden="true">↑</span></a>
-        <span class="footer-copyright">© <span id="current-year">2026</span> CONSORCIO PILLCO MARCA</span>
-      </div>
-    </footer>
+    @include('partials.site-footer')
+
+    <button class="back-to-top" type="button" data-back-to-top hidden aria-label="Volver arriba">
+      <span aria-hidden="true">↑</span>
+    </button>
   </body>
 </html>

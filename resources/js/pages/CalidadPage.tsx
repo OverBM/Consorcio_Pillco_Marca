@@ -3,7 +3,8 @@
 // contra `/api/v1/calidad/observaciones`.
 
 import { useMemo, useState, type FormEvent } from 'react';
-import { router, useHttp, usePage } from '@inertiajs/react';
+import { useHttp, usePage } from '@inertiajs/react';
+import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge, Button } from '../components/ui';
 import { Field, Input, Select, Textarea, FormPanel, FormSection, SubmitButton } from '../components/form';
@@ -82,7 +83,7 @@ export default function CalidadPage({ observacionesDb = [] }: CalidadPageProps) 
             onSuccess: () => {
                 notify.success('Observación técnica registrada.');
                 crear.setData({ obra_id: obras[0] ? String(obras[0].id) : '', numero_acta: '', descripcion: '', origen: 'supervision', plazo_subsanacion: '' });
-                router.reload({ only: ['observacionesDb'] });
+                refrescarProps('observacionesDb');
             },
             onError: (errors: Record<string, string>) => {
                 notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar la observación.');
@@ -96,7 +97,7 @@ export default function CalidadPage({ observacionesDb = [] }: CalidadPageProps) 
         levantar.post(`/api/v1/calidad/observaciones/${id}/levantar`, {
             onSuccess: () => {
                 notify.success('Observación levantada y subsanada.');
-                router.reload({ only: ['observacionesDb'] });
+                refrescarProps('observacionesDb');
             },
             onError: (errors: Record<string, string>) => {
                 notify.error(Object.values(errors).flat().join(' ') || 'No se pudo levantar la observación.');

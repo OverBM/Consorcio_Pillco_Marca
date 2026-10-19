@@ -3,7 +3,8 @@
 // Datos desde props `mermasDb`; alta vía `useHttp` contra `/api/v1/mermas`.
 
 import { useMemo, useState, type FormEvent } from 'react';
-import { router, useHttp, usePage } from '@inertiajs/react';
+import { useHttp, usePage } from '@inertiajs/react';
+import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge } from '../components/ui';
 import { Field, Input, Select, Textarea, FormPanel, FormSection, SubmitButton } from '../components/form';
@@ -101,7 +102,7 @@ export default function MermasPage({ mermasDb = [] }: MermasPageProps) {
             onSuccess: () => {
                 notify.success('Merma registrada y stock ajustado.');
                 crear.setData({ almacen_id: '', material_id: '', cantidad: '', causa: 'deterioro', justificacion: '' });
-                router.reload({ only: ['mermasDb'] });
+                refrescarProps('mermasDb');
             },
             onError: (errors: Record<string, string>) => {
                 notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar la merma.');

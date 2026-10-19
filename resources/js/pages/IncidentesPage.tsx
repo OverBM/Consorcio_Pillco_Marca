@@ -3,7 +3,8 @@
 // contra `/api/v1/sst/incidentes`.
 
 import { useMemo, useState, type FormEvent } from 'react';
-import { router, useHttp, usePage } from '@inertiajs/react';
+import { useHttp, usePage } from '@inertiajs/react';
+import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge } from '../components/ui';
 import { Field, Input, Select, Textarea, FormPanel, FormSection, SubmitButton } from '../components/form';
@@ -122,7 +123,7 @@ export default function IncidentesPage({ incidentesDb = [], trabajadoresDb = [] 
                     requiere_traslado: false,
                     causas: '',
                 });
-                router.reload({ only: ['incidentesDb'] });
+                refrescarProps('incidentesDb');
             },
             onError: (errors: Record<string, string>) => {
                 notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar el incidente.');

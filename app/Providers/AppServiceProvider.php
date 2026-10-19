@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Inertia\ExceptionResponse;
+use Inertia\Inertia;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,6 +26,30 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->configureInertiaErrorPages();
+    }
+
+    /**
+     * Render the 404 screen inside the SPA for web visits, while keeping
+     * JSON responses for the API and any request that expects JSON.
+     */
+    protected function configureInertiaErrorPages(): void
+    {
+        Inertia::handleExceptionsUsing(function (ExceptionResponse $response): ?ExceptionResponse {
+            $request = $response->request;
+
+            if ($response->statusCode() !== 404) {
+                return null;
+            }
+
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return null;
+            }
+
+            return $response->render('errors/NotFound', [
+                'path' => '/'.$request->path(),
+            ]);
+        });
     }
 
     /**

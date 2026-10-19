@@ -3,7 +3,8 @@
 // contra `/api/v1/ambiente/residuos`.
 
 import { useMemo, type FormEvent } from 'react';
-import { router, useHttp, usePage } from '@inertiajs/react';
+import { useHttp, usePage } from '@inertiajs/react';
+import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge } from '../components/ui';
 import { Field, Input, Select, Textarea, FormPanel, FormSection, SubmitButton } from '../components/form';
@@ -133,7 +134,7 @@ export default function ResiduosPage({ residuosDb = [], eorsDb = [] }: ResiduosP
                     destino: 'reutilizacion',
                     eors_id: '',
                 });
-                router.reload({ only: ['residuosDb'] });
+                refrescarProps('residuosDb');
             },
             onError: (errors: Record<string, string>) => {
                 notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar el residuo.');

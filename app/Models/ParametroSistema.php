@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 
 class ParametroSistema extends Model
 {
+    use Auditable;
+
     protected $table = 'parametros_sistema';
 
     protected $fillable = [

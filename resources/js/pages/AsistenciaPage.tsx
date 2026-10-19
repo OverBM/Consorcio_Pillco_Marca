@@ -3,7 +3,8 @@
 // contra `/api/v1/personal/marcaciones` con validación geodésica del backend.
 
 import { useMemo, useState, type FormEvent } from 'react';
-import { router, useHttp } from '@inertiajs/react';
+import { useHttp } from '@inertiajs/react';
+import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge, Button, Modal } from '../components/ui';
 import { Field, Select } from '../components/form';
@@ -121,7 +122,7 @@ export default function AsistenciaPage({ asistenciasDb = [], obrasDb = [], traba
                 setModal(false);
                 setGps(null);
                 marcar.setData({ trabajador_id: '', obra_id: obrasDb[0] ? String(obrasDb[0].id) : '', tipo: 'entrada' });
-                router.reload({ only: ['asistenciasDb'] });
+                refrescarProps('asistenciasDb');
             },
             onError: (errors: Record<string, string>) => {
                 notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar la marcación.');

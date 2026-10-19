@@ -18,11 +18,40 @@ use App\Models\Residuo;
 use App\Models\Rol;
 use App\Models\Trabajador;
 use App\Models\Usuario;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class PersonalSstViewController extends Controller
 {
+    /**
+     * Agrupación de tablas auditadas por módulo funcional del sistema.
+     *
+     * @var array<string, array{nombre: string, entidades: array<int, string>}>
+     */
+    private const MODULOS_AUDITORIA = [
+        'almacen_logistica' => [
+            'nombre' => 'Almacén y Logística',
+            'entidades' => ['almacenes', 'stock_almacen', 'recepciones', 'transferencias', 'materiales'],
+        ],
+        'pmi' => [
+            'nombre' => 'Gestión de Proyectos (PMI/PMU)',
+            'entidades' => ['obras', 'obra_fases', 'fase_requisitos', 'fase_criterios', 'hitos', 'partidas', 'valorizaciones'],
+        ],
+        'compras' => [
+            'nombre' => 'Compras y Proveedores',
+            'entidades' => ['ordenes_compra', 'requerimientos'],
+        ],
+        'administracion' => [
+            'nombre' => 'Administración',
+            'entidades' => ['roles', 'solicitudes_acceso', 'parametros_sistema'],
+        ],
+        'seguridad' => [
+            'nombre' => 'Seguridad y Sesiones',
+            'entidades' => ['usuarios', 'sesion'],
+        ],
+    ];
+
     public function asistencia(): Response
     {
         $asistencias = Asistencia::with(['trabajador', 'obra'])->latest()->take(50)->get();
@@ -147,17 +176,59 @@ class PersonalSstViewController extends Controller
         ]);
 
         return Inertia::render('UsuariosPage', [
-            'usuariosDb' => $usuarios,
+            'usuariosDb' => Inertia::defer(fn () => $usuarios),
             'rolesDb' => $roles,
         ]);
     }
 
-    public function auditoria(): Response
+    /**
+     * Bitácora de auditoría con filtros por usuario/módulo y paginación.
+     */
+    public function auditoria(Request $request): Response
     {
-        $auditoria = Auditoria::with('usuario')->latest()->take(100)->get();
+        $usuarioId = $request->string('usuario_id')->toString();
+        $modulo = $request->string('modulo')->toString();
+        $entidades = self::MODULOS_AUDITORIA[$modulo]['entidades'] ?? null;
+
+        $registros = Auditoria::with('usuario')
+            ->when($usuarioId !== '', fn ($query) => $query->where('usuario_id', $usuarioId))
+            ->when($entidades !== null, fn ($query) => $query->whereIn('entidad', $entidades))
+            ->latest()
+            ->paginate(25)
+            ->withQueryString()
+            ->through(fn (Auditoria $registro): array => [
+                'id' => $registro->id,
+                'accion' => $registro->accion,
+                'entidad' => $registro->entidad,
+                'entidad_id' => $registro->entidad_id,
+                'ip' => $registro->ip,
+                'antes' => $registro->antes,
+                'despues' => $registro->despues,
+                'created_at' => $registro->created_at?->toIso8601String(),
+                'usuario' => $registro->usuario ? [
+                    'name' => $registro->usuario->name,
+                    'email' => $registro->usuario->email,
+                ] : null,
+            ]);
+
+        $usuarios = Usuario::query()
+            ->whereIn('id', Auditoria::query()->whereNotNull('usuario_id')->select('usuario_id'))
+            ->orderBy('name')
+            ->get(['id', 'name', 'email'])
+            ->map(fn (Usuario $usuario): array => [
+                'id' => (string) $usuario->id,
+                'nombre' => $usuario->name ?? $usuario->email,
+                'email' => $usuario->email,
+            ])
+            ->values();
 
         return Inertia::render('AuditoriaPage', [
-            'auditoriaDb' => $auditoria,
+            'auditoriaDb' => $registros,
+            'usuariosDb' => $usuarios,
+            'modulosDb' => collect(self::MODULOS_AUDITORIA)
+                ->map(fn (array $modulo, string $codigo): array => ['codigo' => $codigo, 'nombre' => $modulo['nombre']])
+                ->values(),
+            'filtros' => ['usuario_id' => $usuarioId, 'modulo' => $modulo],
         ]);
     }
 }

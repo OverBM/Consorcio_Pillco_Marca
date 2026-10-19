@@ -3,7 +3,8 @@
 // vía `PUT /api/v1/riesgos/{id}` usando `useHttp`.
 
 import { useMemo, useState, type FormEvent } from 'react';
-import { router, useHttp, usePage } from '@inertiajs/react';
+import { useHttp, usePage } from '@inertiajs/react';
+import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge, Button, Modal } from '../components/ui';
 import { Field, Input, Select, Textarea, FormPanel, FormSection, SubmitButton } from '../components/form';
@@ -85,7 +86,7 @@ export default function RiesgosPage({ riesgosDb = [] }: RiesgosPageProps) {
             onSuccess: () => {
                 notify.success('Riesgo registrado en la matriz.');
                 crear.setData({ obra_id: '', descripcion: '', categoria: 'tecnico', probabilidad: '3', impacto: '3', respuesta: '' });
-                router.reload({ only: ['riesgosDb'] });
+                refrescarProps('riesgosDb');
             },
             onError: (errors: Record<string, string>) => {
                 notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar el riesgo.');
@@ -106,7 +107,7 @@ export default function RiesgosPage({ riesgosDb = [] }: RiesgosPageProps) {
             onSuccess: () => {
                 notify.success('Riesgo actualizado.');
                 setEditando(null);
-                router.reload({ only: ['riesgosDb'] });
+                refrescarProps('riesgosDb');
             },
             onError: (errors: Record<string, string>) => {
                 notify.error(Object.values(errors).flat().join(' ') || 'No se pudo actualizar el riesgo.');

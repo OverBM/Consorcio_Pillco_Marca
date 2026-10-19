@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Requerimiento;
 use App\Models\RequerimientoDetalle;
+use App\Support\NotificadorOperativo;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -86,6 +87,15 @@ class RequerimientoController extends Controller
 
             return $requerimiento;
         });
+
+        NotificadorOperativo::aRoles(
+            ['jefe_logistica_compras'],
+            'requerimiento_registrado',
+            'Nuevo requerimiento de compra',
+            "El requerimiento {$requerimiento->codigo} fue registrado y espera evaluación.",
+            'requerimiento',
+            $requerimiento->id,
+        );
 
         return response()->json([
             'success' => true,

@@ -3,7 +3,8 @@
 // Datos desde props; alta vía `useHttp` contra `/api/v1/ordenes-compra`.
 
 import { useMemo, useState, type FormEvent } from 'react';
-import { router, useHttp, usePage } from '@inertiajs/react';
+import { useHttp, usePage } from '@inertiajs/react';
+import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge, Modal } from '../components/ui';
 import { Field, Input, Select, FormPanel, FormSection, SubmitButton } from '../components/form';
@@ -142,7 +143,7 @@ export default function OrdenesCompraPage({ ordenesDb = [], cotizacionesDb = [] 
             onSuccess: () => {
                 notify.success('Orden de compra emitida.');
                 crear.setData({ cotizacion_id: '', almacen_destino_id: '', fecha_entrega_prometida: '', urgente: false });
-                router.reload({ only: ['ordenesDb', 'cotizacionesDb'] });
+                refrescarProps('ordenesDb', 'cotizacionesDb');
             },
             onError: (errors: Record<string, string>) => {
                 notify.error(Object.values(errors).flat().join(' ') || 'No se pudo emitir la orden de compra.');

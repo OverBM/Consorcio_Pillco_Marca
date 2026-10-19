@@ -4,7 +4,8 @@
 // Datos desde props `transferenciasDb`; escrituras vía `useHttp`.
 
 import { useMemo, useState, type FormEvent } from 'react';
-import { router, useHttp, usePage } from '@inertiajs/react';
+import { useHttp, usePage } from '@inertiajs/react';
+import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge, Modal } from '../components/ui';
 import { Button, Field, Input, Select, Textarea, FormPanel, FormSection, SubmitButton } from '../components/form';
@@ -202,7 +203,7 @@ export default function TransferenciasPage({ transferenciasDb = [] }: Transferen
             onSuccess: () => {
                 notify.success('Orden de transferencia registrada.');
                 setModalCrear(false);
-                router.reload({ only: ['transferenciasDb'] });
+                refrescarProps('transferenciasDb');
             },
             onError: (errors: Record<string, string>) => {
                 notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar la transferencia.');
@@ -214,7 +215,7 @@ export default function TransferenciasPage({ transferenciasDb = [] }: Transferen
         accion.post(`/api/v1/transferencias/${t.id}/aprobar`, {
             onSuccess: () => {
                 notify.success('Transferencia aprobada y stock reservado en origen.');
-                router.reload({ only: ['transferenciasDb'] });
+                refrescarProps('transferenciasDb');
             },
             onError: (errors: Record<string, string>) => {
                 notify.error(Object.values(errors).flat().join(' ') || 'No se pudo aprobar la transferencia.');
@@ -259,7 +260,7 @@ export default function TransferenciasPage({ transferenciasDb = [] }: Transferen
             onSuccess: () => {
                 notify.success('Recepción confirmada e inventario actualizado en destino.');
                 setRecibiendo(null);
-                router.reload({ only: ['transferenciasDb'] });
+                refrescarProps('transferenciasDb');
             },
             onError: (errors: Record<string, string>) => {
                 notify.error(Object.values(errors).flat().join(' ') || 'No se pudo confirmar la recepción.');

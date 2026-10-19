@@ -18,6 +18,8 @@ test('el endpoint de despachos lista los despachos con su transferencia y almace
         'activo' => true,
     ]);
 
+    $this->actingAsConRol($usuario);
+
     $programa = Programa::create([
         'nombre' => 'Programa de Prueba',
         'estado' => 'activo',

@@ -115,4 +115,21 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Password Policy and Login Lockout
+    |--------------------------------------------------------------------------
+    |
+    | Reusable password policy applied when registering an account or changing
+    | a password, plus the failed-attempt threshold that temporarily locks an
+    | account after repeated unsuccessful logins.
+    |
+    */
+
+    'policy' => [
+        'min_length' => 8,
+        'max_attempts' => (int) env('AUTH_MAX_ATTEMPTS', 5),
+        'lockout_minutes' => (int) env('AUTH_LOCKOUT_MINUTES', 15),
+    ],
+
 ];

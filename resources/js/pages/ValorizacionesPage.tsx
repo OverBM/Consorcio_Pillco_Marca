@@ -3,7 +3,8 @@
 // `/api/v1/valorizaciones/{id}/aprobar` usando `useHttp`.
 
 import { useMemo, useState, type FormEvent } from 'react';
-import { router, useHttp, usePage } from '@inertiajs/react';
+import { useHttp, usePage } from '@inertiajs/react';
+import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge, Button } from '../components/ui';
 import { Field, Input, Select, FormPanel, FormSection, SubmitButton } from '../components/form';
@@ -84,7 +85,7 @@ export default function ValorizacionesPage({ valorizacionesDb = [] }: Valorizaci
             onSuccess: () => {
                 notify.success('Valorización mensual registrada.');
                 crear.setData({ obra_id: '', periodo: '', valor_planificado: '', valor_ganado: '', costo_real: '' });
-                router.reload({ only: ['valorizacionesDb'] });
+                refrescarProps('valorizacionesDb');
             },
             onError: (errors: Record<string, string>) => {
                 notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar la valorización.');
@@ -97,7 +98,7 @@ export default function ValorizacionesPage({ valorizacionesDb = [] }: Valorizaci
         aprobar.post(`/api/v1/valorizaciones/${id}/aprobar`, {
             onSuccess: () => {
                 notify.success('Valorización aprobada.');
-                router.reload({ only: ['valorizacionesDb'] });
+                refrescarProps('valorizacionesDb');
             },
             onError: (errors: Record<string, string>) => {
                 notify.error(Object.values(errors).flat().join(' ') || 'No se pudo aprobar la valorización.');

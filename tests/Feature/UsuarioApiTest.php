@@ -37,6 +37,8 @@ test('el endpoint de usuarios lista los usuarios con rol y obra', function () {
     $usuario->roles()->sync([$rol->id]);
     $usuario->obras()->sync([$obra->id => ['rol_id' => $rol->id]]);
 
+    $this->actingAs($usuario);
+
     $this->getJson('/api/v1/usuarios')
         ->assertOk()
         ->assertJsonPath('success', true)
@@ -48,6 +50,8 @@ test('el endpoint de usuarios lista los usuarios con rol y obra', function () {
 
 test('el endpoint de usuarios registra un usuario con su rol y alcance', function () {
     [, $obra] = contextoUsuarios();
+
+    $this->actingAsConRol($this->usuarioConRol());
 
     $response = $this->postJson('/api/v1/usuarios', [
         'name' => 'Lic. Mariana Rojas',
@@ -70,11 +74,13 @@ test('el endpoint de usuarios registra un usuario con su rol y alcance', functio
 test('el endpoint de usuarios rechaza correos duplicados', function () {
     [$rol] = contextoUsuarios();
 
-    Usuario::create([
+    $existente = Usuario::create([
         'name' => 'Existente',
         'email' => 'duplicado@pillcomarca.pe',
         'password' => bcrypt('password123'),
     ]);
+
+    $this->actingAsConRol($existente);
 
     $response = $this->postJson('/api/v1/usuarios', [
         'name' => 'Nuevo',
@@ -95,6 +101,8 @@ test('el endpoint de usuarios actualiza el estado y rol de un usuario', function
         'password' => bcrypt('password123'),
         'activo' => true,
     ]);
+
+    $this->actingAsConRol($usuario);
 
     $response = $this->putJson("/api/v1/usuarios/{$usuario->id}", [
         'name' => 'Usuario Actualizado',

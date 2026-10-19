@@ -12,7 +12,7 @@ uses(RefreshDatabase::class);
 
 function contextoCalidadAmbiente(): array
 {
-    Usuario::create([
+    $usuario = Usuario::create([
         'name' => 'Jefe de Calidad',
         'email' => 'calidad@pillcomarca.pe',
         'password' => bcrypt('secret123'),
@@ -52,11 +52,12 @@ function contextoCalidadAmbiente(): array
         'razon_social' => 'ECO AMBIENTAL HUANCAYO SAC',
     ]);
 
-    return [$obra, $almacen, $indicador, $eors];
+    return [$usuario, $obra, $almacen, $indicador, $eors];
 }
 
 test('el endpoint de calidad registra y levanta una observación técnica', function () {
-    [$obra] = contextoCalidadAmbiente();
+    [$usuario, $obra] = contextoCalidadAmbiente();
+    $this->actingAsConRol($usuario);
 
     $crear = $this->postJson('/api/v1/calidad/observaciones', [
         'obra_id' => $obra->id,
@@ -82,7 +83,8 @@ test('el endpoint de calidad registra y levanta una observación técnica', func
 });
 
 test('el endpoint de mediciones marca fuera de límite al superar el LMP', function () {
-    [$obra, , $indicador] = contextoCalidadAmbiente();
+    [$usuario, $obra, , $indicador] = contextoCalidadAmbiente();
+    $this->actingAsConRol($usuario);
 
     $response = $this->postJson('/api/v1/ambiente/mediciones', [
         'obra_id' => $obra->id,
@@ -98,7 +100,8 @@ test('el endpoint de mediciones marca fuera de límite al superar el LMP', funct
 });
 
 test('el endpoint de residuos registra un residuo reutilizable', function () {
-    [$obra, $almacen, , $eors] = contextoCalidadAmbiente();
+    [$usuario, $obra, $almacen, , $eors] = contextoCalidadAmbiente();
+    $this->actingAsConRol($usuario);
 
     $response = $this->postJson('/api/v1/ambiente/residuos', [
         'obra_id' => $obra->id,

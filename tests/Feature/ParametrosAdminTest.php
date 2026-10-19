@@ -17,7 +17,7 @@ function administradorDePrueba(): Usuario
 }
 
 test('el POST web admin.parametros.update persiste un parámetro existente', function () {
-    $this->actingAs(administradorDePrueba());
+    $this->actingAsConRol(administradorDePrueba());
 
     ParametroSistema::create([
         'clave' => 'geo.radio_busqueda_m',
@@ -37,7 +37,7 @@ test('el POST web admin.parametros.update persiste un parámetro existente', fun
 });
 
 test('el POST web admin.parametros.update valida las claves inexistentes', function () {
-    $this->actingAs(administradorDePrueba());
+    $this->actingAsConRol(administradorDePrueba());
 
     $this->post('/admin/parametros', [
         'clave' => 'clave.inventada',

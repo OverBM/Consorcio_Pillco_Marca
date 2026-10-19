@@ -39,6 +39,8 @@ class LogisticaGeolocalizadaApiTest extends TestCase
             'activo' => true,
         ]);
 
+        $this->actingAsConRol($this->usuario);
+
         $programa = Programa::create([
             'codigo' => 'PRG-JUNIN',
             'nombre' => 'Programa Valle del Mantaro',

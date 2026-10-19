@@ -1,4 +1,4 @@
-import type { Auth, Catalogos, Contexto } from '@/types/auth';
+import type { Auth, Catalogos, Contexto, NotificacionesFeed } from '@/types/auth';
 
 declare module 'react' {
     interface InputHTMLAttributes<T> {
@@ -13,6 +13,7 @@ declare module '@inertiajs/core' {
             auth: Auth;
             catalogos: Catalogos;
             contexto: Contexto;
+            notificacionesFeed: NotificacionesFeed;
             sidebarOpen: boolean;
             [key: string]: unknown;
         };

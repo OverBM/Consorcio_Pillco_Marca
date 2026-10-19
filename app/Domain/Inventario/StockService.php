@@ -98,7 +98,11 @@ class StockService
             $stock = StockAlmacen::where('almacen_id', $almacenId)
                 ->where('material_id', $materialId)
                 ->lockForUpdate()
-                ->firstOrFail();
+                ->first();
+
+            if (! $stock) {
+                throw new InvalidArgumentException("No existe stock registrado para el material ID {$materialId} en el almacén ID {$almacenId}");
+            }
 
             if ((float) $stock->cantidad < $cantidad) {
                 throw new InvalidArgumentException("Stock insuficiente para material ID {$materialId} en almacén ID {$almacenId}");
@@ -139,7 +143,11 @@ class StockService
             $stock = StockAlmacen::where('almacen_id', $almacenId)
                 ->where('material_id', $materialId)
                 ->lockForUpdate()
-                ->firstOrFail();
+                ->first();
+
+            if (! $stock) {
+                throw new InvalidArgumentException("No existe stock registrado para el material ID {$materialId} en el almacén ID {$almacenId}");
+            }
 
             $disponible = (float) $stock->cantidad - (float) $stock->cantidad_reservada;
             if ($disponible < $cantidad) {

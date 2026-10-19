@@ -3,10 +3,11 @@
 // Conecta los macroprocesos Bizagi 16 al 30 con mapa interactivo Leaflet y KPIs operativos.
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, router, usePage } from '@inertiajs/react';
+import { Deferred, Link, router, usePage } from '@inertiajs/react';
 import contexto from '@/routes/contexto';
 import { PageHeader } from '../components/PageHeader';
 import { KpiCard } from '../components/KpiCard';
+import { Skeleton, SkeletonKpiGrid, SkeletonText } from '../components/Skeleton';
 import { AlertaBanner } from '../components/AlertaBanner';
 import { MapaLeaflet, type RutaMapa, type SugerenciaMapa } from '../components/MapaLeaflet';
 import { GeoDetalle } from '../components/GeoDetalle';
@@ -82,8 +83,12 @@ interface PanelIndicadores {
 interface PanelProps {
     obrasDb: Obra[];
     almacenesDb: Almacen[];
+    obrasRedDb?: Obra[];
+    almacenesRedDb?: Almacen[];
     materialesDb: Material[];
     stock: StockState;
+    stockRed?: StockState;
+    almacenCentralId?: string | null;
     indicadores: PanelIndicadores;
     sobrantes: SobranteDb[];
     rutas: RutaMapa[];
@@ -94,10 +99,11 @@ interface PanelProps {
 export default function PanelGeneral() {
     const props = usePage().props as unknown as PanelProps;
 
-    const obras = props.obrasDb ?? [];
-    const almacenes = props.almacenesDb ?? [];
+    // Red completa para el mapa y la comparativa; el contexto operativo solo resalta.
+    const obras = props.obrasRedDb ?? props.obrasDb ?? [];
+    const almacenes = props.almacenesRedDb ?? props.almacenesDb ?? [];
     const materiales = props.materialesDb ?? [];
-    const stock = props.stock ?? { stock: {}, reservas: {} };
+    const stock = props.stockRed ?? props.stock ?? { stock: {}, reservas: {} };
     const sobrantes = props.sobrantes ?? [];
     const rutas = props.rutas ?? [];
     const movimientos7d = props.movimientos7d ?? [];
@@ -125,7 +131,13 @@ export default function PanelGeneral() {
     const [frentesComparados, setFrentesComparados] = useState<string[]>(obraActiva ? [obraActiva.id] : []);
     const [prediccionDinamica, setPrediccionDinamica] = useState<PrediccionDinamica | null>(null);
 
-    const almCentral = useMemo(() => almacenes.find((a) => a.id === 'alm-central') ?? almacenes[0], [almacenes]);
+    const almCentral = useMemo(() => {
+        if (props.almacenCentralId) {
+            const configurado = almacenes.find((a) => a.id === props.almacenCentralId);
+            if (configurado) return configurado;
+        }
+        return almacenes[0];
+    }, [almacenes, props.almacenCentralId]);
 
     // Función para calcular redistribución sugerida (Cemento Andino Tipo V como caso central)
     const calcularRedistribucionParaObra = (obraId: string, almId?: string) => {
@@ -250,57 +262,59 @@ export default function PanelGeneral() {
             />
 
             {/* 7 Indicadores consolidados PMI / PMU (Bizagi 16-30) */}
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-7">
-                <KpiCard
-                    icon={<IconClipboardList size={18} />}
-                    label="Solicitudes"
-                    value={kpiSolicitudesPendientes}
-                    hint="en atención"
-                    tone="indigo"
-                />
-                <KpiCard
-                    icon={<IconShoppingCart size={18} />}
-                    label="Requerimientos"
-                    value={kpiReqSobrecosto}
-                    hint="con sobrecosto"
-                    tone={kpiReqSobrecosto > 0 ? 'danger' : 'ok'}
-                />
-                <KpiCard
-                    icon={<IconTruck size={18} />}
-                    label="OC / Fletes"
-                    value={kpiOCEnTransito}
-                    hint="en transporte"
-                    tone="indigo"
-                />
-                <KpiCard
-                    icon={<IconAlert size={18} />}
-                    label="Stock Crítico"
-                    value={kpiStockCritico}
-                    hint="alertas activas"
-                    tone={kpiStockCritico > 0 ? 'danger' : 'ok'}
-                />
-                <KpiCard
-                    icon={<IconRepeat size={18} />}
-                    label="Transferencias"
-                    value={kpiTransferenciasActivas}
-                    hint="en curso"
-                    tone="violet"
-                />
-                <KpiCard
-                    icon={<IconAlertTriangle size={18} />}
-                    label="Incidencias"
-                    value={kpiIncidencias}
-                    hint="por conciliar"
-                    tone={kpiIncidencias > 0 ? 'danger' : 'ok'}
-                />
-                <KpiCard
-                    icon={<IconTrash size={18} />}
-                    label="Mermas"
-                    value={kpiMermasSobreUmbral}
-                    hint="sobre umbral"
-                    tone={kpiMermasSobreUmbral > 0 ? 'danger' : 'ok'}
-                />
-            </div>
+            <Deferred data="indicadores" fallback={<SkeletonKpiGrid />}>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-7">
+                    <KpiCard
+                        icon={<IconClipboardList size={18} />}
+                        label="Solicitudes"
+                        value={kpiSolicitudesPendientes}
+                        hint="en atención"
+                        tone="indigo"
+                    />
+                    <KpiCard
+                        icon={<IconShoppingCart size={18} />}
+                        label="Requerimientos"
+                        value={kpiReqSobrecosto}
+                        hint="con sobrecosto"
+                        tone={kpiReqSobrecosto > 0 ? 'danger' : 'ok'}
+                    />
+                    <KpiCard
+                        icon={<IconTruck size={18} />}
+                        label="OC / Fletes"
+                        value={kpiOCEnTransito}
+                        hint="en transporte"
+                        tone="indigo"
+                    />
+                    <KpiCard
+                        icon={<IconAlert size={18} />}
+                        label="Stock Crítico"
+                        value={kpiStockCritico}
+                        hint="alertas activas"
+                        tone={kpiStockCritico > 0 ? 'danger' : 'ok'}
+                    />
+                    <KpiCard
+                        icon={<IconRepeat size={18} />}
+                        label="Transferencias"
+                        value={kpiTransferenciasActivas}
+                        hint="en curso"
+                        tone="violet"
+                    />
+                    <KpiCard
+                        icon={<IconAlertTriangle size={18} />}
+                        label="Incidencias"
+                        value={kpiIncidencias}
+                        hint="por conciliar"
+                        tone={kpiIncidencias > 0 ? 'danger' : 'ok'}
+                    />
+                    <KpiCard
+                        icon={<IconTrash size={18} />}
+                        label="Mermas"
+                        value={kpiMermasSobreUmbral}
+                        hint="sobre umbral"
+                        tone={kpiMermasSobreUmbral > 0 ? 'danger' : 'ok'}
+                    />
+                </div>
+            </Deferred>
 
             {/* Alertas de sobrante por cierre de obra */}
             <section id="seccion-sobrantes" className="space-y-3 scroll-mt-20">
@@ -308,6 +322,7 @@ export default function PanelGeneral() {
                     <h3 className="section-title">Redistribución de excedentes por cierre de obra</h3>
                     <span className="text-xs text-muted">Pasa el cursor sobre la alerta para resaltar la ruta</span>
                 </div>
+                <Deferred data="sobrantes" fallback={<Card><SkeletonText lines={3} /></Card>}>
                 {sobrantes.length === 0 ? (
                     <Card>
                         <EmptyState
@@ -350,6 +365,7 @@ export default function PanelGeneral() {
                         </div>
                     ))
                 )}
+                </Deferred>
             </section>
 
             {/* Mapa Interactivo Leaflet */}
@@ -482,7 +498,7 @@ export default function PanelGeneral() {
                             const isMainActive = obraActiva?.id === obra.id;
                             const estado = estadoDeAlmacen(alm, obra.estado, stock, materiales);
                             const meta = ESTADO_META[estado];
-                            const kmCentral = haversineDistanceKm(alm.coords, almCentral.coords);
+                            const kmCentral = almCentral ? haversineDistanceKm(alm.coords, almCentral.coords) : 0;
                             const stockAlm = stock.stock[alm.id] ?? {};
 
                             let countOptimo = 0;
@@ -558,7 +574,7 @@ export default function PanelGeneral() {
                                             <div>
                                                 <span className="text-muted block text-[10px]">DIST. A CENTRAL</span>
                                                 <span className="font-bold text-ink text-sm">
-                                                    {alm.id === 'alm-central' ? '0 km (Sede)' : formatKm(kmCentral)}
+                                                    {almCentral && alm.id === almCentral.id ? '0 km (Sede)' : formatKm(kmCentral)}
                                                 </span>
                                             </div>
                                         </div>
@@ -637,6 +653,7 @@ export default function PanelGeneral() {
             {/* Accesos rápidos a los 8 módulos del sistema */}
             <div className="grid gap-6 lg:grid-cols-3">
                 <Card title="Movimientos de almacén — últimos 7 días" subtitle="Ingresos y salidas agregadas en la red">
+                    <Deferred data="movimientos7d" fallback={<Skeleton className="h-56 w-full" />}>
                     <BarChart7d data={movimientos7d} />
                     <div className="mt-4">
                         <ChartLegend
@@ -646,6 +663,7 @@ export default function PanelGeneral() {
                             ]}
                         />
                     </div>
+                    </Deferred>
                 </Card>
 
                 <Card className="lg:col-span-2" title="Módulos de Almacén y Logística" subtitle="Accesos directos a los flujos operativos">

@@ -81,9 +81,12 @@ if (portfolioGrid && portfolioStatus) {
     const articulo = document.createElement("article");
     articulo.className = "project-card";
 
-    const arte = document.createElement("div");
+    const detalleUrl = `/proyectos/${proyecto.id}`;
+
+    const arte = document.createElement("a");
     arte.className = "project-art project-art-building";
-    arte.setAttribute("aria-hidden", "true");
+    arte.href = detalleUrl;
+    arte.setAttribute("aria-label", `Ver detalle de ${proyecto.nombre}`);
     arte.innerHTML =
       '<svg viewBox="0 0 480 230"><path d="M54 193h372M95 193V93l70-42 70 42v100M235 193V72l71-34 70 34v121"/><path d="M117 112h24v29h-24zm52 0h24v29h-24zm89-18h25v31h-25zm53 0h25v31h-25zm-53 57h25v31h-25zm53 0h25v31h-25z"/><path class="art-accent" d="m90 86 75-45 74 45M230 65l76-36 76 36"/></svg>';
     const etiqueta = document.createElement("span");
@@ -103,7 +106,11 @@ if (portfolioGrid && portfolioStatus) {
     meta.append(metaPrograma, metaEstado);
 
     const titulo = document.createElement("h3");
-    titulo.textContent = proyecto.nombre;
+    const tituloEnlace = document.createElement("a");
+    tituloEnlace.className = "project-title-link";
+    tituloEnlace.href = detalleUrl;
+    tituloEnlace.textContent = proyecto.nombre;
+    titulo.append(tituloEnlace);
 
     const distrito = document.createElement("p");
     distrito.textContent = `Distrito de ${proyecto.distrito || "—"}`;
@@ -126,8 +133,8 @@ if (portfolioGrid && portfolioStatus) {
 
     const enlace = document.createElement("a");
     enlace.className = "project-link";
-    enlace.href = "#contacto";
-    enlace.innerHTML = 'Consultar esta obra <span aria-hidden="true">↗</span>';
+    enlace.href = detalleUrl;
+    enlace.innerHTML = 'Ver detalle de la obra <span aria-hidden="true">↗</span>';
 
     contenido.append(meta, titulo, distrito, progreso, enlace);
     articulo.append(arte, contenido);
@@ -251,6 +258,25 @@ if (copyButton && messageOutput && copyStatus) {
 
 const year = document.querySelector("#current-year");
 if (year) year.textContent = String(new Date().getFullYear());
+
+const backToTop = document.querySelector("[data-back-to-top]");
+
+if (backToTop) {
+  const prefersReducedMotion =
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const syncBackToTop = () => {
+    backToTop.hidden = window.scrollY < 400;
+  };
+
+  backToTop.addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: prefersReducedMotion ? "auto" : "smooth" });
+  });
+
+  window.addEventListener("scroll", syncBackToTop, { passive: true });
+  syncBackToTop();
+}
 
 
 const ambientVideos = [...document.querySelectorAll("[data-ambient-video]")];

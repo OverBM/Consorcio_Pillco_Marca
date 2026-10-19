@@ -3,7 +3,8 @@
 // Datos desde props `requerimientosDb`; alta y evaluación vía `useHttp`.
 
 import { useMemo, useState, type FormEvent } from 'react';
-import { router, useHttp, usePage } from '@inertiajs/react';
+import { useHttp, usePage } from '@inertiajs/react';
+import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge, Modal } from '../components/ui';
 import { Field, Input, Select, Textarea, FormPanel, FormSection, SubmitButton } from '../components/form';
@@ -169,7 +170,7 @@ export default function RequerimientosPage({ requerimientosDb = [] }: Requerimie
                     fecha_requerida: '',
                     detalles: [{ material_id: '', cantidad: '' }],
                 });
-                router.reload({ only: ['requerimientosDb'] });
+                refrescarProps('requerimientosDb');
             },
             onError: (errors: Record<string, string>) => {
                 notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar el requerimiento.');
@@ -182,7 +183,7 @@ export default function RequerimientosPage({ requerimientosDb = [] }: Requerimie
         evaluar.post(`/api/v1/requerimientos/${fila.id}/evaluar`, {
             onSuccess: () => {
                 notify.success('Requerimiento aprobado.');
-                router.reload({ only: ['requerimientosDb'] });
+                refrescarProps('requerimientosDb');
             },
             onError: (errors: Record<string, string>) => {
                 notify.error(Object.values(errors).flat().join(' ') || 'No se pudo aprobar.');
@@ -204,7 +205,7 @@ export default function RequerimientosPage({ requerimientosDb = [] }: Requerimie
                 notify.success('Requerimiento rechazado.');
                 setRechazando(null);
                 evaluar.setData('motivo_rechazo', '');
-                router.reload({ only: ['requerimientosDb'] });
+                refrescarProps('requerimientosDb');
             },
             onError: (errors: Record<string, string>) => {
                 notify.error(Object.values(errors).flat().join(' ') || 'No se pudo rechazar.');

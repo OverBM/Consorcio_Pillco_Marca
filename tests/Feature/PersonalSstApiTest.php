@@ -45,7 +45,8 @@ function contextoPersonalSst(): array
 }
 
 test('la marcación dentro de la geocerca se registra como conforme', function () {
-    [, , $obra, $trabajador] = contextoPersonalSst();
+    [$usuario, , $obra, $trabajador] = contextoPersonalSst();
+    $this->actingAsConRol($usuario);
 
     $response = $this->postJson('/api/v1/personal/marcaciones', [
         'trabajador_id' => $trabajador->id,
@@ -62,7 +63,8 @@ test('la marcación dentro de la geocerca se registra como conforme', function (
 });
 
 test('la marcación fuera de la geocerca se registra como observada', function () {
-    [, , $obra, $trabajador] = contextoPersonalSst();
+    [$usuario, , $obra, $trabajador] = contextoPersonalSst();
+    $this->actingAsConRol($usuario);
 
     $response = $this->postJson('/api/v1/personal/marcaciones', [
         'trabajador_id' => $trabajador->id,
@@ -76,7 +78,8 @@ test('la marcación fuera de la geocerca se registra como observada', function (
 });
 
 test('el endpoint de asistencias lista el consolidado con trabajador y obra', function () {
-    [, , $obra, $trabajador] = contextoPersonalSst();
+    [$usuario, , $obra, $trabajador] = contextoPersonalSst();
+    $this->actingAsConRol($usuario);
 
     Asistencia::create([
         'trabajador_id' => $trabajador->id,
@@ -95,7 +98,8 @@ test('el endpoint de asistencias lista el consolidado con trabajador y obra', fu
 });
 
 test('el endpoint de planillas genera y procesa el periodo de la obra', function () {
-    [, , $obra] = contextoPersonalSst();
+    [$usuario, , $obra] = contextoPersonalSst();
+    $this->actingAsConRol($usuario);
 
     $response = $this->postJson('/api/v1/personal/planillas/generar', [
         'obra_id' => $obra->id,
@@ -107,7 +111,8 @@ test('el endpoint de planillas genera y procesa el periodo de la obra', function
 });
 
 test('el endpoint de incidentes reporta un nuevo evento SST', function () {
-    [, , $obra, $trabajador] = contextoPersonalSst();
+    [$usuario, , $obra, $trabajador] = contextoPersonalSst();
+    $this->actingAsConRol($usuario);
 
     $response = $this->postJson('/api/v1/sst/incidentes', [
         'obra_id' => $obra->id,
@@ -126,7 +131,8 @@ test('el endpoint de incidentes reporta un nuevo evento SST', function () {
 });
 
 test('el endpoint de capacitaciones programa una capacitación SST', function () {
-    [, , $obra] = contextoPersonalSst();
+    [$usuario, , $obra] = contextoPersonalSst();
+    $this->actingAsConRol($usuario);
 
     $response = $this->postJson('/api/v1/sst/capacitaciones', [
         'tipo' => 'sst',

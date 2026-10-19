@@ -3,7 +3,8 @@
 // contra `/api/v1/sst/capacitaciones`.
 
 import { useMemo, type FormEvent } from 'react';
-import { router, useHttp, usePage } from '@inertiajs/react';
+import { useHttp, usePage } from '@inertiajs/react';
+import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge } from '../components/ui';
 import { Field, Input, Select, FormPanel, FormSection, SubmitButton } from '../components/form';
@@ -79,7 +80,7 @@ export default function CapacitacionesPage({ capacitacionesDb = [] }: Capacitaci
             onSuccess: () => {
                 notify.success('Capacitación SST programada.');
                 crear.setData({ tipo: 'sst', titulo: '', obra_id: '', fecha_programada: '', instructor: '', nota_minima: '' });
-                router.reload({ only: ['capacitacionesDb'] });
+                refrescarProps('capacitacionesDb');
             },
             onError: (errors: Record<string, string>) => {
                 notify.error(Object.values(errors).flat().join(' ') || 'No se pudo programar la capacitación.');

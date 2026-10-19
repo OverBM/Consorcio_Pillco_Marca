@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Web\Concerns\FiltraContextoOperativo;
+use App\Models\Almacen;
 use App\Models\Despacho;
 use App\Models\InventarioFisico;
 use App\Models\Merma;
@@ -41,8 +42,18 @@ class LogisticaViewController extends Controller
                 'estado' => $s->cantidad <= $s->stock_seguridad ? 'critico' : ($s->cantidad <= $s->stock_minimo ? 'bajo' : 'optimo'),
             ]);
 
+        $almacenes = $this->filtrarContextoAlmacenes(Almacen::query())
+            ->orderBy('nombre')
+            ->get(['id', 'nombre'])
+            ->map(fn (Almacen $almacen) => [
+                'id' => (string) $almacen->id,
+                'nombre' => $almacen->nombre,
+            ])
+            ->values();
+
         return Inertia::render('StockPage', [
             'stockDb' => $stock,
+            'almacenesDb' => $almacenes,
         ]);
     }
 

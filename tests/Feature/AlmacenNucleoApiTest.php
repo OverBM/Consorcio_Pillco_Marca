@@ -38,6 +38,8 @@ class AlmacenNucleoApiTest extends TestCase
             'activo' => true,
         ]);
 
+        $this->actingAsConRol($this->usuario);
+
         $programa = Programa::create([
             'codigo' => 'PRG-MANTARO',
             'nombre' => 'Programa Vial y Salud Mantaro',
@@ -204,6 +206,64 @@ class AlmacenNucleoApiTest extends TestCase
             'almacen_id' => $this->almacen->id,
             'material_id' => $this->material->id,
             'cantidad' => 30,
+        ]);
+    }
+
+    public function test_atender_solicitud_sin_stock_devuelve_422(): void
+    {
+        $solResp = $this->postJson('/api/v1/solicitudes', [
+            'obra_id' => $this->obra->id,
+            'almacen_id' => $this->almacen->id,
+            'detalles' => [
+                ['material_id' => $this->material->id, 'cantidad' => 10],
+            ],
+        ]);
+        $solResp->assertStatus(201);
+        $solicitudId = $solResp->json('data.id');
+
+        $this->postJson("/api/v1/solicitudes/{$solicitudId}/atender")
+            ->assertStatus(422)
+            ->assertJsonPath('message', fn (string $mensaje) => str_contains($mensaje, 'No existe stock registrado'));
+
+        $this->assertDatabaseHas('solicitudes_material', [
+            'id' => $solicitudId,
+            'estado' => 'registrada',
+        ]);
+    }
+
+    public function test_atender_solicitud_con_stock_insuficiente_devuelve_422(): void
+    {
+        $this->postJson('/api/v1/recepciones', [
+            'almacen_id' => $this->almacen->id,
+            'orden_compra_id' => $this->ordenCompra->id,
+            'detalles' => [
+                [
+                    'orden_compra_detalle_id' => 1,
+                    'material_id' => $this->material->id,
+                    'cantidad_ordenada' => 5,
+                    'cantidad_recibida' => 5,
+                ],
+            ],
+        ]);
+
+        $solResp = $this->postJson('/api/v1/solicitudes', [
+            'obra_id' => $this->obra->id,
+            'almacen_id' => $this->almacen->id,
+            'detalles' => [
+                ['material_id' => $this->material->id, 'cantidad' => 20],
+            ],
+        ]);
+        $solResp->assertStatus(201);
+        $solicitudId = $solResp->json('data.id');
+
+        $this->postJson("/api/v1/solicitudes/{$solicitudId}/atender")
+            ->assertStatus(422)
+            ->assertJsonPath('message', fn (string $mensaje) => str_contains($mensaje, 'Stock insuficiente'));
+
+        $this->assertDatabaseHas('stock_almacen', [
+            'almacen_id' => $this->almacen->id,
+            'material_id' => $this->material->id,
+            'cantidad' => 5,
         ]);
     }
 }

@@ -3,7 +3,8 @@
 // Datos desde props `devolucionesDb` y `recepcionesDb`; escrituras vía `useHttp`.
 
 import { useMemo, useState, type FormEvent } from 'react';
-import { router, useHttp } from '@inertiajs/react';
+import { useHttp } from '@inertiajs/react';
+import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge } from '../components/ui';
 import { Field, Input, Select, Textarea, FormPanel, FormSection, SubmitButton } from '../components/form';
@@ -184,7 +185,7 @@ export default function DevolucionesPage({ devolucionesDb = [], recepcionesDb = 
             onSuccess: () => {
                 notify.success('Devolución registrada y stock actualizado.');
                 reiniciar();
-                router.reload({ only: ['devolucionesDb'] });
+                refrescarProps('devolucionesDb');
             },
             onError: (errors: Record<string, string>) => {
                 notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar la devolución.');

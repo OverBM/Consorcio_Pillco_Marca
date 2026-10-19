@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Models\Almacen;
+use App\Models\Auditoria;
 use App\Models\Obra;
 use App\Models\Usuario;
 use Illuminate\Http\RedirectResponse;
@@ -56,8 +57,18 @@ class ContextoController extends Controller
             ]);
         }
 
+        $anterior = [
+            'obra_activa_id' => $request->session()->get('obra_activa_id'),
+            'almacen_activo_id' => $request->session()->get('almacen_activo_id'),
+        ];
+
         $request->session()->put('obra_activa_id', $obraId);
         $request->session()->put('almacen_activo_id', $almacenId);
+
+        Auditoria::registrar('cambio_contexto', 'sesion', null, $anterior, [
+            'obra_activa_id' => $obraId,
+            'almacen_activo_id' => $almacenId,
+        ]);
 
         return redirect()->back();
     }

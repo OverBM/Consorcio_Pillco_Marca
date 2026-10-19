@@ -3,7 +3,8 @@
 // Datos desde props; alta y adjudicación vía `useHttp`.
 
 import { useMemo, useState, type FormEvent } from 'react';
-import { router, useHttp, usePage } from '@inertiajs/react';
+import { useHttp, usePage } from '@inertiajs/react';
+import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge, Modal } from '../components/ui';
 import { Field, Input, Select, Textarea, FormPanel, FormSection, SubmitButton } from '../components/form';
@@ -179,7 +180,7 @@ export default function CotizacionesPage({
                     condiciones: '',
                     detalles: [{ material_id: '', cantidad: '', precio_unitario: '' }],
                 });
-                router.reload({ only: ['cotizacionesDb'] });
+                refrescarProps('cotizacionesDb');
             },
             onError: (errors: Record<string, string>) => {
                 notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar la cotización.');
@@ -201,7 +202,7 @@ export default function CotizacionesPage({
                 notify.success('Cotización adjudicada como ganadora.');
                 setSeleccionando(null);
                 adjudicar.setData('motivo_seleccion', '');
-                router.reload({ only: ['cotizacionesDb'] });
+                refrescarProps('cotizacionesDb');
             },
             onError: (errors: Record<string, string>) => {
                 notify.error(Object.values(errors).flat().join(' ') || 'No se pudo adjudicar.');

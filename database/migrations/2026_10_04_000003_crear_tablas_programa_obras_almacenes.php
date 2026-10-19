@@ -27,7 +27,7 @@ return new class extends Migration
             $table->string('direccion', 240)->nullable();
             $table->string('distrito', 80)->nullable();
             $table->string('estado', 20)->default('planificacion');
-            $table->string('fase_ciclo', 24)->default('iniciacion');
+            $table->string('fase_ciclo', 24)->default('inicio');
             $table->date('fecha_inicio')->nullable();
             $table->date('fecha_fin_prevista')->nullable();
             $table->date('fecha_fin_real')->nullable();

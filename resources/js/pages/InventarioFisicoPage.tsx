@@ -3,7 +3,8 @@
 // Datos desde props `inventariosDb`; escrituras vía `useHttp`.
 
 import { useMemo, useState, type FormEvent } from 'react';
-import { router, useHttp, usePage } from '@inertiajs/react';
+import { useHttp, usePage } from '@inertiajs/react';
+import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge, Modal } from '../components/ui';
 import { Button, Field, Input, Select, FormPanel, FormSection, SubmitButton } from '../components/form';
@@ -112,7 +113,7 @@ export default function InventarioFisicoPage({ inventariosDb = [] }: InventarioF
                 crear.setData('almacen_id', '');
                 crear.setData('periodo', '');
                 crear.setData('tolerancia_pct', '1');
-                router.reload({ only: ['inventariosDb'] });
+                refrescarProps('inventariosDb');
             },
             onError: (errors: Record<string, string>) => {
                 notify.error(Object.values(errors).flat().join(' ') || 'No se pudo programar el inventario.');
@@ -143,7 +144,7 @@ export default function InventarioFisicoPage({ inventariosDb = [] }: InventarioF
             onSuccess: () => {
                 notify.success('Conteos registrados y stock ajustado.');
                 setContando(null);
-                router.reload({ only: ['inventariosDb'] });
+                refrescarProps('inventariosDb');
             },
             onError: (errors: Record<string, string>) => {
                 notify.error(Object.values(errors).flat().join(' ') || 'No se pudieron registrar los conteos.');

@@ -3,7 +3,8 @@
 // Datos desde props `proveedoresDb`; escrituras vía `useHttp`.
 
 import { useMemo, useState, type FormEvent } from 'react';
-import { router, useHttp } from '@inertiajs/react';
+import { useHttp } from '@inertiajs/react';
+import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge, Button, Modal } from '../components/ui';
 import { Field, Input, SubmitButton } from '../components/form';
@@ -116,7 +117,7 @@ export default function ProveedoresPage({ proveedoresDb = [] }: ProveedoresPageP
             onSuccess: () => {
                 notify.success('Proveedor registrado.');
                 setModalNuevo(false);
-                router.reload({ only: ['proveedoresDb'] });
+                refrescarProps('proveedoresDb');
             },
             onError: (errors: Record<string, string>) => {
                 notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar el proveedor.');

@@ -2,7 +2,8 @@
 // Lista `partidasDb` y registra nuevas partidas vía `useHttp` contra `/api/v1/partidas`.
 
 import { useMemo, useState, type FormEvent } from 'react';
-import { router, useHttp, usePage } from '@inertiajs/react';
+import { useHttp, usePage } from '@inertiajs/react';
+import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge } from '../components/ui';
 import { Field, Input, Select, FormPanel, FormSection, SubmitButton } from '../components/form';
@@ -77,7 +78,7 @@ export default function PartidasPage({ partidasDb = [] }: PartidasPageProps) {
             onSuccess: () => {
                 notify.success('Partida registrada en la EDT.');
                 crear.setData({ obra_id: '', codigo: '', descripcion: '', unidad: '', metrado: '', costo_unitario: '', avance_pct: '' });
-                router.reload({ only: ['partidasDb'] });
+                refrescarProps('partidasDb');
             },
             onError: (errors: Record<string, string>) => {
                 notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar la partida.');

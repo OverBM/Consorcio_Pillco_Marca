@@ -3,7 +3,8 @@
 // vía `useHttp` contra `/api/v1/ambiente/mediciones`.
 
 import { useMemo, type FormEvent } from 'react';
-import { router, useHttp, usePage } from '@inertiajs/react';
+import { useHttp, usePage } from '@inertiajs/react';
+import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge } from '../components/ui';
 import { Field, Input, Select, Textarea, FormPanel, FormSection, SubmitButton } from '../components/form';
@@ -87,7 +88,7 @@ export default function MonitoreoAmbientalPage({ medicionesDb = [], indicadoresD
             onSuccess: () => {
                 notify.success('Medición ambiental registrada.');
                 crear.setData({ obra_id: obras[0] ? String(obras[0].id) : '', indicador_id: indicadoresDb[0] ? String(indicadoresDb[0].id) : '', valor: '', medida_correctiva: '' });
-                router.reload({ only: ['medicionesDb'] });
+                refrescarProps('medicionesDb');
             },
             onError: (errors: Record<string, string>) => {
                 notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar la medición.');

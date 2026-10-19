@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Domain\Geo\GeoService;
+use App\Domain\Personal\ConsolidarAsistenciaService;
 use App\Http\Controllers\Controller;
 use App\Models\Asistencia;
 use App\Models\Marcacion;
@@ -17,7 +18,8 @@ use Illuminate\Support\Facades\DB;
 class PersonalController extends Controller
 {
     public function __construct(
-        protected GeoService $geoService
+        protected GeoService $geoService,
+        protected ConsolidarAsistenciaService $consolidadorAsistencia
     ) {}
 
     /**
@@ -107,12 +109,15 @@ class PersonalController extends Controller
             'created_at' => now(),
         ]);
 
+        $asistencia = $this->consolidadorAsistencia->consolidar($marcacion);
+
         return response()->json([
             'success' => true,
             'message' => $dentroGeocerca
                 ? 'Marcación registrada dentro de la geocerca de obra.'
                 : 'Marcación registrada FUERA de la geocerca de obra.',
             'data' => $marcacion->load(['trabajador', 'obra']),
+            'asistencia' => $asistencia,
         ], 201);
     }
 

@@ -3,7 +3,8 @@
 // descuento automático de stock. Datos desde props `solicitudesDb`.
 
 import { useMemo, useState, type FormEvent } from 'react';
-import { router, useHttp, usePage } from '@inertiajs/react';
+import { useHttp, usePage } from '@inertiajs/react';
+import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge, Modal } from '../components/ui';
 import { Button, Field, Input, Select, FormPanel, FormSection, SubmitButton } from '../components/form';
@@ -88,6 +89,8 @@ export default function SolicitudesPage({ solicitudesDb = [] }: SolicitudesPageP
         detalles: [{ material_id: '', cantidad: '' }] as LineaForm[],
     });
 
+    const httpAtender = useHttp<Record<string, string>>({});
+
     const [atendiendo, setAtendiendo] = useState<SolicitudFila | null>(null);
 
     const filas: SolicitudFila[] = useMemo(
@@ -146,7 +149,7 @@ export default function SolicitudesPage({ solicitudesDb = [] }: SolicitudesPageP
             onSuccess: () => {
                 notify.success('Solicitud de material registrada.');
                 reiniciar();
-                router.reload({ only: ['solicitudesDb'] });
+                refrescarProps('solicitudesDb');
             },
             onError: (errors: Record<string, string>) => {
                 notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar la solicitud.');
@@ -157,19 +160,16 @@ export default function SolicitudesPage({ solicitudesDb = [] }: SolicitudesPageP
     const atender = () => {
         if (!atendiendo) return;
 
-        http.post(
-            `/api/v1/solicitudes/${atendiendo.id}/atender`,
-            {
-                onSuccess: () => {
-                    notify.success('Solicitud atendida y stock descontado.');
-                    setAtendiendo(null);
-                    router.reload({ only: ['solicitudesDb'] });
-                },
-                onError: (errors: Record<string, string>) => {
-                    notify.error(Object.values(errors).flat().join(' ') || 'No se pudo atender la solicitud.');
-                },
+        httpAtender.post(`/api/v1/solicitudes/${atendiendo.id}/atender`, {
+            onSuccess: () => {
+                notify.success('Solicitud atendida y stock descontado.');
+                setAtendiendo(null);
+                refrescarProps('solicitudesDb');
             },
-        );
+            onError: (errors: Record<string, string>) => {
+                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo atender la solicitud.');
+            },
+        });
     };
 
     return (
@@ -354,7 +354,7 @@ export default function SolicitudesPage({ solicitudesDb = [] }: SolicitudesPageP
                             <Button variant="secondary" onClick={() => setAtendiendo(null)}>
                                 Cancelar
                             </Button>
-                            <Button variant="primary" onClick={atender} disabled={http.processing}>
+                            <Button variant="primary" onClick={atender} disabled={httpAtender.processing}>
                                 <IconTruck size={15} />
                                 Confirmar Atención
                             </Button>

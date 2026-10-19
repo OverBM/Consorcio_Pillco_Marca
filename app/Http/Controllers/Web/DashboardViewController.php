@@ -11,6 +11,7 @@ use App\Models\Material;
 use App\Models\Merma;
 use App\Models\Obra;
 use App\Models\OrdenCompra;
+use App\Models\ParametroSistema;
 use App\Models\Requerimiento;
 use App\Models\SolicitudMaterial;
 use App\Models\StockAlmacen;
@@ -25,6 +26,10 @@ class DashboardViewController extends Controller
 {
     use FiltraContextoOperativo;
 
+    private const MANTARO_LAT = -12.068;
+
+    private const MANTARO_LNG = -75.21;
+
     public function panel(): Response
     {
         $obrasModel = $this->filtrarContextoObras(Obra::query())->get();
@@ -33,48 +38,17 @@ class DashboardViewController extends Controller
             ->with(['almacen', 'material'])
             ->get();
 
-        $obras = $obrasModel->map(fn ($o) => [
-            'id' => (string) $o->id,
-            'codigo' => $o->codigo ?? 'OBR-'.$o->id,
-            'nombre' => $o->nombre,
-            'distrito' => $o->distrito ?? 'Huancayo',
-            'responsable' => 'Ing. Residente General',
-            'estado' => $this->mapearEstadoObra($o->estado),
-            'pctAvance' => (float) ($o->avance_fisico_pct ?? 65.0),
-            'presupuesto' => (float) ($o->presupuesto_base ?? 1850000.0),
-            'coords' => [
-                'lat' => (float) ($o->latitud ?? -12.0650),
-                'lng' => (float) ($o->longitud ?? -75.2100),
-            ],
-            'descripcion' => $o->direccion ?? 'Frente de Obra Valle del Mantaro',
-            'fechaInicio' => $o->fecha_inicio ? $o->fecha_inicio->format('Y-m-d') : '2026-01-15',
-        ]);
+        $obrasRedModel = Obra::query()->orderBy('id')->get();
+        $almacenesRedModel = Almacen::query()->orderBy('id')->get();
+        $stockRedModel = StockAlmacen::query()->with(['almacen', 'material'])->get();
 
-        $almacenes = $almacenesModel->map(fn ($a) => [
-            'id' => (string) $a->id,
-            'obraId' => (string) $a->obra_id,
-            'codigo' => $a->codigo ?? 'ALM-'.$a->id,
-            'nombre' => $a->nombre,
-            'tipo' => 'frente',
-            'capacidadM3' => (float) ($a->capacidad_referencial ?? 5000),
-            'radioGeocercaM' => (int) ($a->radio_geocerca_m ?? 150),
-            'activo' => (bool) $a->activo,
-            'coords' => [
-                'lat' => (float) ($a->latitud ?? -12.0652),
-                'lng' => (float) ($a->longitud ?? -75.2102),
-            ],
-        ]);
+        $minPorMaterial = $this->minimosPorMaterial($stockModel);
+        [$disponiblePorAlmacen, $stockNested] = $this->disponibilidadPorAlmacen($stockModel);
 
-        $minPorMaterial = [];
-        $disponiblePorAlmacen = [];
-        foreach ($stockModel as $s) {
-            $disponible = max(0, (float) $s->cantidad - (float) $s->cantidad_reservada);
-            $disponiblePorAlmacen[$s->almacen_id][$s->material_id] = $disponible;
-            $min = (float) $s->stock_minimo;
-            if (! isset($minPorMaterial[$s->material_id]) || $min > $minPorMaterial[$s->material_id]) {
-                $minPorMaterial[$s->material_id] = $min;
-            }
-        }
+        $minPorMaterialRed = $this->minimosPorMaterial($stockRedModel);
+        [$disponibleRed, $stockRedNested] = $this->disponibilidadPorAlmacen($stockRedModel);
+
+        $almacenCentralId = $this->resolverAlmacenCentralId($almacenesRedModel);
 
         $materiales = Material::with(['categoria', 'unidadMedida'])->get()->map(fn ($m) => [
             'id' => (string) $m->id,
@@ -82,17 +56,11 @@ class DashboardViewController extends Controller
             'nombre' => $m->nombre,
             'categoria' => $m->categoria?->nombre ?? 'General',
             'unidad' => $m->unidadMedida?->codigo ?? 'und',
-            'stockMinimo' => $minPorMaterial[$m->id] ?? 50,
+            'stockMinimo' => $minPorMaterialRed[$m->id] ?? $minPorMaterial[$m->id] ?? 50,
             'costoReferencial' => (float) ($m->costo_referencial ?? 30.0),
             'criticidad' => $m->criticidad ?? 'normal',
         ]);
 
-        $stockNested = ['stock' => [], 'reservas' => []];
-        foreach ($disponiblePorAlmacen as $almacenId => $materialesAlmacen) {
-            foreach ($materialesAlmacen as $materialId => $cantidad) {
-                $stockNested['stock'][(string) $almacenId][(string) $materialId] = $cantidad;
-            }
-        }
         $stock = $this->filtrarContextoAlmacen(StockAlmacen::query())
             ->with(['almacen', 'material'])
             ->get()
@@ -109,17 +77,136 @@ class DashboardViewController extends Controller
             ]);
 
         return Inertia::render('PanelGeneral', [
-            'obrasDb' => $obras,
-            'almacenesDb' => $almacenes,
+            'obrasDb' => $this->mapearObras($obrasModel),
+            'almacenesDb' => $this->mapearAlmacenes($almacenesModel),
+            'obrasRedDb' => $this->mapearObras($obrasRedModel),
+            'almacenesRedDb' => $this->mapearAlmacenes($almacenesRedModel),
             'materialesDb' => $materiales,
             'stockDb' => $stock,
             'stock' => $stockNested,
-            'indicadores' => $this->construirIndicadores($stockModel, $obrasModel, $disponiblePorAlmacen),
-            'sobrantes' => $this->construirSobrantes($obrasModel, $almacenesModel, $disponiblePorAlmacen, $minPorMaterial),
-            'rutas' => $this->construirRutas(),
-            'movimientos7d' => $this->construirMovimientos7d(),
+            'stockRed' => $stockRedNested,
+            'almacenCentralId' => $almacenCentralId !== null ? (string) $almacenCentralId : null,
+            'indicadores' => Inertia::defer(fn () => $this->construirIndicadores($stockModel, $obrasModel, $disponiblePorAlmacen)),
+            'sobrantes' => Inertia::defer(fn () => $this->construirSobrantes($obrasRedModel, $almacenesRedModel, $disponibleRed, $minPorMaterialRed)),
+            'rutas' => Inertia::defer(fn () => $this->construirRutas()),
+            'movimientos7d' => Inertia::defer(fn () => $this->construirMovimientos7d()),
             'obraActivaId' => $this->obraActivaId(),
         ]);
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function mapearObras(Collection $obras): array
+    {
+        return $obras->values()->map(fn ($o, $i) => [
+            'id' => (string) $o->id,
+            'codigo' => $o->codigo ?? 'OBR-'.$o->id,
+            'nombre' => $o->nombre,
+            'distrito' => $o->distrito ?? 'Huancayo',
+            'responsable' => 'Ing. Residente General',
+            'estado' => $this->mapearEstadoObra($o->estado),
+            'pctAvance' => (float) ($o->avance_fisico_pct ?? 65.0),
+            'presupuesto' => (float) ($o->presupuesto_base ?? 1850000.0),
+            'coords' => $this->coordsConDispersion($o->latitud, $o->longitud, $i),
+            'descripcion' => $o->direccion ?? 'Frente de Obra Valle del Mantaro',
+            'fechaInicio' => $o->fecha_inicio ? $o->fecha_inicio->format('Y-m-d') : '2026-01-15',
+        ])->all();
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function mapearAlmacenes(Collection $almacenes): array
+    {
+        return $almacenes->values()->map(fn ($a, $i) => [
+            'id' => (string) $a->id,
+            'obraId' => (string) $a->obra_id,
+            'codigo' => $a->codigo ?? 'ALM-'.$a->id,
+            'nombre' => $a->nombre,
+            'tipo' => 'frente',
+            'capacidadM3' => (float) ($a->capacidad_referencial ?? 5000),
+            'radioGeocercaM' => (int) ($a->radio_geocerca_m ?? 150),
+            'activo' => (bool) $a->activo,
+            'coords' => $this->coordsConDispersion($a->latitud, $a->longitud, $i),
+        ])->all();
+    }
+
+    /**
+     * Coordenadas de un punto; cuando faltan, se genera una posición
+     * determinista en espiral alrededor del Valle del Mantaro para evitar
+     * que varios registros colapsen en un mismo punto del mapa.
+     *
+     * @return array{lat: float, lng: float}
+     */
+    private function coordsConDispersion(?float $lat, ?float $lng, int $indice): array
+    {
+        if ($lat !== null && $lng !== null) {
+            return ['lat' => (float) $lat, 'lng' => (float) $lng];
+        }
+
+        $radio = 0.012;
+        $angulo = deg2rad(137.5 * $indice);
+
+        return [
+            'lat' => round(self::MANTARO_LAT + $radio * cos($angulo) * (1 + 0.35 * $indice), 5),
+            'lng' => round(self::MANTARO_LNG + $radio * sin($angulo) * (1 + 0.6 * $indice), 5),
+        ];
+    }
+
+    /**
+     * @return array<int|string, float>
+     */
+    private function minimosPorMaterial(Collection $stock): array
+    {
+        $minimos = [];
+        foreach ($stock as $s) {
+            $min = (float) $s->stock_minimo;
+            if (! isset($minimos[$s->material_id]) || $min > $minimos[$s->material_id]) {
+                $minimos[$s->material_id] = $min;
+            }
+        }
+
+        return $minimos;
+    }
+
+    /**
+     * @return array{0: array<int|string, array<int|string, float>>, 1: array{stock: array<string, array<string, float>>, reservas: array<string, mixed>}}
+     */
+    private function disponibilidadPorAlmacen(Collection $stock): array
+    {
+        $disponible = [];
+        $nested = ['stock' => [], 'reservas' => []];
+
+        foreach ($stock as $s) {
+            $cantidad = max(0, (float) $s->cantidad - (float) $s->cantidad_reservada);
+            $disponible[$s->almacen_id][$s->material_id] = $cantidad;
+            $nested['stock'][(string) $s->almacen_id][(string) $s->material_id] = $cantidad;
+        }
+
+        return [$disponible, $nested];
+    }
+
+    /**
+     * Resuelve el almacén central desde el parámetro configurado y, en su
+     * defecto, desde el primer almacén de la red. Nunca usa un id fijo.
+     */
+    private function resolverAlmacenCentralId(Collection $almacenesRed): ?int
+    {
+        $configurado = ParametroSistema::query()
+            ->where('clave', 'logistica.almacen_central_id')
+            ->value('valor');
+
+        if ($configurado !== null && $configurado !== '') {
+            $almacen = $almacenesRed->firstWhere('id', (int) $configurado);
+            if ($almacen !== null) {
+                return (int) $almacen->id;
+            }
+        }
+
+        $primero = $almacenesRed->first();
+
+        return $primero !== null ? (int) $primero->id : null;
     }
 
     /**
@@ -191,7 +278,7 @@ class DashboardViewController extends Controller
         $obras = $obrasModel->keyBy('id');
         $almacenes = $almacenesModel->keyBy('id');
 
-        return $this->filtrarContexto(ExcedenteDetectado::query(), 'obra_origen_id', 'almacen_id')
+        return ExcedenteDetectado::query()
             ->with(['material', 'obra', 'almacen'])
             ->whereIn('estado', ['detectado', 'sugerido'])
             ->get()
@@ -254,7 +341,7 @@ class DashboardViewController extends Controller
      */
     private function construirRutas(): array
     {
-        return $this->filtrarContextoAlmacen(Transferencia::query(), 'almacen_origen_id', 'almacenOrigen')
+        return Transferencia::query()
             ->whereIn('estado', ['en_transito', 'aprobada'])
             ->get()
             ->map(fn ($t) => [

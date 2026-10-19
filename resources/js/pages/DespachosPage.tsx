@@ -4,7 +4,8 @@
 // `transferenciasDb` (transferencias aprobadas sin despacho).
 
 import { useMemo, useState, type FormEvent } from 'react';
-import { router, useHttp } from '@inertiajs/react';
+import { useHttp } from '@inertiajs/react';
+import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge } from '../components/ui';
 import { Field, Select, Textarea, FormPanel, FormSection, SubmitButton } from '../components/form';
@@ -149,7 +150,7 @@ export default function DespachosPage({ despachosDb = [], transferenciasDb = [] 
             onSuccess: () => {
                 notify.success('Despacho registrado; la transferencia está en tránsito.');
                 reiniciar();
-                router.reload({ only: ['despachosDb', 'transferenciasDb'] });
+                refrescarProps('despachosDb', 'transferenciasDb');
             },
             onError: (errors: Record<string, string>) => {
                 notify.error(Object.values(errors).flat().join(' ') || 'No se pudo registrar el despacho.');
