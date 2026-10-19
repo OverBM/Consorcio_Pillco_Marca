@@ -5,6 +5,7 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { useHttp } from '@inertiajs/react';
 import { refrescarProps } from '../utils/refrescar';
+import { opcionesHttp } from '../utils/crud';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge, Button, Modal } from '../components/ui';
 import { Field, Input, Select } from '../components/form';
@@ -223,22 +224,21 @@ export default function RedistribucionPage({
             estado: form.data.estado,
         }));
 
-        const opciones = {
-            onSuccess: () => {
-                notify.success(editando ? 'Excedente actualizado.' : 'Excedente registrado.');
-                cerrarFormulario();
-                refrescar();
-            },
-            onError: (errors: Record<string, string>) => {
-                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo guardar el excedente.');
-            },
-        };
+        const opciones = opcionesHttp(
+            notify,
+            editando ? 'Excedente actualizado.' : 'Excedente registrado.',
+            'No se pudo guardar el excedente.',
+            cerrarFormulario,
+            refrescar,
+        );
 
         if (editando) {
-            form.put(`/api/v1/excedentes/${editando.dbId}`, opciones);
-        } else {
-            form.post('/api/v1/excedentes', opciones);
+            void form.put(`/api/v1/excedentes/${editando.dbId}`, opciones);
+
+            return;
         }
+
+        void form.post('/api/v1/excedentes', opciones);
     };
 
     const confirmarEliminar = () => {
@@ -246,16 +246,16 @@ export default function RedistribucionPage({
             return;
         }
 
-        eliminar.delete(`/api/v1/excedentes/${porEliminar.dbId}`, {
-            onSuccess: () => {
-                notify.success('Excedente eliminado.');
-                setPorEliminar(null);
-                refrescar();
-            },
-            onError: (errors: Record<string, string>) => {
-                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo eliminar el excedente.');
-            },
-        });
+        void eliminar.delete(
+            `/api/v1/excedentes/${porEliminar.dbId}`,
+            opcionesHttp(
+                notify,
+                'Excedente eliminado.',
+                'No se pudo eliminar el excedente.',
+                () => setPorEliminar(null),
+                refrescar,
+            ),
+        );
     };
 
     const abrirRedistribucion = (excedente: ExcedenteFila) => {
@@ -264,7 +264,7 @@ export default function RedistribucionPage({
         setCantidadDestino(String(excedente.cantidad));
         setSugerencias([]);
 
-        sugerir.get(`/api/v1/excedentes/${excedente.dbId}/sugerencias`, {
+        void sugerir.get(`/api/v1/excedentes/${excedente.dbId}/sugerencias`, {
             onSuccess: (respuesta) => {
                 setSugerencias(respuesta?.data?.sugerencias ?? []);
             },
@@ -296,7 +296,7 @@ export default function RedistribucionPage({
             cantidad,
         }));
 
-        transferir.post(`/api/v1/excedentes/${porRedistribuir.dbId}/transferencia`, {
+        void transferir.post(`/api/v1/excedentes/${porRedistribuir.dbId}/transferencia`, {
             onSuccess: () => {
                 notify.success('Transferencia sugerida generada desde el excedente.');
                 setPorRedistribuir(null);

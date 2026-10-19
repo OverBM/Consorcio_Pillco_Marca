@@ -85,7 +85,7 @@ export default function CambiosPage({ cambiosDb = [] }: CambiosPageProps) {
             impacto_costo: Number(crear.data.impacto_costo || 0),
         }));
 
-        crear.post('/api/v1/solicitudes-cambio', {
+        void crear.post('/api/v1/solicitudes-cambio', {
             onSuccess: () => {
                 notify.success('Solicitud de cambio registrada.');
                 crear.setData({ obra_id: '', tipo: 'alcance', descripcion: '', impacto_plazo_dias: '0', impacto_costo: '0' });
@@ -100,7 +100,7 @@ export default function CambiosPage({ cambiosDb = [] }: CambiosPageProps) {
     const decidir = (id: string, estado: 'aprobada' | 'rechazada') => {
         setDecidiendoId(id);
         evaluar.transform(() => ({ estado }));
-        evaluar.post(`/api/v1/solicitudes-cambio/${id}/evaluar`, {
+        void evaluar.post(`/api/v1/solicitudes-cambio/${id}/evaluar`, {
             onSuccess: () => {
                 notify.success(estado === 'aprobada' ? 'Cambio aprobado.' : 'Cambio rechazado.');
                 refrescarProps('cambiosDb');

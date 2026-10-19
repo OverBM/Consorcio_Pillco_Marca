@@ -74,7 +74,7 @@ export default function PartidasPage({ partidasDb = [] }: PartidasPageProps) {
             avance_pct: Number(crear.data.avance_pct || 0),
         }));
 
-        crear.post('/api/v1/partidas', {
+        void crear.post('/api/v1/partidas', {
             onSuccess: () => {
                 notify.success('Partida registrada en la EDT.');
                 crear.setData({ obra_id: '', codigo: '', descripcion: '', unidad: '', metrado: '', costo_unitario: '', avance_pct: '' });

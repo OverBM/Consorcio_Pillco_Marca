@@ -29,7 +29,11 @@ export function resolveActiveHref(pathname: string, hrefs: string[]): string | n
 }
 
 function normalizar(ruta: string): string {
-    const sinQuery = (ruta.split('?')[0] ?? '/').replace(/\/+$/, '');
+    let sinQuery = ruta.split('?')[0] ?? '/';
+
+    while (sinQuery.endsWith('/')) {
+        sinQuery = sinQuery.slice(0, -1);
+    }
 
     return sinQuery === '' ? '/' : sinQuery;
 }

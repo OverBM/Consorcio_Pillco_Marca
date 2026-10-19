@@ -62,7 +62,7 @@ export const validators = {
             if (value === null || value === undefined || value === '') {
                 return undefined;
             }
-            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value)) ? undefined : message;
+            return /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/.test(String(value)) ? undefined : message;
         },
 
     pattern:

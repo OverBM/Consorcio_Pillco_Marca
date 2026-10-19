@@ -170,7 +170,7 @@ export default function CotizacionesPage({
             detalles,
         }));
 
-        crear.post('/api/v1/cotizaciones', {
+        void crear.post('/api/v1/cotizaciones', {
             onSuccess: () => {
                 notify.success('Cotización registrada.');
                 crear.setData({
@@ -197,7 +197,7 @@ export default function CotizacionesPage({
         }
 
         adjudicar.transform(() => ({ motivo_seleccion: adjudicar.data.motivo_seleccion }));
-        adjudicar.post(`/api/v1/cotizaciones/${seleccionando.id}/seleccionar`, {
+        void adjudicar.post(`/api/v1/cotizaciones/${seleccionando.id}/seleccionar`, {
             onSuccess: () => {
                 notify.success('Cotización adjudicada como ganadora.');
                 setSeleccionando(null);

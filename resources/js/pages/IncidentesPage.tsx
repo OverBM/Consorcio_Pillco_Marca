@@ -110,7 +110,7 @@ export default function IncidentesPage({ incidentesDb = [], trabajadoresDb = [] 
             causas: crear.data.causas.trim() || null,
         }));
 
-        crear.post('/api/v1/sst/incidentes', {
+        void crear.post('/api/v1/sst/incidentes', {
             onSuccess: () => {
                 notify.success('Incidente de seguridad registrado.');
                 crear.setData({

@@ -5,6 +5,7 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { useHttp } from '@inertiajs/react';
 import { refrescarProps } from '../utils/refrescar';
+import { opcionesHttp } from '../utils/crud';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge, Button, Modal } from '../components/ui';
 import { Field, Input, Select } from '../components/form';
@@ -135,25 +136,20 @@ export default function ParametrosPage({ parametrosDb = [] }: ParametrosPageProp
 
         form.transform(() => payload);
 
-        const opciones = {
-            onSuccess: () => {
-                notify.success(
-                    editando
-                        ? `Parámetro "${payload.clave}" actualizado correctamente.`
-                        : `Parámetro "${payload.clave}" creado correctamente.`,
-                );
-                cerrarFormulario();
-                refrescar();
-            },
-            onError: (errors: Record<string, string>) => {
-                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo guardar el parámetro.');
-            },
-        };
+        const opciones = opcionesHttp(
+            notify,
+            editando
+                ? `Parámetro "${payload.clave}" actualizado correctamente.`
+                : `Parámetro "${payload.clave}" creado correctamente.`,
+            'No se pudo guardar el parámetro.',
+            cerrarFormulario,
+            refrescar,
+        );
 
         if (editando) {
-            form.put(`/api/v1/parametros/${editando.dbId}`, opciones);
+            void form.put(`/api/v1/parametros/${editando.dbId}`, opciones);
         } else {
-            form.post('/api/v1/parametros', opciones);
+            void form.post('/api/v1/parametros', opciones);
         }
     };
 
@@ -162,16 +158,16 @@ export default function ParametrosPage({ parametrosDb = [] }: ParametrosPageProp
             return;
         }
 
-        eliminar.delete(`/api/v1/parametros/${porEliminar.dbId}`, {
-            onSuccess: () => {
-                notify.success(`Parámetro "${porEliminar.clave}" eliminado.`);
-                setPorEliminar(null);
-                refrescar();
-            },
-            onError: (errors: Record<string, string>) => {
-                notify.error(Object.values(errors).flat().join(' ') || 'No se pudo eliminar el parámetro.');
-            },
-        });
+        void eliminar.delete(
+            `/api/v1/parametros/${porEliminar.dbId}`,
+            opcionesHttp(
+                notify,
+                `Parámetro "${porEliminar.clave}" eliminado.`,
+                'No se pudo eliminar el parámetro.',
+                () => setPorEliminar(null),
+                refrescar,
+            ),
+        );
     };
 
     const parametrosFiltrados = parametros.filter(

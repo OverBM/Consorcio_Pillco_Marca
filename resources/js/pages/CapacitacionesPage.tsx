@@ -76,7 +76,7 @@ export default function CapacitacionesPage({ capacitacionesDb = [] }: Capacitaci
             nota_minima: crear.data.nota_minima ? Number(crear.data.nota_minima) : null,
         }));
 
-        crear.post('/api/v1/sst/capacitaciones', {
+        void crear.post('/api/v1/sst/capacitaciones', {
             onSuccess: () => {
                 notify.success('Capacitación SST programada.');
                 crear.setData({ tipo: 'sst', titulo: '', obra_id: '', fecha_programada: '', instructor: '', nota_minima: '' });

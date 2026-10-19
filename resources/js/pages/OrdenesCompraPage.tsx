@@ -139,7 +139,7 @@ export default function OrdenesCompraPage({ ordenesDb = [], cotizacionesDb = [] 
             detalles,
         }));
 
-        crear.post('/api/v1/ordenes-compra', {
+        void crear.post('/api/v1/ordenes-compra', {
             onSuccess: () => {
                 notify.success('Orden de compra emitida.');
                 crear.setData({ cotizacion_id: '', almacen_destino_id: '', fecha_entrega_prometida: '', urgente: false });

@@ -63,7 +63,7 @@ export default function PerfilPage({ perfil }: PerfilPageProps) {
             telefono: datos.data.telefono.trim() || null,
         }));
 
-        datos.patch('/perfil', {
+        void datos.patch('/perfil', {
             onSuccess: () => {
                 notify.success('Tus datos fueron actualizados.');
                 refrescarProps('perfil');
@@ -85,7 +85,7 @@ export default function PerfilPage({ perfil }: PerfilPageProps) {
             return;
         }
 
-        clave.patch('/perfil/password', {
+        void clave.patch('/perfil/password', {
             onSuccess: () => {
                 notify.success('Tu contraseña fue actualizada.');
                 clave.setData({ current_password: '', password: '', password_confirmation: '' });

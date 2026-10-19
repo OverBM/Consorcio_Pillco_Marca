@@ -75,7 +75,7 @@ export default function SolicitudesAccesoPage({ solicitudesDb = [] }: Solicitude
 
     const aprobar = (s: SolicitudFila) => {
         revision.transform(() => ({ notas_revision: notas || undefined }));
-        revision.post(`/api/v1/solicitudes-acceso/${s.dbId}/aprobar`, {
+        void revision.post(`/api/v1/solicitudes-acceso/${s.dbId}/aprobar`, {
             onSuccess: (respuesta) => {
                 const datos = (
                     respuesta as {
@@ -102,7 +102,7 @@ export default function SolicitudesAccesoPage({ solicitudesDb = [] }: Solicitude
 
     const rechazar = (s: SolicitudFila) => {
         revision.transform(() => ({ notas_revision: notas || undefined }));
-        revision.post(`/api/v1/solicitudes-acceso/${s.dbId}/rechazar`, {
+        void revision.post(`/api/v1/solicitudes-acceso/${s.dbId}/rechazar`, {
             onSuccess: () => {
                 notify.success('Solicitud rechazada.');
                 setSeleccion(null);

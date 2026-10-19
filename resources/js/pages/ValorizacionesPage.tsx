@@ -81,7 +81,7 @@ export default function ValorizacionesPage({ valorizacionesDb = [] }: Valorizaci
             costo_real: Number(crear.data.costo_real || 0),
         }));
 
-        crear.post('/api/v1/valorizaciones', {
+        void crear.post('/api/v1/valorizaciones', {
             onSuccess: () => {
                 notify.success('Valorización mensual registrada.');
                 crear.setData({ obra_id: '', periodo: '', valor_planificado: '', valor_ganado: '', costo_real: '' });
@@ -95,7 +95,7 @@ export default function ValorizacionesPage({ valorizacionesDb = [] }: Valorizaci
 
     const aprobarValorizacion = (id: string) => {
         setAprobandoId(id);
-        aprobar.post(`/api/v1/valorizaciones/${id}/aprobar`, {
+        void aprobar.post(`/api/v1/valorizaciones/${id}/aprobar`, {
             onSuccess: () => {
                 notify.success('Valorización aprobada.');
                 refrescarProps('valorizacionesDb');

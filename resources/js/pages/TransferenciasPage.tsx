@@ -199,7 +199,7 @@ export default function TransferenciasPage({ transferenciasDb = [] }: Transferen
             detalles,
         }));
 
-        crear.post('/api/v1/transferencias', {
+        void crear.post('/api/v1/transferencias', {
             onSuccess: () => {
                 notify.success('Orden de transferencia registrada.');
                 setModalCrear(false);
@@ -212,7 +212,7 @@ export default function TransferenciasPage({ transferenciasDb = [] }: Transferen
     };
 
     const aprobar = (t: TransferenciaFila) => {
-        accion.post(`/api/v1/transferencias/${t.id}/aprobar`, {
+        void accion.post(`/api/v1/transferencias/${t.id}/aprobar`, {
             onSuccess: () => {
                 notify.success('Transferencia aprobada y stock reservado en origen.');
                 refrescarProps('transferenciasDb');
@@ -256,7 +256,7 @@ export default function TransferenciasPage({ transferenciasDb = [] }: Transferen
             detalles,
         }));
 
-        confirmar.post(`/api/v1/transferencias/${recibiendo.id}/confirmar-recepcion`, {
+        void confirmar.post(`/api/v1/transferencias/${recibiendo.id}/confirmar-recepcion`, {
             onSuccess: () => {
                 notify.success('Recepción confirmada e inventario actualizado en destino.');
                 setRecibiendo(null);

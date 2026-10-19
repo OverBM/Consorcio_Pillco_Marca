@@ -173,7 +173,7 @@ export default function RecepcionPage({ recepcionesDb = [], ordenesDb = [] }: Re
             return;
         }
 
-        http.post('/api/v1/recepciones', {
+        void http.post('/api/v1/recepciones', {
             onSuccess: () => {
                 notify.success('Recepción registrada conforme y stock actualizado.');
                 reiniciar();

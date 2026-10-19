@@ -77,7 +77,7 @@ export default function EppPage({ asignacionesDb = [], trabajadoresDb = [] }: Ep
             numero_serie: crear.data.numero_serie.trim() || null,
         }));
 
-        crear.post('/api/v1/sst/epp-asignaciones', {
+        void crear.post('/api/v1/sst/epp-asignaciones', {
             onSuccess: () => {
                 notify.success('EPP asignado y descargado del inventario.');
                 crear.setData({

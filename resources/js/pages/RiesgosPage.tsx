@@ -82,7 +82,7 @@ export default function RiesgosPage({ riesgosDb = [] }: RiesgosPageProps) {
             respuesta: crear.data.respuesta || null,
         }));
 
-        crear.post('/api/v1/riesgos', {
+        void crear.post('/api/v1/riesgos', {
             onSuccess: () => {
                 notify.success('Riesgo registrado en la matriz.');
                 crear.setData({ obra_id: '', descripcion: '', categoria: 'tecnico', probabilidad: '3', impacto: '3', respuesta: '' });
@@ -103,7 +103,7 @@ export default function RiesgosPage({ riesgosDb = [] }: RiesgosPageProps) {
         event.preventDefault();
         if (!editando) return;
 
-        actualizar.put(`/api/v1/riesgos/${editando.id}`, {
+        void actualizar.put(`/api/v1/riesgos/${editando.id}`, {
             onSuccess: () => {
                 notify.success('Riesgo actualizado.');
                 setEditando(null);

@@ -98,7 +98,7 @@ export default function MermasPage({ mermasDb = [] }: MermasPageProps) {
             justificacion: crear.data.justificacion,
         }));
 
-        crear.post('/api/v1/mermas', {
+        void crear.post('/api/v1/mermas', {
             onSuccess: () => {
                 notify.success('Merma registrada y stock ajustado.');
                 crear.setData({ almacen_id: '', material_id: '', cantidad: '', causa: 'deterioro', justificacion: '' });

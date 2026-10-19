@@ -107,7 +107,7 @@ export default function InventarioFisicoPage({ inventariosDb = [] }: InventarioF
             tolerancia_pct: Number(crear.data.tolerancia_pct) || 1,
         }));
 
-        crear.post('/api/v1/inventario-fisico', {
+        void crear.post('/api/v1/inventario-fisico', {
             onSuccess: () => {
                 notify.success('Inventario físico programado.');
                 crear.setData('almacen_id', '');
@@ -140,7 +140,7 @@ export default function InventarioFisicoPage({ inventariosDb = [] }: InventarioF
 
         conteo.transform(() => ({ conteos }));
 
-        conteo.post(`/api/v1/inventario-fisico/${contando.id}/conteos`, {
+        void conteo.post(`/api/v1/inventario-fisico/${contando.id}/conteos`, {
             onSuccess: () => {
                 notify.success('Conteos registrados y stock ajustado.');
                 setContando(null);

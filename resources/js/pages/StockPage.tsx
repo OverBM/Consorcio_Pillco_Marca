@@ -162,7 +162,7 @@ export default function StockPage({ stockDb = [], almacenesDb = [] }: StockPageP
         if (!materialDetalle) return;
         setKardexAlmacen(almacenId);
         setKardex([]);
-        kardexHttp.get(`/api/v1/stock/almacenes/${almacenId}/kardex?material_id=${materialDetalle.id}`, {
+        void kardexHttp.get(`/api/v1/stock/almacenes/${almacenId}/kardex?material_id=${materialDetalle.id}`, {
             onSuccess: (res) => setKardex((res as { data?: KardexMov[] })?.data ?? []),
         });
     };

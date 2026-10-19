@@ -145,7 +145,7 @@ export default function SolicitudesPage({ solicitudesDb = [] }: SolicitudesPageP
             detalles,
         }));
 
-        http.post('/api/v1/solicitudes', {
+        void http.post('/api/v1/solicitudes', {
             onSuccess: () => {
                 notify.success('Solicitud de material registrada.');
                 reiniciar();
@@ -160,7 +160,7 @@ export default function SolicitudesPage({ solicitudesDb = [] }: SolicitudesPageP
     const atender = () => {
         if (!atendiendo) return;
 
-        httpAtender.post(`/api/v1/solicitudes/${atendiendo.id}/atender`, {
+        void httpAtender.post(`/api/v1/solicitudes/${atendiendo.id}/atender`, {
             onSuccess: () => {
                 notify.success('Solicitud atendida y stock descontado.');
                 setAtendiendo(null);

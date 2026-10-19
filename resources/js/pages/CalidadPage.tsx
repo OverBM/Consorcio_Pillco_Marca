@@ -79,7 +79,7 @@ export default function CalidadPage({ observacionesDb = [] }: CalidadPageProps) 
             plazo_subsanacion: crear.data.plazo_subsanacion || null,
         }));
 
-        crear.post('/api/v1/calidad/observaciones', {
+        void crear.post('/api/v1/calidad/observaciones', {
             onSuccess: () => {
                 notify.success('Observación técnica registrada.');
                 crear.setData({ obra_id: obras[0] ? String(obras[0].id) : '', numero_acta: '', descripcion: '', origen: 'supervision', plazo_subsanacion: '' });
@@ -94,7 +94,7 @@ export default function CalidadPage({ observacionesDb = [] }: CalidadPageProps) 
     const levantarObservacion = (id: string) => {
         setProcesando(id);
         levantar.transform(() => ({ planos_asbuilt_actualizados: true }));
-        levantar.post(`/api/v1/calidad/observaciones/${id}/levantar`, {
+        void levantar.post(`/api/v1/calidad/observaciones/${id}/levantar`, {
             onSuccess: () => {
                 notify.success('Observación levantada y subsanada.');
                 refrescarProps('observacionesDb');

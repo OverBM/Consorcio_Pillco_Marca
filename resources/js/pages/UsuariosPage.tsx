@@ -98,7 +98,7 @@ export default function UsuariosPage({ usuariosDb = [], rolesDb = [] }: Usuarios
             activo: crear.data.estado === 'activo',
         }));
 
-        crear.post('/api/v1/usuarios', {
+        void crear.post('/api/v1/usuarios', {
             onSuccess: () => {
                 notify.success('Usuario registrado exitosamente.');
                 crear.setData({
@@ -151,7 +151,7 @@ export default function UsuariosPage({ usuariosDb = [], rolesDb = [] }: Usuarios
             activo: editar.data.estado === 'activo',
         }));
 
-        editar.put(`/api/v1/usuarios/${editando.id}`, {
+        void editar.put(`/api/v1/usuarios/${editando.id}`, {
             onSuccess: () => {
                 notify.success('Usuario actualizado exitosamente.');
                 setEditando(null);

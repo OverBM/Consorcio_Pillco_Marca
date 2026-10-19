@@ -63,7 +63,7 @@ export default function CierreObraPage({ obrasDb = [] }: CierreObraPageProps) {
     useEffect(() => {
         if (!obraId) return;
         setCargando(true);
-        consulta.get(`/api/v1/cierres-obra/${obraId}`, {
+        void consulta.get(`/api/v1/cierres-obra/${obraId}`, {
             onSuccess: (res) => setDetalle((res as { data: DetalleCierre }).data),
             onError: () => notify.error('No se pudo cargar el estado de cierre.'),
             onFinish: () => setCargando(false),
@@ -76,10 +76,10 @@ export default function CierreObraPage({ obrasDb = [] }: CierreObraPageProps) {
             notify.error('Selecciona una obra.');
             return;
         }
-        accion.post(`/api/v1/cierres-obra/${obraId}/${etapa}`, {
+        void accion.post(`/api/v1/cierres-obra/${obraId}/${etapa}`, {
             onSuccess: () => {
                 notify.success(etapa === 'iniciar' ? 'Proceso de cierre iniciado.' : 'Obra liquidada y cerrada.');
-                consulta.get(`/api/v1/cierres-obra/${obraId}`, {
+                void consulta.get(`/api/v1/cierres-obra/${obraId}`, {
                     onSuccess: (res) => setDetalle((res as { data: DetalleCierre }).data),
                 });
                 refrescarProps('obrasDb');

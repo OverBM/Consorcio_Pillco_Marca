@@ -122,7 +122,7 @@ export default function CicloVidaPage({
     const enviarFase = (fase: string, estado: 'en_proceso' | 'aprobada', justificaciones: Record<string, string> = {}) => {
         setFaseActiva(fase);
         faseHttp.transform(() => ({ fase, estado, observaciones: '', justificaciones }));
-        faseHttp.post(`/api/v1/proyectos/${obraId}/fases`, {
+        void faseHttp.post(`/api/v1/proyectos/${obraId}/fases`, {
             onSuccess: () => {
                 notify.success('Fase del proyecto actualizada.');
                 setJustificando(null);

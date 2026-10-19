@@ -138,7 +138,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             return;
         }
 
-        marcarUna.post(urlMarcarLeida(item), {
+        void marcarUna.post(urlMarcarLeida(item), {
             onSuccess: () => refrescarProps('notificacionesFeed'),
         });
     };
@@ -149,7 +149,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             return;
         }
 
-        marcarUna.post(urlMarcarLeida(item), {
+        void marcarUna.post(urlMarcarLeida(item), {
             onSuccess: () => {
                 refrescarProps('notificacionesFeed');
                 router.visit(destino);
@@ -159,7 +159,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
     };
 
     const marcarTodo = (): void => {
-        marcarTodas.post('/api/v1/notificaciones/marcar-todas', {
+        void marcarTodas.post('/api/v1/notificaciones/marcar-todas', {
             onSuccess: () => refrescarProps('notificacionesFeed'),
         });
     };

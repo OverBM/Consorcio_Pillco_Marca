@@ -159,7 +159,7 @@ export default function RequerimientosPage({ requerimientosDb = [] }: Requerimie
             detalles,
         }));
 
-        crear.post('/api/v1/requerimientos', {
+        void crear.post('/api/v1/requerimientos', {
             onSuccess: () => {
                 notify.success('Requerimiento registrado.');
                 crear.setData({
@@ -180,7 +180,7 @@ export default function RequerimientosPage({ requerimientosDb = [] }: Requerimie
 
     const aprobar = (fila: RequerimientoFila) => {
         evaluar.transform(() => ({ estado: 'aprobado', motivo_rechazo: '' }));
-        evaluar.post(`/api/v1/requerimientos/${fila.id}/evaluar`, {
+        void evaluar.post(`/api/v1/requerimientos/${fila.id}/evaluar`, {
             onSuccess: () => {
                 notify.success('Requerimiento aprobado.');
                 refrescarProps('requerimientosDb');
@@ -200,7 +200,7 @@ export default function RequerimientosPage({ requerimientosDb = [] }: Requerimie
         }
 
         evaluar.transform(() => ({ estado: 'rechazado', motivo_rechazo: evaluar.data.motivo_rechazo }));
-        evaluar.post(`/api/v1/requerimientos/${rechazando.id}/evaluar`, {
+        void evaluar.post(`/api/v1/requerimientos/${rechazando.id}/evaluar`, {
             onSuccess: () => {
                 notify.success('Requerimiento rechazado.');
                 setRechazando(null);

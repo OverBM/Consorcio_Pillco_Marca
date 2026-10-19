@@ -120,7 +120,7 @@ export default function ResiduosPage({ residuosDb = [], eorsDb = [] }: ResiduosP
             eors_id: crear.data.eors_id ? Number(crear.data.eors_id) : null,
         }));
 
-        crear.post('/api/v1/ambiente/residuos', {
+        void crear.post('/api/v1/ambiente/residuos', {
             onSuccess: () => {
                 notify.success('Residuo o material reutilizable registrado.');
                 crear.setData({

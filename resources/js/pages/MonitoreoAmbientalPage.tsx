@@ -84,7 +84,7 @@ export default function MonitoreoAmbientalPage({ medicionesDb = [], indicadoresD
             medida_correctiva: crear.data.medida_correctiva.trim() || null,
         }));
 
-        crear.post('/api/v1/ambiente/mediciones', {
+        void crear.post('/api/v1/ambiente/mediciones', {
             onSuccess: () => {
                 notify.success('Medición ambiental registrada.');
                 crear.setData({ obra_id: obras[0] ? String(obras[0].id) : '', indicador_id: indicadoresDb[0] ? String(indicadoresDb[0].id) : '', valor: '', medida_correctiva: '' });

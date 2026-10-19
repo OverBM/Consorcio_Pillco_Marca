@@ -98,7 +98,7 @@ export default function CronogramaEvmPage({ obrasDb = [], evmData, hitosDb = [] 
             estado: crear.data.estado,
         }));
 
-        crear.post(`/api/v1/proyectos/${obraId}/hitos`, {
+        void crear.post(`/api/v1/proyectos/${obraId}/hitos`, {
             onSuccess: () => {
                 notify.success('Hito registrado en el cronograma.');
                 crear.setData({ nombre: '', fecha_planificada: '', estado: 'pendiente' });

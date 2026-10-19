@@ -113,7 +113,7 @@ export default function ProveedoresPage({ proveedoresDb = [] }: ProveedoresPageP
             calificacion: http.data.calificacion ? Number(http.data.calificacion) : null,
         }));
 
-        http.post('/api/v1/proveedores', {
+        void http.post('/api/v1/proveedores', {
             onSuccess: () => {
                 notify.success('Proveedor registrado.');
                 setModalNuevo(false);

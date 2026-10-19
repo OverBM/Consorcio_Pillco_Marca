@@ -1,0 +1,616 @@
+{
+    "paging": {
+        "pageIndex": 1,
+        "pageSize": 30,
+        "total": 218
+    },
+    "baseComponent": {
+        "id": "AaFSWRJ8M4B-yTxw84-b",
+        "key": "consorcio-pillco-marca_version-2",
+        "name": "Consorcio Pillco Marca v2",
+        "qualifier": "TRK",
+        "measures": []
+    },
+    "components": [
+        {
+            "id": "AaFSX4V0-S1ooumMYTJN",
+            "key": "consorcio-pillco-marca_version-2:app/Models/Obra.php",
+            "name": "Obra.php",
+            "qualifier": "FIL",
+            "path": "app/Models/Obra.php",
+            "language": "php",
+            "measures": [
+                {
+                    "metric": "duplicated_blocks",
+                    "value": "1",
+                    "bestValue": false
+                },
+                {
+                    "metric": "duplicated_lines",
+                    "value": "69",
+                    "bestValue": false
+                }
+            ]
+        },
+        {
+            "id": "AaFSX4V1-S1ooumMYTJv",
+            "key": "consorcio-pillco-marca_version-2:app/Models/Almacen.php",
+            "name": "Almacen.php",
+            "qualifier": "FIL",
+            "path": "app/Models/Almacen.php",
+            "language": "php",
+            "measures": [
+                {
+                    "metric": "duplicated_blocks",
+                    "value": "1",
+                    "bestValue": false
+                },
+                {
+                    "metric": "duplicated_lines",
+                    "value": "60",
+                    "bestValue": false
+                }
+            ]
+        },
+        {
+            "id": "AaFSX4V1-S1ooumMYTM2",
+            "key": "consorcio-pillco-marca_version-2:resources/js/navigation.config.ts",
+            "name": "navigation.config.ts",
+            "qualifier": "FIL",
+            "path": "resources/js/navigation.config.ts",
+            "language": "ts",
+            "measures": [
+                {
+                    "metric": "duplicated_blocks",
+                    "value": "2",
+                    "bestValue": false
+                },
+                {
+                    "metric": "duplicated_lines",
+                    "value": "48",
+                    "bestValue": false
+                }
+            ]
+        },
+        {
+            "id": "AaFSX4V1-S1ooumMYTKj",
+            "key": "consorcio-pillco-marca_version-2:app/Http/Controllers/Api/V1/SolicitudMaterialController.php",
+            "name": "SolicitudMaterialController.php",
+            "qualifier": "FIL",
+            "path": "app/Http/Controllers/Api/V1/SolicitudMaterialController.php",
+            "language": "php",
+            "measures": [
+                {
+                    "metric": "duplicated_blocks",
+                    "value": "1",
+                    "bestValue": false
+                },
+                {
+                    "metric": "duplicated_lines",
+                    "value": "38",
+                    "bestValue": false
+                }
+            ]
+        },
+        {
+            "id": "AaFSX4V1-S1ooumMYTKi",
+            "key": "consorcio-pillco-marca_version-2:app/Http/Controllers/Api/V1/SolicitudCambioController.php",
+            "name": "SolicitudCambioController.php",
+            "qualifier": "FIL",
+            "path": "app/Http/Controllers/Api/V1/SolicitudCambioController.php",
+            "language": "php",
+            "measures": [
+                {
+                    "metric": "duplicated_blocks",
+                    "value": "1",
+                    "bestValue": false
+                },
+                {
+                    "metric": "duplicated_lines",
+                    "value": "35",
+                    "bestValue": false
+                }
+            ]
+        },
+        {
+            "id": "AaFSX4V1-S1ooumMYTKb",
+            "key": "consorcio-pillco-marca_version-2:app/Http/Controllers/Api/V1/AuthController.php",
+            "name": "AuthController.php",
+            "qualifier": "FIL",
+            "path": "app/Http/Controllers/Api/V1/AuthController.php",
+            "language": "php",
+            "measures": [
+                {
+                    "metric": "duplicated_blocks",
+                    "value": "2",
+                    "bestValue": false
+                },
+                {
+                    "metric": "duplicated_lines",
+                    "value": "24",
+                    "bestValue": false
+                }
+            ]
+        },
+        {
+            "id": "AaFSX4V1-S1ooumMYTME",
+            "key": "consorcio-pillco-marca_version-2:resources/js/pages/ParametrosPage.tsx",
+            "name": "ParametrosPage.tsx",
+            "qualifier": "FIL",
+            "path": "resources/js/pages/ParametrosPage.tsx",
+            "language": "ts",
+            "measures": [
+                {
+                    "metric": "duplicated_blocks",
+                    "value": "1",
+                    "bestValue": false
+                },
+                {
+                    "metric": "duplicated_lines",
+                    "value": "22",
+                    "bestValue": false
+                }
+            ]
+        },
+        {
+            "id": "AaFSX4V1-S1ooumMYTMP",
+            "key": "consorcio-pillco-marca_version-2:resources/js/pages/RedistribucionPage.tsx",
+            "name": "RedistribucionPage.tsx",
+            "qualifier": "FIL",
+            "path": "resources/js/pages/RedistribucionPage.tsx",
+            "language": "ts",
+            "measures": [
+                {
+                    "metric": "duplicated_blocks",
+                    "value": "1",
+                    "bestValue": false
+                },
+                {
+                    "metric": "duplicated_lines",
+                    "value": "22",
+                    "bestValue": false
+                }
+            ]
+        },
+        {
+            "id": "AaFSX4V1-S1ooumMYTMN",
+            "key": "consorcio-pillco-marca_version-2:resources/js/pages/CalidadPage.tsx",
+            "name": "CalidadPage.tsx",
+            "qualifier": "FIL",
+            "path": "resources/js/pages/CalidadPage.tsx",
+            "language": "ts",
+            "measures": [
+                {
+                    "metric": "duplicated_blocks",
+                    "value": "2",
+                    "bestValue": false
+                },
+                {
+                    "metric": "duplicated_lines",
+                    "value": "11",
+                    "bestValue": false
+                }
+            ]
+        },
+        {
+            "id": "AaFSX4V1-S1ooumMYTL_",
+            "key": "consorcio-pillco-marca_version-2:resources/js/pages/IncidentesPage.tsx",
+            "name": "IncidentesPage.tsx",
+            "qualifier": "FIL",
+            "path": "resources/js/pages/IncidentesPage.tsx",
+            "language": "ts",
+            "measures": [
+                {
+                    "metric": "duplicated_blocks",
+                    "value": "2",
+                    "bestValue": false
+                },
+                {
+                    "metric": "duplicated_lines",
+                    "value": "11",
+                    "bestValue": false
+                }
+            ]
+        },
+        {
+            "id": "AaFSX4V1-S1ooumMYTMR",
+            "key": "consorcio-pillco-marca_version-2:resources/js/pages/MonitoreoAmbientalPage.tsx",
+            "name": "MonitoreoAmbientalPage.tsx",
+            "qualifier": "FIL",
+            "path": "resources/js/pages/MonitoreoAmbientalPage.tsx",
+            "language": "ts",
+            "measures": [
+                {
+                    "metric": "duplicated_blocks",
+                    "value": "1",
+                    "bestValue": false
+                },
+                {
+                    "metric": "duplicated_lines",
+                    "value": "10",
+                    "bestValue": false
+                }
+            ]
+        },
+        {
+            "id": "AaFSX4V1-S1ooumMYTMH",
+            "key": "consorcio-pillco-marca_version-2:resources/js/pages/ResiduosPage.tsx",
+            "name": "ResiduosPage.tsx",
+            "qualifier": "FIL",
+            "path": "resources/js/pages/ResiduosPage.tsx",
+            "language": "ts",
+            "measures": [
+                {
+                    "metric": "duplicated_blocks",
+                    "value": "1",
+                    "bestValue": false
+                },
+                {
+                    "metric": "duplicated_lines",
+                    "value": "10",
+                    "bestValue": false
+                }
+            ]
+        },
+        {
+            "id": "AaFSX4V1-S1ooumMYTKD",
+            "key": "consorcio-pillco-marca_version-2:app/Models/Adelanto.php",
+            "name": "Adelanto.php",
+            "qualifier": "FIL",
+            "path": "app/Models/Adelanto.php",
+            "language": "php",
+            "measures": [
+                {
+                    "metric": "duplicated_lines",
+                    "value": "0",
+                    "bestValue": true
+                },
+                {
+                    "metric": "duplicated_blocks",
+                    "value": "0",
+                    "bestValue": true
+                }
+            ]
+        },
+        {
+            "id": "AaFSX4V0-S1ooumMYTJI",
+            "key": "consorcio-pillco-marca_version-2:app/Models/AdelantoEvento.php",
+            "name": "AdelantoEvento.php",
+            "qualifier": "FIL",
+            "path": "app/Models/AdelantoEvento.php",
+            "language": "php",
+            "measures": [
+                {
+                    "metric": "duplicated_lines",
+                    "value": "0",
+                    "bestValue": true
+                },
+                {
+                    "metric": "duplicated_blocks",
+                    "value": "0",
+                    "bestValue": true
+                }
+            ]
+        },
+        {
+            "id": "AaFSX4V1-S1ooumMYTMF",
+            "key": "consorcio-pillco-marca_version-2:resources/js/pages/AdelantosPage.tsx",
+            "name": "AdelantosPage.tsx",
+            "qualifier": "FIL",
+            "path": "resources/js/pages/AdelantosPage.tsx",
+            "language": "ts",
+            "measures": [
+                {
+                    "metric": "duplicated_lines",
+                    "value": "0",
+                    "bestValue": true
+                },
+                {
+                    "metric": "duplicated_blocks",
+                    "value": "0",
+                    "bestValue": true
+                }
+            ]
+        },
+        {
+            "id": "AaFSX4V1-S1ooumMYTLP",
+            "key": "consorcio-pillco-marca_version-2:app/Domain/Optimization/AhpOptimizationService.php",
+            "name": "AhpOptimizationService.php",
+            "qualifier": "FIL",
+            "path": "app/Domain/Optimization/AhpOptimizationService.php",
+            "language": "php",
+            "measures": [
+                {
+                    "metric": "duplicated_lines",
+                    "value": "0",
+                    "bestValue": true
+                },
+                {
+                    "metric": "duplicated_blocks",
+                    "value": "0",
+                    "bestValue": true
+                }
+            ]
+        },
+        {
+            "id": "AaFSX4V0-S1ooumMYTJD",
+            "key": "consorcio-pillco-marca_version-2:app/Models/Alerta.php",
+            "name": "Alerta.php",
+            "qualifier": "FIL",
+            "path": "app/Models/Alerta.php",
+            "language": "php",
+            "measures": [
+                {
+                    "metric": "duplicated_lines",
+                    "value": "0",
+                    "bestValue": true
+                },
+                {
+                    "metric": "duplicated_blocks",
+                    "value": "0",
+                    "bestValue": true
+                }
+            ]
+        },
+        {
+            "id": "AaFSX4V1-S1ooumMYTLw",
+            "key": "consorcio-pillco-marca_version-2:resources/js/components/AlertaBanner.tsx",
+            "name": "AlertaBanner.tsx",
+            "qualifier": "FIL",
+            "path": "resources/js/components/AlertaBanner.tsx",
+            "language": "ts",
+            "measures": [
+                {
+                    "metric": "duplicated_lines",
+                    "value": "0",
+                    "bestValue": true
+                },
+                {
+                    "metric": "duplicated_blocks",
+                    "value": "0",
+                    "bestValue": true
+                }
+            ]
+        },
+        {
+            "id": "AaFSX4V0-S1ooumMYTJT",
+            "key": "consorcio-pillco-marca_version-2:app/Models/AlertaLeida.php",
+            "name": "AlertaLeida.php",
+            "qualifier": "FIL",
+            "path": "app/Models/AlertaLeida.php",
+            "language": "php",
+            "measures": [
+                {
+                    "metric": "duplicated_lines",
+                    "value": "0",
+                    "bestValue": true
+                },
+                {
+                    "metric": "duplicated_blocks",
+                    "value": "0",
+                    "bestValue": true
+                }
+            ]
+        },
+        {
+            "id": "AaFSX4V1-S1ooumMYTKq",
+            "key": "consorcio-pillco-marca_version-2:app/Http/Controllers/Api/V1/AmbienteController.php",
+            "name": "AmbienteController.php",
+            "qualifier": "FIL",
+            "path": "app/Http/Controllers/Api/V1/AmbienteController.php",
+            "language": "php",
+            "measures": [
+                {
+                    "metric": "duplicated_lines",
+                    "value": "0",
+                    "bestValue": true
+                },
+                {
+                    "metric": "duplicated_blocks",
+                    "value": "0",
+                    "bestValue": true
+                }
+            ]
+        },
+        {
+            "id": "AaFSX4V1-S1ooumMYTM3",
+            "key": "consorcio-pillco-marca_version-2:resources/js/app.tsx",
+            "name": "app.tsx",
+            "qualifier": "FIL",
+            "path": "resources/js/app.tsx",
+            "language": "ts",
+            "measures": [
+                {
+                    "metric": "duplicated_lines",
+                    "value": "0",
+                    "bestValue": true
+                },
+                {
+                    "metric": "duplicated_blocks",
+                    "value": "0",
+                    "bestValue": true
+                }
+            ]
+        },
+        {
+            "id": "AaFSX4V1-S1ooumMYTLj",
+            "key": "consorcio-pillco-marca_version-2:resources/js/components/layout/AppLayout.tsx",
+            "name": "AppLayout.tsx",
+            "qualifier": "FIL",
+            "path": "resources/js/components/layout/AppLayout.tsx",
+            "language": "ts",
+            "measures": [
+                {
+                    "metric": "duplicated_lines",
+                    "value": "0",
+                    "bestValue": true
+                },
+                {
+                    "metric": "duplicated_blocks",
+                    "value": "0",
+                    "bestValue": true
+                }
+            ]
+        },
+        {
+            "id": "AaFSX4V1-S1ooumMYTLL",
+            "key": "consorcio-pillco-marca_version-2:app/Providers/AppServiceProvider.php",
+            "name": "AppServiceProvider.php",
+            "qualifier": "FIL",
+            "path": "app/Providers/AppServiceProvider.php",
+            "language": "php",
+            "measures": [
+                {
+                    "metric": "duplicated_lines",
+                    "value": "0",
+                    "bestValue": true
+                },
+                {
+                    "metric": "duplicated_blocks",
+                    "value": "0",
+                    "bestValue": true
+                }
+            ]
+        },
+        {
+            "id": "AaFSX4V0-S1ooumMYTJd",
+            "key": "consorcio-pillco-marca_version-2:app/Models/Asistencia.php",
+            "name": "Asistencia.php",
+            "qualifier": "FIL",
+            "path": "app/Models/Asistencia.php",
+            "language": "php",
+            "measures": [
+                {
+                    "metric": "duplicated_lines",
+                    "value": "0",
+                    "bestValue": true
+                },
+                {
+                    "metric": "duplicated_blocks",
+                    "value": "0",
+                    "bestValue": true
+                }
+            ]
+        },
+        {
+            "id": "AaFSX4V1-S1ooumMYTL2",
+            "key": "consorcio-pillco-marca_version-2:resources/js/pages/AsistenciaPage.tsx",
+            "name": "AsistenciaPage.tsx",
+            "qualifier": "FIL",
+            "path": "resources/js/pages/AsistenciaPage.tsx",
+            "language": "ts",
+            "measures": [
+                {
+                    "metric": "duplicated_lines",
+                    "value": "0",
+                    "bestValue": true
+                },
+                {
+                    "metric": "duplicated_blocks",
+                    "value": "0",
+                    "bestValue": true
+                }
+            ]
+        },
+        {
+            "id": "AaFSX4V1-S1ooumMYTJe",
+            "key": "consorcio-pillco-marca_version-2:app/Models/Concerns/Auditable.php",
+            "name": "Auditable.php",
+            "qualifier": "FIL",
+            "path": "app/Models/Concerns/Auditable.php",
+            "language": "php",
+            "measures": [
+                {
+                    "metric": "duplicated_lines",
+                    "value": "0",
+                    "bestValue": true
+                },
+                {
+                    "metric": "duplicated_blocks",
+                    "value": "0",
+                    "bestValue": true
+                }
+            ]
+        },
+        {
+            "id": "AaFSX4V1-S1ooumMYTJ6",
+            "key": "consorcio-pillco-marca_version-2:app/Models/Auditoria.php",
+            "name": "Auditoria.php",
+            "qualifier": "FIL",
+            "path": "app/Models/Auditoria.php",
+            "language": "php",
+            "measures": [
+                {
+                    "metric": "duplicated_lines",
+                    "value": "0",
+                    "bestValue": true
+                },
+                {
+                    "metric": "duplicated_blocks",
+                    "value": "0",
+                    "bestValue": true
+                }
+            ]
+        },
+        {
+            "id": "AaFSX4V1-S1ooumMYTL9",
+            "key": "consorcio-pillco-marca_version-2:resources/js/pages/AuditoriaPage.tsx",
+            "name": "AuditoriaPage.tsx",
+            "qualifier": "FIL",
+            "path": "resources/js/pages/AuditoriaPage.tsx",
+            "language": "ts",
+            "measures": [
+                {
+                    "metric": "duplicated_lines",
+                    "value": "0",
+                    "bestValue": true
+                },
+                {
+                    "metric": "duplicated_blocks",
+                    "value": "0",
+                    "bestValue": true
+                }
+            ]
+        },
+        {
+            "id": "AaFSX4V1-S1ooumMYTMf",
+            "key": "consorcio-pillco-marca_version-2:resources/js/types/auth.ts",
+            "name": "auth.ts",
+            "qualifier": "FIL",
+            "path": "resources/js/types/auth.ts",
+            "language": "ts",
+            "measures": [
+                {
+                    "metric": "duplicated_lines",
+                    "value": "0",
+                    "bestValue": true
+                },
+                {
+                    "metric": "duplicated_blocks",
+                    "value": "0",
+                    "bestValue": true
+                }
+            ]
+        },
+        {
+            "id": "AaFSX4V1-S1ooumMYTK_",
+            "key": "consorcio-pillco-marca_version-2:app/Http/Controllers/Web/AuthWebController.php",
+            "name": "AuthWebController.php",
+            "qualifier": "FIL",
+            "path": "app/Http/Controllers/Web/AuthWebController.php",
+            "language": "php",
+            "measures": [
+                {
+                    "metric": "duplicated_lines",
+                    "value": "0",
+                    "bestValue": true
+                },
+                {
+                    "metric": "duplicated_blocks",
+                    "value": "0",
+                    "bestValue": true
+                }
+            ]
+        }
+    ]
+}

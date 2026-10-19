@@ -58,6 +58,8 @@ Thumbs.db
 
 # Sonar & Test Reports
 sonar-issues.json
+sonar-duplicacion-archivo.json
+sonar-duplicaciones.json
 /.scannerwork
 /phpunit-report.xml
 /coverage.xml

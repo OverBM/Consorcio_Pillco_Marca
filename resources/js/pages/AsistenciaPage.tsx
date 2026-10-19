@@ -116,7 +116,7 @@ export default function AsistenciaPage({ asistenciasDb = [], obrasDb = [], traba
             longitud: gps.lng,
         }));
 
-        marcar.post('/api/v1/personal/marcaciones', {
+        void marcar.post('/api/v1/personal/marcaciones', {
             onSuccess: () => {
                 notify.success('Marcación registrada con validación de geocerca.');
                 setModal(false);

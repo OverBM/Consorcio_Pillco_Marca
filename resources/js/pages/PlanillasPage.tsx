@@ -79,7 +79,7 @@ export default function PlanillasPage({ planillasDb = [] }: PlanillasPageProps) 
             periodo: generar.data.periodo.trim(),
         }));
 
-        generar.post('/api/v1/personal/planillas/generar', {
+        void generar.post('/api/v1/personal/planillas/generar', {
             onSuccess: () => {
                 notify.success('Planilla generada y procesada.');
                 generar.setData({ obra_id: obras[0] ? String(obras[0].id) : '', periodo: '' });

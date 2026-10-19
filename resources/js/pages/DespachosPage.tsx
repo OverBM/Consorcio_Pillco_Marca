@@ -146,7 +146,7 @@ export default function DespachosPage({ despachosDb = [], transferenciasDb = [] 
             detalles,
         }));
 
-        http.post('/api/v1/despachos', {
+        void http.post('/api/v1/despachos', {
             onSuccess: () => {
                 notify.success('Despacho registrado; la transferencia está en tránsito.');
                 reiniciar();

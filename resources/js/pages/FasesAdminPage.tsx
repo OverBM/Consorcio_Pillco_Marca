@@ -146,9 +146,9 @@ export default function FasesAdminPage({
             },
         };
         if (reqEditando) {
-            reqForm.put(`/api/v1/admin/fases/requisitos/${reqEditando.dbId}`, opciones);
+            void reqForm.put(`/api/v1/admin/fases/requisitos/${reqEditando.dbId}`, opciones);
         } else {
-            reqForm.post('/api/v1/admin/fases/requisitos', opciones);
+            void reqForm.post('/api/v1/admin/fases/requisitos', opciones);
         }
     };
 
@@ -217,9 +217,9 @@ export default function FasesAdminPage({
             },
         };
         if (critEditando) {
-            critForm.put(`/api/v1/admin/fases/criterios/${critEditando.dbId}`, opciones);
+            void critForm.put(`/api/v1/admin/fases/criterios/${critEditando.dbId}`, opciones);
         } else {
-            critForm.post('/api/v1/admin/fases/criterios', opciones);
+            void critForm.post('/api/v1/admin/fases/criterios', opciones);
         }
     };
 
@@ -232,7 +232,7 @@ export default function FasesAdminPage({
         if (!ruta) {
             return;
         }
-        eliminar.delete(ruta, {
+        void eliminar.delete(ruta, {
             onSuccess: () => {
                 notify.success('Registro eliminado.');
                 setReqEliminar(null);

@@ -181,7 +181,7 @@ export default function DevolucionesPage({ devolucionesDb = [], recepcionesDb = 
             detalles,
         }));
 
-        crear.post('/api/v1/devoluciones', {
+        void crear.post('/api/v1/devoluciones', {
             onSuccess: () => {
                 notify.success('Devolución registrada y stock actualizado.');
                 reiniciar();
