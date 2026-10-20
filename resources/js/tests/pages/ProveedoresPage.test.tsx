@@ -57,18 +57,14 @@ describe('ProveedoresPage', () => {
         expect(screen.getAllByText('★ 4.5')[0]).toBeTruthy();
         expect(screen.getAllByText('Homologado')[0]).toBeTruthy();
         expect(screen.getAllByText('Inactivo')[0]).toBeTruthy();
-        expect(
-            screen.getByText(textoContenido('4.50 / 5.0')),
-        ).toBeTruthy();
+        expect(screen.getByText(textoContenido('4.50 / 5.0'))).toBeTruthy();
     });
 
     it('muestra el estado vacío y promedio cero', () => {
         renderPagina(ProveedoresPage, { proveedoresDb: [] });
 
         expect(screen.getByText('Sin proveedores registrados')).toBeTruthy();
-        expect(
-            screen.getByText(textoContenido('0.00 / 5.0')),
-        ).toBeTruthy();
+        expect(screen.getByText(textoContenido('0.00 / 5.0'))).toBeTruthy();
     });
 
     it('busca por RUC, razón social o contacto', () => {

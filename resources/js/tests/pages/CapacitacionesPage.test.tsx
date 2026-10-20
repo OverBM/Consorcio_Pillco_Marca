@@ -61,9 +61,7 @@ describe('CapacitacionesPage', () => {
     it('muestra el estado vacío', () => {
         renderPagina(CapacitacionesPage, { capacitacionesDb: [] });
 
-        expect(
-            screen.getByText('Sin capacitaciones programadas'),
-        ).toBeTruthy();
+        expect(screen.getByText('Sin capacitaciones programadas')).toBeTruthy();
         expect(screen.getByText('Capacitaciones (0)')).toBeTruthy();
     });
 
@@ -126,9 +124,7 @@ describe('CapacitacionesPage', () => {
                 },
             }),
         );
-        expect(
-            screen.getByText('Capacitación SST programada.'),
-        ).toBeTruthy();
+        expect(screen.getByText('Capacitación SST programada.')).toBeTruthy();
         expect(router.reload).toHaveBeenCalledWith({
             only: ['capacitacionesDb'],
         });

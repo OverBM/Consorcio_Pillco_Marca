@@ -94,9 +94,7 @@ describe('PerfilPage', () => {
                 datos: { name: 'Ana Torres Ríos', telefono: null },
             }),
         );
-        expect(
-            screen.getByText('Tus datos fueron actualizados.'),
-        ).toBeTruthy();
+        expect(screen.getByText('Tus datos fueron actualizados.')).toBeTruthy();
         expect(router.reload).toHaveBeenCalledWith({ only: ['perfil'] });
     });
 
@@ -108,9 +106,7 @@ describe('PerfilPage', () => {
         });
 
         fireEvent.click(enviar);
-        expect(
-            screen.getByText('Ingresa tu contraseña actual.'),
-        ).toBeTruthy();
+        expect(screen.getByText('Ingresa tu contraseña actual.')).toBeTruthy();
 
         fireEvent.change(screen.getByLabelText(/^Contraseña actual/), {
             target: { value: 'actual-123' },
@@ -157,9 +153,7 @@ describe('PerfilPage', () => {
                 },
             }),
         );
-        expect(
-            screen.getByText('Tu contraseña fue actualizada.'),
-        ).toBeTruthy();
+        expect(screen.getByText('Tu contraseña fue actualizada.')).toBeTruthy();
         expect(
             (screen.getByLabelText(/^Contraseña actual/) as HTMLInputElement)
                 .value,

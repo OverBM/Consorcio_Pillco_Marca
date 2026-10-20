@@ -46,9 +46,7 @@ describe('ValorizacionesPage', () => {
             screen.getAllByText('Costos y Valorizaciones Mensuales')[0],
         ).toBeTruthy();
         expect(screen.getByText('Valorizaciones (2)')).toBeTruthy();
-        expect(
-            screen.getAllByText(formatFecha('2026-01-31'))[0],
-        ).toBeTruthy();
+        expect(screen.getAllByText(formatFecha('2026-01-31'))[0]).toBeTruthy();
         expect(screen.getAllByText(moneda(90000))[0]).toBeTruthy();
         expect(screen.getAllByText('0.947')[0]).toBeTruthy();
         expect(screen.getAllByText('0.900')[0]).toBeTruthy();
@@ -85,12 +83,10 @@ describe('ValorizacionesPage', () => {
         });
 
         expect(screen.getByText('Valorizaciones (1)')).toBeTruthy();
-        expect(
-            screen.queryAllByText(formatFecha('2026-01-31')),
-        ).toHaveLength(0);
-        expect(
-            screen.getAllByText(formatFecha('2026-02-28'))[0],
-        ).toBeTruthy();
+        expect(screen.queryAllByText(formatFecha('2026-01-31'))).toHaveLength(
+            0,
+        );
+        expect(screen.getAllByText(formatFecha('2026-02-28'))[0]).toBeTruthy();
     });
 
     it('muestra el estado vacío', () => {
@@ -165,9 +161,7 @@ describe('ValorizacionesPage', () => {
             valorizacionesDb: valorizaciones,
         });
 
-        fireEvent.click(
-            screen.getAllByRole('button', { name: /Aprobar/ })[0],
-        );
+        fireEvent.click(screen.getAllByRole('button', { name: /Aprobar/ })[0]);
 
         expect(llamadasHttp).toContainEqual(
             expect.objectContaining({

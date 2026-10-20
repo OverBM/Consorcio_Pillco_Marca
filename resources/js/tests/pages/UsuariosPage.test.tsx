@@ -85,17 +85,13 @@ describe('UsuariosPage', () => {
         });
 
         fireEvent.click(enviar);
-        expect(
-            screen.getByText('Ingresa el nombre del usuario.'),
-        ).toBeTruthy();
+        expect(screen.getByText('Ingresa el nombre del usuario.')).toBeTruthy();
 
         fireEvent.change(screen.getByLabelText(/^Nombre y Apellidos/), {
             target: { value: 'Carlos Mendoza' },
         });
         fireEvent.click(enviar);
-        expect(
-            screen.getByText('Ingresa el correo corporativo.'),
-        ).toBeTruthy();
+        expect(screen.getByText('Ingresa el correo corporativo.')).toBeTruthy();
 
         fireEvent.change(screen.getByLabelText(/^Correo Corporativo/), {
             target: { value: 'carlos@pillco.pe' },
@@ -188,12 +184,20 @@ describe('UsuariosPage', () => {
             screen.getAllByText('ana@consorcio.test').length,
         ).toBeGreaterThan(0);
 
-        fireEvent.change(screen.getAllByLabelText(/^Nombre y Apellidos/).at(-1) as HTMLElement, {
-            target: { value: 'Ana Torres Ríos' },
-        });
-        fireEvent.change(screen.getAllByLabelText(/^Estado/).at(-1) as HTMLElement, {
-            target: { value: 'inactivo' },
-        });
+        fireEvent.change(
+            screen
+                .getAllByLabelText(/^Nombre y Apellidos/)
+                .at(-1) as HTMLElement,
+            {
+                target: { value: 'Ana Torres Ríos' },
+            },
+        );
+        fireEvent.change(
+            screen.getAllByLabelText(/^Estado/).at(-1) as HTMLElement,
+            {
+                target: { value: 'inactivo' },
+            },
+        );
         fireEvent.click(
             screen.getByRole('button', { name: /Guardar Cambios/ }),
         );

@@ -84,9 +84,7 @@ describe('AuditoriaPage', () => {
         renderPagina(AuditoriaPage, { auditoriaDb: paginador });
 
         expect(screen.getByText('Página 1 de 2')).toBeTruthy();
-        expect(
-            screen.getByText('Mostrando 1–2 de 40 registros'),
-        ).toBeTruthy();
+        expect(screen.getByText('Mostrando 1–2 de 40 registros')).toBeTruthy();
         expect(
             (
                 screen.getByRole('button', {
@@ -100,7 +98,11 @@ describe('AuditoriaPage', () => {
         expect(router.get).toHaveBeenCalledWith(
             '/admin/auditoria',
             { usuario_id: '', modulo: '', page: 2 },
-            { preserveState: true, preserveScroll: true, only: ['auditoriaDb'] },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                only: ['auditoriaDb'],
+            },
         );
     });
 
@@ -120,7 +122,9 @@ describe('AuditoriaPage', () => {
             expect.objectContaining({ only: ['auditoriaDb'] }),
         );
 
-        fireEvent.click(screen.getByRole('button', { name: 'Limpiar filtros' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Limpiar filtros' }),
+        );
 
         expect(router.get).toHaveBeenLastCalledWith(
             '/admin/auditoria',

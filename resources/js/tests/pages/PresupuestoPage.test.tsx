@@ -30,6 +30,8 @@ describe('PresupuestoPage', () => {
         expect(screen.getAllByText(moneda(68000))[0]).toBeTruthy();
         expect(screen.getAllByText('84.8%')[0]).toBeTruthy();
         expect(screen.getAllByText('80%').length).toBeGreaterThan(0);
-        expect(screen.getAllByText('Gastos Generales y Supervisión')[0]).toBeTruthy();
+        expect(
+            screen.getAllByText('Gastos Generales y Supervisión')[0],
+        ).toBeTruthy();
     });
 });

@@ -145,9 +145,7 @@ describe('CambiosPage', () => {
     it('aprueba y rechaza solicitudes pendientes', () => {
         renderPagina(CambiosPage, { cambiosDb: cambios });
 
-        fireEvent.click(
-            screen.getAllByRole('button', { name: /Aprobar/ })[0],
-        );
+        fireEvent.click(screen.getAllByRole('button', { name: /Aprobar/ })[0]);
         expect(llamadasHttp).toContainEqual(
             expect.objectContaining({
                 metodo: 'post',
@@ -157,9 +155,7 @@ describe('CambiosPage', () => {
         );
         expect(screen.getByText('Cambio aprobado.')).toBeTruthy();
 
-        fireEvent.click(
-            screen.getAllByRole('button', { name: /Rechazar/ })[0],
-        );
+        fireEvent.click(screen.getAllByRole('button', { name: /Rechazar/ })[0]);
         expect(llamadasHttp).toContainEqual(
             expect.objectContaining({
                 metodo: 'post',

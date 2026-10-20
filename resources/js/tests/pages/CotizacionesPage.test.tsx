@@ -84,9 +84,7 @@ describe('CotizacionesPage', () => {
         expect(screen.getAllByText('Monto ofertado')[0]).toBeTruthy();
         expect(screen.getAllByText('REQ-010')[0]).toBeTruthy();
         expect(screen.getAllByText('#20')[0]).toBeTruthy();
-        expect(
-            screen.getAllByText('Ferretería Andina SAC')[0],
-        ).toBeTruthy();
+        expect(screen.getAllByText('Ferretería Andina SAC')[0]).toBeTruthy();
         expect(screen.getAllByText('RUC: 20123456789')[0]).toBeTruthy();
         expect(screen.getAllByText('RUC: —')[0]).toBeTruthy();
         expect(screen.getAllByText('5 días')[0]).toBeTruthy();
@@ -132,9 +130,9 @@ describe('CotizacionesPage', () => {
         expect(
             screen.getAllByText('REQ-010', { selector: 'td' })[0],
         ).toBeTruthy();
-        expect(
-            screen.queryAllByText('#20', { selector: 'td' }),
-        ).toHaveLength(0);
+        expect(screen.queryAllByText('#20', { selector: 'td' })).toHaveLength(
+            0,
+        );
     });
 
     it('valida requerimiento, proveedor y detalle', () => {
@@ -228,9 +226,7 @@ describe('CotizacionesPage', () => {
 
         fireEvent.click(screen.getAllByText('Adjudicar')[0]);
         expect(screen.getByText('Adjudicar cotización')).toBeTruthy();
-        expect(
-            screen.getAllByText('Ferretería Andina SAC')[0],
-        ).toBeTruthy();
+        expect(screen.getAllByText('Ferretería Andina SAC')[0]).toBeTruthy();
 
         fireEvent.click(
             screen

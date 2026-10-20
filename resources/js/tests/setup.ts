@@ -13,7 +13,7 @@ function stubGlobal<T extends keyof typeof globalThis>(
 }
 
 stubGlobal(
-    'ResizeObserver' as 'ResizeObserver',
+    'ResizeObserver' as const,
     class ResizeObserverFalso {
         public observe(): void {}
         public unobserve(): void {}
@@ -22,7 +22,7 @@ stubGlobal(
 );
 
 stubGlobal(
-    'IntersectionObserver' as 'IntersectionObserver',
+    'IntersectionObserver' as const,
     class IntersectionObserverFalso {
         public observe(): void {}
         public unobserve(): void {}

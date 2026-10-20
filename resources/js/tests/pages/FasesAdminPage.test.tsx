@@ -104,16 +104,12 @@ describe('FasesAdminPage', () => {
         fireEvent.click(
             screen.getByRole('button', { name: '02 · Planificación' }),
         );
-        expect(
-            screen.getByText('Requisitos de Planificación'),
-        ).toBeTruthy();
+        expect(screen.getByText('Requisitos de Planificación')).toBeTruthy();
         expect(screen.getAllByText('REQ-03')[0]).toBeTruthy();
         expect(screen.queryAllByText('REQ-01')).toHaveLength(0);
         expect(screen.getByText('Sin criterios')).toBeTruthy();
 
-        fireEvent.click(
-            screen.getByRole('button', { name: '03 · Ejecución' }),
-        );
+        fireEvent.click(screen.getByRole('button', { name: '03 · Ejecución' }));
         expect(screen.getByText('Sin requisitos')).toBeTruthy();
         expect(screen.getByText('Sin criterios')).toBeTruthy();
     });
@@ -124,7 +120,9 @@ describe('FasesAdminPage', () => {
         fireEvent.click(
             screen.getByRole('button', { name: /Nuevo requisito/ }),
         );
-        expect(screen.getByText('Nuevo requisito', { selector: 'h3' })).toBeTruthy();
+        expect(
+            screen.getByText('Nuevo requisito', { selector: 'h3' }),
+        ).toBeTruthy();
 
         fireEvent.change(screen.getByLabelText(/^Código/), {
             target: { value: '   ' },
@@ -175,15 +173,15 @@ describe('FasesAdminPage', () => {
         expect(router.reload).toHaveBeenCalledWith({
             only: ['requisitosDb', 'criteriosDb'],
         });
-        expect(screen.queryByText('Nuevo requisito', { selector: 'h3' })).toBeNull();
+        expect(
+            screen.queryByText('Nuevo requisito', { selector: 'h3' }),
+        ).toBeNull();
     });
 
     it('edita un requisito existente', () => {
         renderPagina(FasesAdminPage, props());
 
-        fireEvent.click(
-            screen.getAllByRole('button', { name: 'Editar' })[0],
-        );
+        fireEvent.click(screen.getAllByRole('button', { name: 'Editar' })[0]);
         expect(screen.getByText('Editar requisito')).toBeTruthy();
         expect(
             (screen.getByLabelText(/^Descripción/) as HTMLTextAreaElement)
@@ -214,9 +212,7 @@ describe('FasesAdminPage', () => {
     it('elimina un requisito tras confirmar', () => {
         renderPagina(FasesAdminPage, props());
 
-        fireEvent.click(
-            screen.getAllByRole('button', { name: 'Eliminar' })[0],
-        );
+        fireEvent.click(screen.getAllByRole('button', { name: 'Eliminar' })[0]);
         expect(screen.getByText('Eliminar registro')).toBeTruthy();
 
         fireEvent.click(
@@ -238,10 +234,10 @@ describe('FasesAdminPage', () => {
     it('valida el JSON y los campos del criterio', () => {
         renderPagina(FasesAdminPage, props());
 
-        fireEvent.click(
-            screen.getByRole('button', { name: /Nuevo criterio/ }),
-        );
-        expect(screen.getByText('Nuevo criterio', { selector: 'h3' })).toBeTruthy();
+        fireEvent.click(screen.getByRole('button', { name: /Nuevo criterio/ }));
+        expect(
+            screen.getByText('Nuevo criterio', { selector: 'h3' }),
+        ).toBeTruthy();
 
         fireEvent.change(screen.getByLabelText(/^Código/), {
             target: { value: 'CRI-09' },
@@ -265,9 +261,7 @@ describe('FasesAdminPage', () => {
         });
         fireEvent.click(screen.getByRole('button', { name: /Guardar/ }));
         expect(
-            screen.getByText(
-                'Completa el código, nombre y tipo del criterio.',
-            ),
+            screen.getByText('Completa el código, nombre y tipo del criterio.'),
         ).toBeTruthy();
         expect(llamadasHttp).toHaveLength(0);
     });
@@ -275,9 +269,7 @@ describe('FasesAdminPage', () => {
     it('crea un criterio con parámetros, umbral y obligatoriedad', () => {
         renderPagina(FasesAdminPage, props());
 
-        fireEvent.click(
-            screen.getByRole('button', { name: /Nuevo criterio/ }),
-        );
+        fireEvent.click(screen.getByRole('button', { name: /Nuevo criterio/ }));
         fireEvent.change(screen.getByLabelText(/^Código/), {
             target: { value: '  CRI-09  ' },
         });
@@ -324,9 +316,7 @@ describe('FasesAdminPage', () => {
     it('edita un criterio y permite dejar el umbral vacío', () => {
         renderPagina(FasesAdminPage, props());
 
-        fireEvent.click(
-            screen.getAllByRole('button', { name: 'Editar' })[4],
-        );
+        fireEvent.click(screen.getAllByRole('button', { name: 'Editar' })[4]);
         expect(screen.getByText('Editar criterio')).toBeTruthy();
 
         fireEvent.change(screen.getByLabelText(/^Umbral/), {
@@ -350,16 +340,12 @@ describe('FasesAdminPage', () => {
     it('elimina un criterio y cierra el modal con Cancelar', () => {
         renderPagina(FasesAdminPage, props());
 
-        fireEvent.click(
-            screen.getAllByRole('button', { name: 'Eliminar' })[4],
-        );
+        fireEvent.click(screen.getAllByRole('button', { name: 'Eliminar' })[4]);
         fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
         expect(screen.queryByText('Eliminar registro')).toBeNull();
         expect(llamadasHttp).toHaveLength(0);
 
-        fireEvent.click(
-            screen.getAllByRole('button', { name: 'Eliminar' })[4],
-        );
+        fireEvent.click(screen.getAllByRole('button', { name: 'Eliminar' })[4]);
         fireEvent.click(
             screen
                 .getAllByRole('button', { name: 'Eliminar' })

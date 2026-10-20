@@ -39,7 +39,9 @@ export const authFixture: Auth = {
         dni: '70123456',
         roles: [{ codigo: 'area_financiera', nombre: 'Área Financiera' }],
         permisos: ['panel.ver', 'pmi.ver', 'logistica.ver'],
-        obras: [{ id: 1, codigo: 'OB-01', nombre: 'Mejoramiento Vía Huancayo' }],
+        obras: [
+            { id: 1, codigo: 'OB-01', nombre: 'Mejoramiento Vía Huancayo' },
+        ],
         almacenes: [{ id: 1, codigo: 'ALM-01', nombre: 'Almacén Central' }],
     },
 };

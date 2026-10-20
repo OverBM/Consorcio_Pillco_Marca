@@ -45,9 +45,7 @@ describe('navigation.config', () => {
         const grupos = filtrarNavegacion([]);
 
         expect(grupos.map((grupo) => grupo.title)).toEqual(['Panel Principal']);
-        expect(
-            grupos[0].items.map((item) => item.id),
-        ).toEqual(['mi-perfil']);
+        expect(grupos[0].items.map((item) => item.id)).toEqual(['mi-perfil']);
     });
 
     it('mantiene visibles los módulos permitidos', () => {

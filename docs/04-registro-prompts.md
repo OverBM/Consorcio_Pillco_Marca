@@ -29,18 +29,18 @@ Reglas de uso:
 
 ## 2. Prompts ejecutados en la etapa
 
-| ID | Objetivo | Restricciones | Resultado | Evidencia |
-| --- | --- | --- | --- | --- |
-| P-01 | Auditar qué módulos del frontend carecían de pruebas y priorizar por cobertura | No modificar código de producción | Inventario de páginas, componentes y utilidades sin cobertura | Reporte de cobertura inicial |
-| P-02 | Implementar pruebas de páginas con el harness, fixtures y mocks existentes | Reutilizar `harness.tsx`, `fixtures.ts` y `mocks/inertia.tsx`; no crear infraestructura nueva | 460 pruebas sobre 73 archivos | Suite en verde |
-| P-03 | Cubrir el lote 4: Ciclo de Vida, Calidad, Cambios, Incidentes, Mermas y Monitoreo Ambiental | Seguir las convenciones de `DataTable`, modales y toasts | 29 pruebas nuevas | Suite en verde |
-| P-04 | Configurar el análisis estático sin patrones de exclusión | No excluir carpetas; el alcance se define con `sonar.sources` y `sonar.tests` | `sonar-project.properties` con 0 exclusiones | Escaneo sin error de solapamiento |
-| P-05 | Generar y normalizar reportes de cobertura JS y PHP | Rutas relativas; fin de línea LF | `coverage/lcov.info` y `coverage.xml` versionables | Medición combinada 85,61 % |
-| P-06 | Verificar la cobertura real en el servidor de análisis | Solo lectura; sin cambiar el código | 84,3 % global, 0 hallazgos, Quality Gate aprobado | Métricas del proyecto |
-| P-07 | Comparar cobertura con y sin reporte PHP | Mismo código y misma configuración | 74,7 % con lcov; 84,3 % con lcov + Clover | Diferencia de 9,6 puntos |
-| P-08 | Comprobar que un clon limpio funciona | Ocultar temporalmente los directorios generados | `tsc` y pruebas en verde solo con los dos módulos versionados | Verificación reproducible |
-| P-09 | Preparar la entrega para repositorio y análisis | No incluir dependencias, secretos ni reportes ignorados | Commit preparado sin artefactos indebidos | `git add -A -n` |
-| P-10 | Documentar el aseguramiento de la calidad | Trazabilidad con ISO 9001, ISO/IEC 25010 e ISO/IEC 29119-3 | Documentos `02`, `03` y `04` | `docs/` |
+| ID   | Objetivo                                                                                    | Restricciones                                                                                 | Resultado                                                     | Evidencia                         |
+| ---- | ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | --------------------------------- |
+| P-01 | Auditar qué módulos del frontend carecían de pruebas y priorizar por cobertura              | No modificar código de producción                                                             | Inventario de páginas, componentes y utilidades sin cobertura | Reporte de cobertura inicial      |
+| P-02 | Implementar pruebas de páginas con el harness, fixtures y mocks existentes                  | Reutilizar `harness.tsx`, `fixtures.ts` y `mocks/inertia.tsx`; no crear infraestructura nueva | 460 pruebas sobre 73 archivos                                 | Suite en verde                    |
+| P-03 | Cubrir el lote 4: Ciclo de Vida, Calidad, Cambios, Incidentes, Mermas y Monitoreo Ambiental | Seguir las convenciones de `DataTable`, modales y toasts                                      | 29 pruebas nuevas                                             | Suite en verde                    |
+| P-04 | Configurar el análisis estático sin patrones de exclusión                                   | No excluir carpetas; el alcance se define con `sonar.sources` y `sonar.tests`                 | `sonar-project.properties` con 0 exclusiones                  | Escaneo sin error de solapamiento |
+| P-05 | Generar y normalizar reportes de cobertura JS y PHP                                         | Rutas relativas; fin de línea LF                                                              | `coverage/lcov.info` y `coverage.xml` versionables            | Medición combinada 85,61 %        |
+| P-06 | Verificar la cobertura real en el servidor de análisis                                      | Solo lectura; sin cambiar el código                                                           | 84,3 % global, 0 hallazgos, Quality Gate aprobado             | Métricas del proyecto             |
+| P-07 | Comparar cobertura con y sin reporte PHP                                                    | Mismo código y misma configuración                                                            | 74,7 % con lcov; 84,3 % con lcov + Clover                     | Diferencia de 9,6 puntos          |
+| P-08 | Comprobar que un clon limpio funciona                                                       | Ocultar temporalmente los directorios generados                                               | `tsc` y pruebas en verde solo con los dos módulos versionados | Verificación reproducible         |
+| P-09 | Preparar la entrega para repositorio y análisis                                             | No incluir dependencias, secretos ni reportes ignorados                                       | Commit preparado sin artefactos indebidos                     | `git add -A -n`                   |
+| P-10 | Documentar el aseguramiento de la calidad                                                   | Trazabilidad con ISO 9001, ISO/IEC 25010 e ISO/IEC 29119-3                                    | Documentos `02`, `03` y `04`                                  | `docs/`                           |
 
 ---
 
@@ -126,11 +126,11 @@ Evidencia: git status, git ls-files y simulación de add.
 
 ## 4. Relación con las normas
 
-| Plantilla | ISO 9001:2015 | ISO/IEC 25010 | ISO/IEC 29119-3 |
-| --- | --- | --- | --- |
-| P-01 | 9.1 Seguimiento y medición | Mantenibilidad | Planificación de pruebas |
-| P-02 | 8.5.1 Control de la producción | Adecuación funcional | Casos y procedimientos |
-| P-03 | 9.1 Seguimiento y medición | Mantenibilidad / Seguridad | Resultados de pruebas |
-| P-04 | 8.5.1 Control de la producción | Portabilidad | Entorno de pruebas |
-| P-05 | 10.2 No conformidad | Fiabilidad | Registro de incidentes |
-| P-06 | 7.5 Información documentada | Mantenibilidad | Informe de pruebas |
+| Plantilla | ISO 9001:2015                  | ISO/IEC 25010              | ISO/IEC 29119-3          |
+| --------- | ------------------------------ | -------------------------- | ------------------------ |
+| P-01      | 9.1 Seguimiento y medición     | Mantenibilidad             | Planificación de pruebas |
+| P-02      | 8.5.1 Control de la producción | Adecuación funcional       | Casos y procedimientos   |
+| P-03      | 9.1 Seguimiento y medición     | Mantenibilidad / Seguridad | Resultados de pruebas    |
+| P-04      | 8.5.1 Control de la producción | Portabilidad               | Entorno de pruebas       |
+| P-05      | 10.2 No conformidad            | Fiabilidad                 | Registro de incidentes   |
+| P-06      | 7.5 Información documentada    | Mantenibilidad             | Informe de pruebas       |

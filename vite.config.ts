@@ -36,7 +36,10 @@ export default defineConfig({
         setupFiles: ['resources/js/tests/setup.ts'],
         alias: {
             '@inertiajs/react': fileURLToPath(
-                new URL('resources/js/tests/mocks/inertia.tsx', import.meta.url),
+                new URL(
+                    'resources/js/tests/mocks/inertia.tsx',
+                    import.meta.url,
+                ),
             ),
         },
         clearMocks: true,
@@ -115,6 +118,9 @@ export default defineConfig({
         ignorePatterns: [
             '.github/**',
             'composer.json',
+            'resources/js/actions/**',
+            'resources/js/routes/**',
+            'resources/js/wayfinder/**',
             'resources/js/components/ui/*',
             'resources/views/mail/*',
         ],

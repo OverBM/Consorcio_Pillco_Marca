@@ -92,9 +92,7 @@ describe('DevolucionesPage', () => {
         ).toBeTruthy();
         expect(screen.getByText('Devoluciones (2)')).toBeTruthy();
         expect(screen.getAllByText('DEV-001')[0]).toBeTruthy();
-        expect(
-            screen.getAllByText('Ferretería Andina SAC')[0],
-        ).toBeTruthy();
+        expect(screen.getAllByText('Ferretería Andina SAC')[0]).toBeTruthy();
         expect(screen.getAllByText('REC-001')[0]).toBeTruthy();
         expect(screen.getAllByText('Cemento Portland (+1)')[0]).toBeTruthy();
         expect(screen.getAllByText('Rechazo: 5')[0]).toBeTruthy();
@@ -174,9 +172,7 @@ describe('DevolucionesPage', () => {
             target: { value: '1' },
         });
         expect(
-            (
-                screen.getByLabelText(/^Proveedor/) as HTMLInputElement
-            ).value,
+            (screen.getByLabelText(/^Proveedor/) as HTMLInputElement).value,
         ).toBe('Ferretería Andina SAC');
         fireEvent.click(enviar);
         expect(

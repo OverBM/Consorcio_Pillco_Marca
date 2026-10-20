@@ -132,9 +132,7 @@ describe('MermasPage', () => {
             target: { value: '   ' },
         });
         fireEvent.click(enviar);
-        expect(
-            screen.getByText('Describe la causa o incidente.'),
-        ).toBeTruthy();
+        expect(screen.getByText('Describe la causa o incidente.')).toBeTruthy();
         expect(llamadasHttp).toHaveLength(0);
     });
 

@@ -14,31 +14,31 @@ Documentar cómo se configura, ejecuta y verifica el análisis estático para qu
 
 ## 2. Archivos y responsabilidades
 
-| Archivo | Función |
-| --- | --- |
-| `sonar-project.properties` | Alcance, pruebas y rutas de reportes |
-| `coverage/lcov.info` | Cobertura JavaScript generada por Vitest |
-| `coverage.xml` | Cobertura PHP generada por Pest en formato Clover |
-| `.gitignore` | Excluye dependencias, artefactos y directorios generados |
-| `.gitattributes` | Fuerza fin de línea LF en el repositorio |
-| `vite.config.ts` | Configuración de Vitest y de la cobertura |
-| `phpunit.xml` | Configuración de la suite PHP |
+| Archivo                    | Función                                                  |
+| -------------------------- | -------------------------------------------------------- |
+| `sonar-project.properties` | Alcance, pruebas y rutas de reportes                     |
+| `coverage/lcov.info`       | Cobertura JavaScript generada por Vitest                 |
+| `coverage.xml`             | Cobertura PHP generada por Pest en formato Clover        |
+| `.gitignore`               | Excluye dependencias, artefactos y directorios generados |
+| `.gitattributes`           | Fuerza fin de línea LF en el repositorio                 |
+| `vite.config.ts`           | Configuración de Vitest y de la cobertura                |
+| `phpunit.xml`              | Configuración de la suite PHP                            |
 
 ---
 
 ## 3. Configuración del análisis
 
-| Propiedad | Valor | Justificación |
-| --- | --- | --- |
-| `sonar.projectKey` | `consorcio-pillco-marca_version-2` | Identificador del proyecto; se puede sobrescribir por CLI |
-| `sonar.projectVersion` | `3.0.0` | Versión del entregable |
-| `sonar.sources` | Lista explícita de directorios de producción | Evita solapamiento con pruebas y excluye generados |
-| `sonar.tests` | `tests,resources/js/tests` | Pruebas PHP y JS |
-| `sonar.sourceEncoding` | `UTF-8` | Codificación única |
-| `sonar.php.tests.reportPath` | `phpunit-report.xml` | Reporte JUnit de Pest (opcional) |
-| `sonar.php.coverage.reportPaths` | `coverage.xml` | Cobertura PHP |
-| `sonar.javascript.lcov.reportPaths` | `coverage/lcov.info` | Cobertura JS |
-| `sonar.qualitygate.wait` | `false` | El escaneo no bloquea la entrega |
+| Propiedad                           | Valor                                        | Justificación                                             |
+| ----------------------------------- | -------------------------------------------- | --------------------------------------------------------- |
+| `sonar.projectKey`                  | `consorcio-pillco-marca_version-2`           | Identificador del proyecto; se puede sobrescribir por CLI |
+| `sonar.projectVersion`              | `3.0.0`                                      | Versión del entregable                                    |
+| `sonar.sources`                     | Lista explícita de directorios de producción | Evita solapamiento con pruebas y excluye generados        |
+| `sonar.tests`                       | `tests,resources/js/tests`                   | Pruebas PHP y JS                                          |
+| `sonar.sourceEncoding`              | `UTF-8`                                      | Codificación única                                        |
+| `sonar.php.tests.reportPath`        | `phpunit-report.xml`                         | Reporte JUnit de Pest (opcional)                          |
+| `sonar.php.coverage.reportPaths`    | `coverage.xml`                               | Cobertura PHP                                             |
+| `sonar.javascript.lcov.reportPaths` | `coverage/lcov.info`                         | Cobertura JS                                              |
+| `sonar.qualitygate.wait`            | `false`                                      | El escaneo no bloquea la entrega                          |
 
 **No se define `sonar.exclusions`.** El alcance se controla con `sonar.sources`/`sonar.tests` y con `.gitignore`; excluir carpetas está penalizado en la evaluación y no aporta precisión.
 
@@ -76,10 +76,10 @@ sonar-scanner -Dsonar.host.url=<servidor> -Dsonar.token=<token>
 
 Se comparó el mismo commit con y sin el reporte PHP:
 
-| Escenario | Cobertura | Cobertura de líneas | Ramas | Líneas a cubrir | No cubiertas |
-| --- | --- | --- | --- | --- | --- |
-| Solo `lcov.info` | 74,7 % | 69,6 % | 83,1 % | 6.266 | 1.905 |
-| `lcov.info` + `coverage.xml` | **84,3 %** | **84,8 %** | 83,1 % | 9.522 | 1.444 |
+| Escenario                    | Cobertura  | Cobertura de líneas | Ramas  | Líneas a cubrir | No cubiertas |
+| ---------------------------- | ---------- | ------------------- | ------ | --------------- | ------------ |
+| Solo `lcov.info`             | 74,7 %     | 69,6 %              | 83,1 % | 6.266           | 1.905        |
+| `lcov.info` + `coverage.xml` | **84,3 %** | **84,8 %**          | 83,1 % | 9.522           | 1.444        |
 
 Conclusión: **ambos reportes son obligatorios**. Sin el Clover, el analizador ignora las pruebas PHP.
 
@@ -98,19 +98,19 @@ El estado de la última tarea de análisis se consulta en `api/ce/activity`. El 
 
 ## 8. Resultado obtenido
 
-| Métrica | Valor |
-| --- | --- |
-| Cobertura | 84,3 % |
-| Cobertura de líneas | 84,8 % |
-| Cobertura de ramas | 83,1 % |
-| Líneas a cubrir | 9.522 |
-| Líneas no cubiertas | 1.444 |
-| Líneas de código (ncloc) | 31.122 |
-| Duplicación | 1,2 % |
+| Métrica                          | Valor     |
+| -------------------------------- | --------- |
+| Cobertura                        | 84,3 %    |
+| Cobertura de líneas              | 84,8 %    |
+| Cobertura de ramas               | 83,1 %    |
+| Líneas a cubrir                  | 9.522     |
+| Líneas no cubiertas              | 1.444     |
+| Líneas de código (ncloc)         | 31.122    |
+| Duplicación                      | 1,2 %     |
 | Bugs / vulnerabilidades / smells | 0 / 0 / 0 |
-| Hotspots | 0 |
-| Calificaciones | A / A / A |
-| Quality Gate | Aprobado |
+| Hotspots                         | 0         |
+| Calificaciones                   | A / A / A |
+| Quality Gate                     | Aprobado  |
 
 ---
 
@@ -136,11 +136,11 @@ El estado de la última tarea de análisis se consulta en `api/ce/activity`. El 
 
 ## 11. Diagnóstico de problemas
 
-| Síntoma | Causa | Acción |
-| --- | --- | --- |
-| `can't be indexed twice` | Sources y tests solapados | Mantener listas disjuntas |
-| Límite de 50.000 líneas | Proyecto privado en plan gratuito | Proyecto público o limpieza de proyectos |
-| Cobertura 74,7 % | Falta Clover PHP | Agregar `coverage.xml` |
-| Cobertura 0 % | Reportes ausentes o rutas absolutas | Regenerar y normalizar |
-| Cobertura distinta entre máquinas | Reportes desfasados del commit | Regenerar antes de entregar |
-| Rama no coincide | `sonar.branch.name` distinto | Escanear sin parámetro o alinear ramas |
+| Síntoma                           | Causa                               | Acción                                   |
+| --------------------------------- | ----------------------------------- | ---------------------------------------- |
+| `can't be indexed twice`          | Sources y tests solapados           | Mantener listas disjuntas                |
+| Límite de 50.000 líneas           | Proyecto privado en plan gratuito   | Proyecto público o limpieza de proyectos |
+| Cobertura 74,7 %                  | Falta Clover PHP                    | Agregar `coverage.xml`                   |
+| Cobertura 0 %                     | Reportes ausentes o rutas absolutas | Regenerar y normalizar                   |
+| Cobertura distinta entre máquinas | Reportes desfasados del commit      | Regenerar antes de entregar              |
+| Rama no coincide                  | `sonar.branch.name` distinto        | Escanear sin parámetro o alinear ramas   |

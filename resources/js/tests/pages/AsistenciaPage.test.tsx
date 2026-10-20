@@ -1,5 +1,5 @@
 import { fireEvent, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import AsistenciaPage from '../../pages/AsistenciaPage';
 import { formatFs, formatNum } from '../../utils/format';
@@ -49,7 +49,10 @@ function props(datos: Record<string, unknown> = {}) {
 }
 
 function conGeolocalizacion(
-    getCurrentPosition: (ok: PositionCallback, error?: PositionErrorCallback) => void,
+    getCurrentPosition: (
+        ok: PositionCallback,
+        error?: PositionErrorCallback,
+    ) => void,
 ) {
     Object.defineProperty(navigator, 'geolocation', {
         configurable: true,
@@ -70,12 +73,15 @@ describe('AsistenciaPage', () => {
         renderPagina(AsistenciaPage, props());
 
         expect(
-            screen.getAllByText('Control de Asistencia con Geocerca Móvil (GPS)')[0],
+            screen.getAllByText(
+                'Control de Asistencia con Geocerca Móvil (GPS)',
+            )[0],
         ).toBeTruthy();
-        expect(screen.getByText('Asistencias Registradas').closest('div')?.textContent).toContain('2');
         expect(
-            screen.getAllByText(formatNum(15.5))[0],
-        ).toBeTruthy();
+            screen.getByText('Asistencias Registradas').closest('div')
+                ?.textContent,
+        ).toContain('2');
+        expect(screen.getAllByText(formatNum(15.5))[0]).toBeTruthy();
         expect(screen.getAllByText('Juan Ramos')[0]).toBeTruthy();
         expect(screen.getAllByText('Operario')[0]).toBeTruthy();
         expect(
@@ -107,7 +113,9 @@ describe('AsistenciaPage', () => {
                 'La geolocalización no está disponible en este navegador.',
             ),
         ).toBeTruthy();
-        expect(screen.getByText('Registrar Marcación con Geocerca')).toBeTruthy();
+        expect(
+            screen.getByText('Registrar Marcación con Geocerca'),
+        ).toBeTruthy();
         expect(
             screen.getByText(
                 'Pulsa "Recalcular GPS" para capturar tu ubicación.',
@@ -116,13 +124,15 @@ describe('AsistenciaPage', () => {
     });
 
     it('informa el error al no poder capturar el GPS', () => {
-        conGeolocalizacion((_ok, error) => error?.({
-            code: 1,
-            message: 'denegado',
-            PERMISSION_DENIED: 1,
-            POSITION_UNAVAILABLE: 2,
-            TIMEOUT: 3,
-        } as GeolocationPositionError));
+        conGeolocalizacion((_ok, error) =>
+            error?.({
+                code: 1,
+                message: 'denegado',
+                PERMISSION_DENIED: 1,
+                POSITION_UNAVAILABLE: 2,
+                TIMEOUT: 3,
+            } as GeolocationPositionError),
+        );
         renderPagina(AsistenciaPage, props());
 
         fireEvent.click(
@@ -211,12 +221,16 @@ describe('AsistenciaPage', () => {
             }),
         );
         expect(
-            screen.getByText('Marcación registrada con validación de geocerca.'),
+            screen.getByText(
+                'Marcación registrada con validación de geocerca.',
+            ),
         ).toBeTruthy();
         expect(router.reload).toHaveBeenCalledWith({
             only: ['asistenciasDb'],
         });
-        expect(screen.queryByText('Registrar Marcación con Geocerca')).toBeNull();
+        expect(
+            screen.queryByText('Registrar Marcación con Geocerca'),
+        ).toBeNull();
     });
 
     it('filtra trabajadores por la obra seleccionada', () => {

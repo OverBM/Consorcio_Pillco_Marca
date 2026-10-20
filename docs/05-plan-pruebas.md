@@ -18,31 +18,31 @@ Demostrar que el sistema cumple sus flujos funcionales visibles, que el código 
 
 ## 2. Niveles y tipos de prueba
 
-| Nivel | Herramienta | Alcance | Evidencia |
-| --- | --- | --- | --- |
-| Unitaria JS | Vitest | Utilidades (`format`, `geo`, `csv`, `estados`, `crud`, `validation`, `refrescar`, `cicloVida`, `navigation`) y hook `useSimulatedTransit` | 51 pruebas |
-| Componentes | Vitest + Testing Library | `DataTable`, formularios, modales, iconos, mapas, notificaciones, KPIs | 21 archivos |
-| Integración de página | Vitest + Inertia simulado | Render, filtros, acciones y modales de las 39 páginas | 40 archivos |
-| Servicio HTTP | Vitest | Cliente `services/http/client` | 18 pruebas |
-| Backend | Pest | Feature y Unit de controladores, dominio, modelos y políticas | 137 pruebas, 899 aserciones |
-| Tipos | TypeScript | Todo el frontend | `tsc --noEmit` |
-| Build | Vite+ | Cliente y SSR | `vp build` y `vp build --ssr` |
-| Análisis estático | Sonar | Código de producción JS/PHP | Quality Gate |
+| Nivel                 | Herramienta               | Alcance                                                                                                                                   | Evidencia                     |
+| --------------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| Unitaria JS           | Vitest                    | Utilidades (`format`, `geo`, `csv`, `estados`, `crud`, `validation`, `refrescar`, `cicloVida`, `navigation`) y hook `useSimulatedTransit` | 51 pruebas                    |
+| Componentes           | Vitest + Testing Library  | `DataTable`, formularios, modales, iconos, mapas, notificaciones, KPIs                                                                    | 21 archivos                   |
+| Integración de página | Vitest + Inertia simulado | Render, filtros, acciones y modales de las 39 páginas                                                                                     | 40 archivos                   |
+| Servicio HTTP         | Vitest                    | Cliente `services/http/client`                                                                                                            | 18 pruebas                    |
+| Backend               | Pest                      | Feature y Unit de controladores, dominio, modelos y políticas                                                                             | 137 pruebas, 899 aserciones   |
+| Tipos                 | TypeScript                | Todo el frontend                                                                                                                          | `tsc --noEmit`                |
+| Build                 | Vite+                     | Cliente y SSR                                                                                                                             | `vp build` y `vp build --ssr` |
+| Análisis estático     | Sonar                     | Código de producción JS/PHP                                                                                                               | Quality Gate                  |
 
 ---
 
 ## 3. Entorno de ejecución
 
-| Componente | Versión |
-| --- | --- |
-| PHP | 8.4.26 (NTS) |
-| Laravel | 13 |
-| Pest | Suite del proyecto |
-| Node.js | 22.22.2 |
-| Vitest | 4.1.11 |
-| TypeScript | Configuración del proyecto |
-| Cobertura PHP | Xdebug 3.5.3 |
-| Cobertura JS | V8 (integrada en Vitest) |
+| Componente    | Versión                    |
+| ------------- | -------------------------- |
+| PHP           | 8.4.26 (NTS)               |
+| Laravel       | 13                         |
+| Pest          | Suite del proyecto         |
+| Node.js       | 22.22.2                    |
+| Vitest        | 4.1.11                     |
+| TypeScript    | Configuración del proyecto |
+| Cobertura PHP | Xdebug 3.5.3               |
+| Cobertura JS  | V8 (integrada en Vitest)   |
 
 ---
 
@@ -69,14 +69,14 @@ Demostrar que el sistema cumple sus flujos funcionales visibles, que el código 
 
 **Salida**
 
-| Criterio | Umbral | Resultado |
-| --- | --- | --- |
-| Pruebas JS | 0 fallos | 460/460 |
-| Pruebas PHP | 0 fallos | 137/137 |
-| Cobertura combinada | ≥ 80 % | 85,61 % local; 84,3 % en el analizador |
-| Duplicación | ≤ 3 % | 1,2 % |
-| Bugs / vulnerabilidades / smells | 0 | 0 / 0 / 0 |
-| Quality Gate | Aprobado | Aprobado |
+| Criterio                         | Umbral   | Resultado                              |
+| -------------------------------- | -------- | -------------------------------------- |
+| Pruebas JS                       | 0 fallos | 460/460                                |
+| Pruebas PHP                      | 0 fallos | 137/137                                |
+| Cobertura combinada              | ≥ 80 %   | 85,61 % local; 84,3 % en el analizador |
+| Duplicación                      | ≤ 3 %    | 1,2 %                                  |
+| Bugs / vulnerabilidades / smells | 0        | 0 / 0 / 0                              |
+| Quality Gate                     | Aprobado | Aprobado                               |
 
 ---
 
@@ -91,25 +91,25 @@ Demostrar que el sistema cumple sus flujos funcionales visibles, que el código 
 
 ## 7. Riesgos y mitigación
 
-| Riesgo | Impacto | Mitigación |
-| --- | --- | --- |
-| jsdom no implementa APIs del navegador | Pruebas frágiles | Stubs explícitos y limpieza en `afterEach` |
-| Textos repetidos por el doble render de `DataTable` | Falsos negativos | Aserciones por colección e índices controlados |
-| Dependencia de catálogos y props | Pruebas acopladas | Fixtures versionados y mínimos |
-| Cobertura inflada por exclusiones | Métrica engañosa | Se reporta también la métrica del analizador |
-| Deriva entre código y reportes | Cobertura incorrecta | Regenerar reportes antes de cada entrega |
-| Entorno distinto (Linux) | Rutas inválidas | Rutas relativas y fin de línea LF |
+| Riesgo                                              | Impacto              | Mitigación                                     |
+| --------------------------------------------------- | -------------------- | ---------------------------------------------- |
+| jsdom no implementa APIs del navegador              | Pruebas frágiles     | Stubs explícitos y limpieza en `afterEach`     |
+| Textos repetidos por el doble render de `DataTable` | Falsos negativos     | Aserciones por colección e índices controlados |
+| Dependencia de catálogos y props                    | Pruebas acopladas    | Fixtures versionados y mínimos                 |
+| Cobertura inflada por exclusiones                   | Métrica engañosa     | Se reporta también la métrica del analizador   |
+| Deriva entre código y reportes                      | Cobertura incorrecta | Regenerar reportes antes de cada entrega       |
+| Entorno distinto (Linux)                            | Rutas inválidas      | Rutas relativas y fin de línea LF              |
 
 ---
 
 ## 8. Registro de ejecución
 
-| Fecha | Suite | Resultado | Observación |
-| --- | --- | --- | --- |
-| Octubre 2026 | Frontend (73 archivos) | 460/460 | Sin fallos |
-| Octubre 2026 | Backend (Pest) | 137/137, 899 aserciones | Sin fallos |
-| Octubre 2026 | Tipos | Sin errores | `tsc --noEmit` |
-| Octubre 2026 | Build cliente + SSR | Correcto | Stub de Leaflet para SSR |
-| Octubre 2026 | Análisis estático | Quality Gate aprobado | 84,3 % de cobertura, 1,2 % de duplicación |
+| Fecha        | Suite                  | Resultado               | Observación                               |
+| ------------ | ---------------------- | ----------------------- | ----------------------------------------- |
+| Octubre 2026 | Frontend (73 archivos) | 460/460                 | Sin fallos                                |
+| Octubre 2026 | Backend (Pest)         | 137/137, 899 aserciones | Sin fallos                                |
+| Octubre 2026 | Tipos                  | Sin errores             | `tsc --noEmit`                            |
+| Octubre 2026 | Build cliente + SSR    | Correcto                | Stub de Leaflet para SSR                  |
+| Octubre 2026 | Análisis estático      | Quality Gate aprobado   | 84,3 % de cobertura, 1,2 % de duplicación |
 
 El detalle por archivo está en `07-inventario-cobertura.md`.

@@ -13,7 +13,11 @@ import {
     suggestReceivingObras,
 } from '../../utils/geo';
 
-const obra = (id: string, estado: Obra['estado'], distrito = 'Huancayo'): Obra => ({
+const obra = (
+    id: string,
+    estado: Obra['estado'],
+    distrito = 'Huancayo',
+): Obra => ({
     id,
     nombre: `Obra ${id}`,
     estado,
@@ -25,7 +29,11 @@ const obra = (id: string, estado: Obra['estado'], distrito = 'Huancayo'): Obra =
     pctAvance: 20,
 });
 
-const almacen = (id: string, obraId: string, coords: Almacen['coords']): Almacen => ({
+const almacen = (
+    id: string,
+    obraId: string,
+    coords: Almacen['coords'],
+): Almacen => ({
     id,
     obraId,
     nombre: `Almacén ${id}`,
@@ -165,7 +173,10 @@ describe('utils/geo', () => {
     });
 
     it('calcula el centroide de las coordenadas', () => {
-        expect(calculateCoordsCenter([])).toEqual({ lat: -12.068, lng: -75.21 });
+        expect(calculateCoordsCenter([])).toEqual({
+            lat: -12.068,
+            lng: -75.21,
+        });
         expect(
             calculateCoordsCenter([
                 { lat: -12, lng: -75 },

@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest';
 
 import type { Almacen, Material } from '../../types';
 import type { StockState } from '../../types/stock';
-import { ESTADO_META, estadoDeAlmacen, estadoDeStock } from '../../utils/estados';
+import {
+    ESTADO_META,
+    estadoDeAlmacen,
+    estadoDeStock,
+} from '../../utils/estados';
 
 const material1: Material = {
     id: 'm1',
@@ -58,9 +62,9 @@ describe('utils/estados', () => {
             a1: { m1: 0, m2: 200 },
         });
 
-        expect(estadoDeAlmacen(almacen, 'activa', stock, [material1, material2])).toBe(
-            'critico',
-        );
+        expect(
+            estadoDeAlmacen(almacen, 'activa', stock, [material1, material2]),
+        ).toBe('critico');
 
         const stockOptimo = stockCon({ a1: { m1: 100, m2: 50 } });
         expect(

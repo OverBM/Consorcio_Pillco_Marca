@@ -54,12 +54,12 @@ describe('MonitoreoAmbientalPage', () => {
         renderPagina(MonitoreoAmbientalPage, { medicionesDb: mediciones });
 
         expect(
-            screen.getAllByText(
-                'Monitoreo Ambiental y Cumplimiento de LMP',
-            )[0],
+            screen.getAllByText('Monitoreo Ambiental y Cumplimiento de LMP')[0],
         ).toBeTruthy();
         expect(screen.getByText('Mediciones Registradas (2)')).toBeTruthy();
-        expect(screen.getAllByText('Material Particulado PM10')[0]).toBeTruthy();
+        expect(
+            screen.getAllByText('Material Particulado PM10')[0],
+        ).toBeTruthy();
         expect(
             screen.getAllByText('Mejoramiento Vía Huancayo')[0],
         ).toBeTruthy();
@@ -76,9 +76,7 @@ describe('MonitoreoAmbientalPage', () => {
                     (el.textContent ?? '').includes('µg/m³'),
             ).length,
         ).toBeGreaterThan(0);
-        expect(
-            screen.getByText('1 mediciones exceden el LMP'),
-        ).toBeTruthy();
+        expect(screen.getByText('1 mediciones exceden el LMP')).toBeTruthy();
     });
 
     it('muestra el estado vacío', () => {
@@ -161,9 +159,7 @@ describe('MonitoreoAmbientalPage', () => {
                 },
             }),
         );
-        expect(
-            screen.getByText('Medición ambiental registrada.'),
-        ).toBeTruthy();
+        expect(screen.getByText('Medición ambiental registrada.')).toBeTruthy();
         expect(router.reload).toHaveBeenCalledWith({
             only: ['medicionesDb'],
         });

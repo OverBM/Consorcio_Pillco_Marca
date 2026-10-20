@@ -34,9 +34,7 @@ describe('ParametrosPage', () => {
         expect(
             screen.getAllByText('Parámetros y Constantes del Sistema')[0],
         ).toBeTruthy();
-        expect(
-            screen.getAllByText('ahp.ratio_consistencia')[0],
-        ).toBeTruthy();
+        expect(screen.getAllByText('ahp.ratio_consistencia')[0]).toBeTruthy();
         expect(screen.getAllByText('AHP')[0]).toBeTruthy();
         expect(screen.getAllByText('GEO')[0]).toBeTruthy();
         expect(screen.getAllByText('STOCK')[0]).toBeTruthy();
@@ -54,22 +52,14 @@ describe('ParametrosPage', () => {
         renderPagina(ParametrosPage, { parametrosDb: parametros });
 
         fireEvent.click(screen.getByRole('button', { name: 'Ranking / AHP' }));
-        expect(
-            screen.getAllByText('ahp.ratio_consistencia')[0],
-        ).toBeTruthy();
-        expect(
-            screen.queryAllByText('geo.radio_busqueda_m'),
-        ).toHaveLength(0);
+        expect(screen.getAllByText('ahp.ratio_consistencia')[0]).toBeTruthy();
+        expect(screen.queryAllByText('geo.radio_busqueda_m')).toHaveLength(0);
 
         fireEvent.click(
             screen.getByRole('button', { name: 'Control de Stock & Mermas' }),
         );
-        expect(
-            screen.getAllByText('stock.merma_max_pct')[0],
-        ).toBeTruthy();
-        expect(
-            screen.queryAllByText('empresa.nombre'),
-        ).toHaveLength(0);
+        expect(screen.getAllByText('stock.merma_max_pct')[0]).toBeTruthy();
+        expect(screen.queryAllByText('empresa.nombre')).toHaveLength(0);
     });
 
     it('muestra el estado vacío sin parámetros', () => {
@@ -136,7 +126,9 @@ describe('ParametrosPage', () => {
             }),
         );
         expect(
-            screen.getByText('Parámetro "pmu.umbral_dias" creado correctamente.'),
+            screen.getByText(
+                'Parámetro "pmu.umbral_dias" creado correctamente.',
+            ),
         ).toBeTruthy();
         expect(router.reload).toHaveBeenCalledWith({
             only: ['parametrosDb'],
@@ -147,10 +139,10 @@ describe('ParametrosPage', () => {
     it('edita un parámetro existente con la clave bloqueada', () => {
         renderPagina(ParametrosPage, { parametrosDb: parametros });
 
-        fireEvent.click(
-            screen.getAllByRole('button', { name: 'Editar' })[0],
-        );
-        expect(screen.getByText('Modificar Parámetro del Sistema')).toBeTruthy();
+        fireEvent.click(screen.getAllByRole('button', { name: 'Editar' })[0]);
+        expect(
+            screen.getByText('Modificar Parámetro del Sistema'),
+        ).toBeTruthy();
         expect(
             (screen.getByLabelText(/^Clave/) as HTMLInputElement).disabled,
         ).toBe(true);
@@ -182,16 +174,16 @@ describe('ParametrosPage', () => {
     it('elimina un parámetro tras confirmar', () => {
         renderPagina(ParametrosPage, { parametrosDb: parametros });
 
-        fireEvent.click(
-            screen.getAllByRole('button', { name: 'Eliminar' })[0],
-        );
+        fireEvent.click(screen.getAllByRole('button', { name: 'Eliminar' })[0]);
         expect(screen.getByText('Eliminar Parámetro')).toBeTruthy();
         expect(
             screen.getAllByText('ahp.ratio_consistencia').length,
         ).toBeGreaterThan(0);
 
         fireEvent.click(
-            screen.getAllByRole('button', { name: 'Eliminar' }).at(-1) as HTMLElement,
+            screen
+                .getAllByRole('button', { name: 'Eliminar' })
+                .at(-1) as HTMLElement,
         );
 
         expect(llamadasHttp).toContainEqual(

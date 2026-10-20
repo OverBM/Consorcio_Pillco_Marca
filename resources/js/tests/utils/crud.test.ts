@@ -47,9 +47,7 @@ describe('utils/crud', () => {
 
         opciones.onError({ nombre: 'Requerido', cantidad: 'Debe ser mayor' });
 
-        expect(notify.error).toHaveBeenCalledWith(
-            'Requerido Debe ser mayor',
-        );
+        expect(notify.error).toHaveBeenCalledWith('Requerido Debe ser mayor');
     });
 
     it('usa el mensaje de respaldo cuando no hay errores', () => {

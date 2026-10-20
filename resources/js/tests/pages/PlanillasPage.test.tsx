@@ -106,9 +106,7 @@ describe('PlanillasPage', () => {
                 datos: { obra_id: 1, periodo: '2026-10-Q1' },
             }),
         );
-        expect(
-            screen.getByText('Planilla generada y procesada.'),
-        ).toBeTruthy();
+        expect(screen.getByText('Planilla generada y procesada.')).toBeTruthy();
         expect(router.reload).toHaveBeenCalledWith({
             only: ['planillasDb'],
         });

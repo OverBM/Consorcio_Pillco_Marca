@@ -72,7 +72,9 @@ describe('IncidentesPage', () => {
         expect(screen.getAllByText('ACCIDENTE')[0]).toBeTruthy();
         expect(screen.getAllByText('INCIDENTE')[0]).toBeTruthy();
         expect(screen.getAllByText('Juan Ramos')[0]).toBeTruthy();
-        expect(screen.getAllByText('Caída de operario desde andamio')[0]).toBeTruthy();
+        expect(
+            screen.getAllByText('Caída de operario desde andamio')[0],
+        ).toBeTruthy();
         expect(screen.getAllByText('GRAVE')[0]).toBeTruthy();
         expect(screen.getAllByText('LEVE')[0]).toBeTruthy();
         expect(screen.getAllByText('ABIERTO')[0]).toBeTruthy();
@@ -104,9 +106,7 @@ describe('IncidentesPage', () => {
             target: { value: '' },
         });
         fireEvent.click(enviar);
-        expect(
-            screen.getByText('Selecciona la obra del evento.'),
-        ).toBeTruthy();
+        expect(screen.getByText('Selecciona la obra del evento.')).toBeTruthy();
 
         fireEvent.change(screen.getByLabelText(/^Obra/), {
             target: { value: '1' },

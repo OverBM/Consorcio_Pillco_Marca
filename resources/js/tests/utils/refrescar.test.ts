@@ -1,13 +1,15 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, type Mock } from 'vitest';
 
 import { router } from '@inertiajs/react';
 import { refrescarProps } from '../../utils/refrescar';
+
+const routerMock = router as unknown as { reload: Mock };
 
 describe('utils/refrescar', () => {
     it('recarga solo los props indicados', () => {
         refrescarProps('excedentesDb', 'transferenciasAhpDb');
 
-        expect(router.reload).toHaveBeenCalledWith({
+        expect(routerMock.reload).toHaveBeenCalledWith({
             only: ['excedentesDb', 'transferenciasAhpDb'],
         });
     });
@@ -15,6 +17,6 @@ describe('utils/refrescar', () => {
     it('no recarga cuando no se indican props', () => {
         refrescarProps();
 
-        expect(router.reload).not.toHaveBeenCalled();
+        expect(routerMock.reload).not.toHaveBeenCalled();
     });
 });

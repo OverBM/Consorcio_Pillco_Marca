@@ -105,9 +105,7 @@ describe('CicloVidaPage', () => {
         expect(screen.queryAllByText('Requisito inactivo')).toHaveLength(0);
         expect(screen.getAllByText(/Firma del acta/)[0]).toBeTruthy();
         expect(screen.queryAllByText(/Criterio inactivo/)).toHaveLength(0);
-        expect(
-            screen.getAllByText('Documento verificado')[0],
-        ).toBeTruthy();
+        expect(screen.getAllByText('Documento verificado')[0]).toBeTruthy();
         expect(screen.getAllByText('aprobada')[0]).toBeTruthy();
         expect(screen.getAllByText('en proceso')[0]).toBeTruthy();
         expect(
@@ -131,9 +129,7 @@ describe('CicloVidaPage', () => {
             evaluacionesDb: {},
         });
 
-        fireEvent.click(
-            screen.getAllByRole('button', { name: /Iniciar/ })[0],
-        );
+        fireEvent.click(screen.getAllByRole('button', { name: /Iniciar/ })[0]);
 
         expect(llamadasHttp).toContainEqual(
             expect.objectContaining({
@@ -147,9 +143,7 @@ describe('CicloVidaPage', () => {
                 },
             }),
         );
-        expect(
-            screen.getByText('Fase del proyecto actualizada.'),
-        ).toBeTruthy();
+        expect(screen.getByText('Fase del proyecto actualizada.')).toBeTruthy();
         expect(router.reload).toHaveBeenCalledWith({
             only: ['fasesDb', 'evaluacionesDb'],
         });
@@ -164,9 +158,7 @@ describe('CicloVidaPage', () => {
             evaluacionesDb: {},
         });
 
-        fireEvent.click(
-            screen.getAllByRole('button', { name: /Aprobar/ })[0],
-        );
+        fireEvent.click(screen.getAllByRole('button', { name: /Aprobar/ })[0]);
 
         expect(llamadasHttp).toContainEqual(
             expect.objectContaining({
@@ -206,9 +198,11 @@ describe('CicloVidaPage', () => {
         });
 
         expect(
-            (screen.getAllByRole('button', {
-                name: /Aprobar/,
-            })[0] as HTMLButtonElement).disabled,
+            (
+                screen.getAllByRole('button', {
+                    name: /Aprobar/,
+                })[0] as HTMLButtonElement
+            ).disabled,
         ).toBe(true);
     });
 

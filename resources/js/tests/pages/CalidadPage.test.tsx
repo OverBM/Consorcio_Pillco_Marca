@@ -41,7 +41,9 @@ describe('CalidadPage', () => {
         renderPagina(CalidadPage, { observacionesDb: observaciones });
 
         expect(
-            screen.getAllByText('Observaciones Técnicas y Control de Calidad')[0],
+            screen.getAllByText(
+                'Observaciones Técnicas y Control de Calidad',
+            )[0],
         ).toBeTruthy();
         expect(screen.getByText('Observaciones (2)')).toBeTruthy();
         expect(screen.getAllByText('ACTA-SUP-015')[0]).toBeTruthy();
@@ -49,9 +51,7 @@ describe('CalidadPage', () => {
         expect(screen.getAllByText('CONTROL_INTERNO')[0]).toBeTruthy();
         expect(screen.getAllByText('Falta encofrado en losa')[0]).toBeTruthy();
         expect(screen.getAllByText('Ana Torres')[0]).toBeTruthy();
-        expect(
-            screen.getAllByText(formatFecha('2026-02-15'))[0],
-        ).toBeTruthy();
+        expect(screen.getAllByText(formatFecha('2026-02-15'))[0]).toBeTruthy();
         expect(screen.getAllByText('Pendiente')[0]).toBeTruthy();
         expect(screen.getAllByText('Actualizado')[0]).toBeTruthy();
         expect(screen.getAllByText('NOTIFICADA')[0]).toBeTruthy();
@@ -66,9 +66,7 @@ describe('CalidadPage', () => {
     it('muestra el estado vacío', () => {
         renderPagina(CalidadPage, { observacionesDb: [] });
 
-        expect(
-            screen.getByText('Sin observaciones registradas'),
-        ).toBeTruthy();
+        expect(screen.getByText('Sin observaciones registradas')).toBeTruthy();
         expect(screen.getByText('Observaciones (0)')).toBeTruthy();
     });
 
@@ -138,9 +136,7 @@ describe('CalidadPage', () => {
     it('levanta una observación pendiente', () => {
         renderPagina(CalidadPage, { observacionesDb: observaciones });
 
-        fireEvent.click(
-            screen.getAllByRole('button', { name: /Levantar/ })[0],
-        );
+        fireEvent.click(screen.getAllByRole('button', { name: /Levantar/ })[0]);
 
         expect(llamadasHttp).toContainEqual(
             expect.objectContaining({

@@ -65,9 +65,7 @@ describe('CierreObraPage', () => {
             }),
         );
         expect(screen.getAllByText('en cierre')[0]).toBeTruthy();
-        expect(
-            screen.getAllByText(formatFecha('2026-01-15'))[0],
-        ).toBeTruthy();
+        expect(screen.getAllByText(formatFecha('2026-01-15'))[0]).toBeTruthy();
         expect(screen.getAllByText('Pendiente')[0]).toBeTruthy();
         expect(
             screen.getByText('Excedentes detectados:').closest('div')
@@ -78,9 +76,7 @@ describe('CierreObraPage', () => {
         ).toBeTruthy();
         expect(screen.getAllByText('Cemento Portland')[0]).toBeTruthy();
         expect(
-            screen.getAllByText(
-                `${formatCantidad(12.5)} bol`,
-            )[0],
+            screen.getAllByText(`${formatCantidad(12.5)} bol`)[0],
         ).toBeTruthy();
         expect(screen.getAllByText('—')[0]).toBeTruthy();
     });
@@ -119,9 +115,7 @@ describe('CierreObraPage', () => {
                 url: '/api/v1/cierres-obra/1/iniciar',
             }),
         );
-        expect(
-            screen.getByText('Proceso de cierre iniciado.'),
-        ).toBeTruthy();
+        expect(screen.getByText('Proceso de cierre iniciado.')).toBeTruthy();
         expect(router.reload).toHaveBeenCalledWith({ only: ['obrasDb'] });
     });
 
@@ -149,14 +143,18 @@ describe('CierreObraPage', () => {
         renderPagina(CierreObraPage, { obrasDb: obras });
 
         expect(
-            (screen.getByRole('button', {
-                name: /Iniciar Cierre/,
-            }) as HTMLButtonElement).disabled,
+            (
+                screen.getByRole('button', {
+                    name: /Iniciar Cierre/,
+                }) as HTMLButtonElement
+            ).disabled,
         ).toBe(true);
         expect(
-            (screen.getByRole('button', {
-                name: /Finalizar y Liquidar/,
-            }) as HTMLButtonElement).disabled,
+            (
+                screen.getByRole('button', {
+                    name: /Finalizar y Liquidar/,
+                }) as HTMLButtonElement
+            ).disabled,
         ).toBe(true);
     });
 });

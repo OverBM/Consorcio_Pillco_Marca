@@ -31,10 +31,12 @@ describe('utils/csv', () => {
             .spyOn(HTMLAnchorElement.prototype, 'click')
             .mockImplementation(() => undefined);
 
+        const urlMock = vi.mocked(URL);
+
         downloadCsv('stock.csv', 'a,b');
 
-        expect(URL.createObjectURL).toHaveBeenCalledOnce();
-        expect(URL.revokeObjectURL).toHaveBeenCalledOnce();
+        expect(urlMock.createObjectURL).toHaveBeenCalledOnce();
+        expect(urlMock.revokeObjectURL).toHaveBeenCalledOnce();
         expect(click).toHaveBeenCalledOnce();
 
         click.mockRestore();

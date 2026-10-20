@@ -137,9 +137,7 @@ describe('TransferenciasPage', () => {
     it('autoriza una orden solicitada', () => {
         renderTransferencias();
 
-        fireEvent.click(
-            screen.getAllByTitle('Autorizar orden (Logística)')[0],
-        );
+        fireEvent.click(screen.getAllByTitle('Autorizar orden (Logística)')[0]);
 
         expect(llamadasHttp).toContainEqual(
             expect.objectContaining({

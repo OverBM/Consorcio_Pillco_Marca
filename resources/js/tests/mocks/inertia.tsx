@@ -196,8 +196,10 @@ export function useHttp<T extends PropsInercia>(inicial: T): EstadoHttp<T> {
     };
 }
 
-interface PropsEnlace
-    extends Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> {
+interface PropsEnlace extends Omit<
+    AnchorHTMLAttributes<HTMLAnchorElement>,
+    'href'
+> {
     href: string | { url: string };
     children?: ReactNode;
     method?: string;
@@ -210,7 +212,8 @@ interface PropsEnlace
 }
 
 export function Link(props: PropsEnlace) {
-    const destino = typeof props.href === 'string' ? props.href : props.href.url;
+    const destino =
+        typeof props.href === 'string' ? props.href : props.href.url;
 
     return (
         <a

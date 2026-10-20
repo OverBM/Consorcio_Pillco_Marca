@@ -77,28 +77,18 @@ describe('CronogramaEvmPage', () => {
         ).toBeTruthy();
         expect(screen.getByText('0.9286')).toBeTruthy();
         expect(screen.getByText('1.0156')).toBeTruthy();
-        expect(
-            screen.getAllByText(`SV: ${moneda(-50000)}`)[0],
-        ).toBeTruthy();
-        expect(
-            screen.getAllByText(`CV: ${moneda(10000)}`)[0],
-        ).toBeTruthy();
+        expect(screen.getAllByText(`SV: ${moneda(-50000)}`)[0]).toBeTruthy();
+        expect(screen.getAllByText(`CV: ${moneda(10000)}`)[0]).toBeTruthy();
         expect(screen.getAllByText(moneda(1420000))[0]).toBeTruthy();
-        expect(
-            screen.getAllByText(`BAC: ${moneda(1400000)}`)[0],
-        ).toBeTruthy();
+        expect(screen.getAllByText(`BAC: ${moneda(1400000)}`)[0]).toBeTruthy();
         expect(
             screen.getAllByText('Obra: Mejoramiento Vía Huancayo')[0],
         ).toBeTruthy();
         expect(
             screen.getAllByText('Culminación movimiento de tierras')[0],
         ).toBeTruthy();
-        expect(
-            screen.getAllByText(formatFecha('2026-03-15'))[0],
-        ).toBeTruthy();
-        expect(
-            screen.getAllByText(formatFecha('2026-06-28'))[0],
-        ).toBeTruthy();
+        expect(screen.getAllByText(formatFecha('2026-03-15'))[0]).toBeTruthy();
+        expect(screen.getAllByText(formatFecha('2026-06-28'))[0]).toBeTruthy();
         expect(screen.getAllByText('en proceso')[0]).toBeTruthy();
         expect(screen.getAllByText('cumplido')[0]).toBeTruthy();
         expect(screen.queryAllByText('Hito de otra obra')).toHaveLength(0);
@@ -136,9 +126,7 @@ describe('CronogramaEvmPage', () => {
             hitosDb: [],
         });
 
-        fireEvent.click(
-            screen.getByRole('button', { name: /Registrar Hito/ }),
-        );
+        fireEvent.click(screen.getByRole('button', { name: /Registrar Hito/ }));
         expect(screen.getByText('Selecciona una obra.')).toBeTruthy();
         expect(llamadasHttp).toHaveLength(0);
     });
@@ -146,11 +134,11 @@ describe('CronogramaEvmPage', () => {
     it('valida el nombre y la fecha planificada', () => {
         renderPagina(CronogramaEvmPage, props());
 
-        fireEvent.click(
-            screen.getByRole('button', { name: /Registrar Hito/ }),
-        );
+        fireEvent.click(screen.getByRole('button', { name: /Registrar Hito/ }));
         expect(
-            screen.getByText('Indica el nombre y la fecha planificada del hito.'),
+            screen.getByText(
+                'Indica el nombre y la fecha planificada del hito.',
+            ),
         ).toBeTruthy();
         expect(llamadasHttp).toHaveLength(0);
     });
@@ -167,9 +155,7 @@ describe('CronogramaEvmPage', () => {
         fireEvent.change(screen.getByLabelText(/^Estado/), {
             target: { value: 'cumplido' },
         });
-        fireEvent.click(
-            screen.getByRole('button', { name: /Registrar Hito/ }),
-        );
+        fireEvent.click(screen.getByRole('button', { name: /Registrar Hito/ }));
 
         expect(llamadasHttp).toContainEqual(
             expect.objectContaining({

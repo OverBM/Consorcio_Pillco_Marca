@@ -5,9 +5,16 @@ import * as Iconos from '../../components/icons';
 
 describe('icons', () => {
     const iconos = Object.entries(Iconos).filter(
-        ([nombre, valor]) => nombre.startsWith('Icon') && typeof valor === 'function',
+        ([nombre, valor]) =>
+            nombre.startsWith('Icon') && typeof valor === 'function',
     ) as Array<
-        [string, (props: { size?: number; className?: string }) => React.ReactElement]
+        [
+            string,
+            (props: {
+                size?: number;
+                className?: string;
+            }) => React.ReactElement,
+        ]
     >;
 
     it('exporta el catálogo completo', () => {

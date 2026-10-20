@@ -96,9 +96,7 @@ describe('SolicitudesAccesoPage', () => {
         renderPagina(SolicitudesAccesoPage, { solicitudesDb: solicitudes });
 
         fireEvent.click(screen.getAllByText('Revisar')[0]);
-        expect(
-            screen.getByText('Revisar solicitud de acceso'),
-        ).toBeTruthy();
+        expect(screen.getByText('Revisar solicitud de acceso')).toBeTruthy();
 
         fireEvent.change(screen.getByLabelText(/^Notas de revisión/), {
             target: { value: 'Verificado con RRHH' },
@@ -131,9 +129,7 @@ describe('SolicitudesAccesoPage', () => {
             await screen.findByText('Contraseña temporal copiada.'),
         ).toBeTruthy();
 
-        fireEvent.click(
-            screen.getAllByRole('button', { name: 'Cerrar' })[1],
-        );
+        fireEvent.click(screen.getAllByRole('button', { name: 'Cerrar' })[1]);
         expect(
             screen.queryByText('Cuenta creada — contraseña temporal'),
         ).toBeNull();
@@ -191,9 +187,7 @@ describe('SolicitudesAccesoPage', () => {
         fireEvent.click(screen.getAllByText('Revisar')[0]);
         fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
 
-        expect(
-            screen.queryByText('Revisar solicitud de acceso'),
-        ).toBeNull();
+        expect(screen.queryByText('Revisar solicitud de acceso')).toBeNull();
         expect(llamadasHttp).toHaveLength(0);
     });
 });
