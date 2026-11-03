@@ -132,7 +132,7 @@ export default function ProgramaPage({
                 <Card className="bg-surface border-line p-4">
                     <div className="flex items-center justify-between">
                         <span className="text-muted font-mono text-xs uppercase">
-                            Avance Físico Promedio
+                            Avance Valorizado (EV/BAC)
                         </span>
                         <div className="bg-soft text-ink rounded-lg p-2">
                             <IconCheckCircle size={16} />
@@ -141,6 +141,9 @@ export default function ProgramaPage({
                     <p className="text-ok mt-2 font-mono text-2xl font-bold">
                         {avancePromedio}%
                     </p>
+                    <span className="text-muted text-[10px]">
+                        Valor ganado sobre línea base contractual
+                    </span>
                     <div className="bg-soft mt-2 h-1.5 w-full overflow-hidden rounded-full">
                         <div
                             className="bg-ok h-full rounded-full"

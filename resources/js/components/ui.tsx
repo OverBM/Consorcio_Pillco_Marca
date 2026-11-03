@@ -110,10 +110,10 @@ export function Badge({
     className?: string;
 }) {
     const tones: Record<string, string> = {
-        ok: 'bg-ok-soft text-emerald-800',
-        warn: 'bg-warn-soft text-amber-800',
-        danger: 'bg-danger-soft text-orange-800',
-        violet: 'bg-sobrante-soft text-violet-800',
+        ok: 'bg-exito-soft text-exito',
+        warn: 'bg-atencion-soft text-atencion',
+        danger: 'bg-critico-soft text-critico',
+        violet: 'bg-sobrante-soft text-sobrante',
         neutral: 'bg-soft text-slate-700',
     };
     return (
@@ -138,7 +138,7 @@ export function Modal({
         return null;
     }
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[3000] flex items-center justify-center p-4">
             <button
                 type="button"
                 aria-label="Cerrar modal"

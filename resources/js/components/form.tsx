@@ -29,13 +29,13 @@ export function Field({
         <label className="block" htmlFor={htmlFor}>
             <span className="label">
                 {label}
-                {required && <span className="text-danger"> *</span>}
+                {required && <span className="text-critico"> *</span>}
             </span>
             {children}
             {error ? (
                 <p
                     role="alert"
-                    className="text-danger mt-1 text-xs font-medium"
+                    className="text-critico mt-1 text-xs font-medium"
                 >
                     {error}
                 </p>
@@ -56,7 +56,7 @@ export function Input({ className, invalid, ...props }: InputProps) {
             className={cn(
                 'field',
                 invalid &&
-                    'border-danger focus:border-danger focus:ring-danger-soft',
+                    'border-critico focus:border-critico focus:ring-danger-soft',
                 className,
             )}
             {...props}
@@ -79,7 +79,7 @@ export function Select({
             className={cn(
                 'field cursor-pointer',
                 invalid &&
-                    'border-danger focus:border-danger focus:ring-danger-soft',
+                    'border-critico focus:border-critico focus:ring-danger-soft',
                 className,
             )}
             {...props}
@@ -99,7 +99,7 @@ export function TextArea({ className, invalid, ...props }: TextAreaProps) {
             className={cn(
                 'field min-h-24 resize-y',
                 invalid &&
-                    'border-danger focus:border-danger focus:ring-danger-soft',
+                    'border-critico focus:border-critico focus:ring-danger-soft',
                 className,
             )}
             {...props}
@@ -175,7 +175,7 @@ export function FileUpload({
                 className={cn(
                     'rounded-field bg-soft/60 hover:text-ink flex w-full cursor-pointer items-center justify-between gap-2 border border-dashed px-3 py-2.5 text-sm transition-colors',
                     marcado
-                        ? 'border-danger text-danger'
+                        ? 'border-critico text-critico'
                         : 'border-line text-muted hover:border-brand-400',
                 )}
             >
@@ -190,7 +190,7 @@ export function FileUpload({
                     <span
                         role="button"
                         tabIndex={0}
-                        className="text-muted hover:bg-danger-soft hover:text-danger rounded p-1"
+                        className="text-muted hover:bg-critico-soft hover:text-critico rounded p-1"
                         aria-label="Quitar adjunto"
                         onClick={(e) => {
                             e.stopPropagation();
@@ -208,7 +208,7 @@ export function FileUpload({
             {error ? (
                 <p
                     role="alert"
-                    className="text-danger mt-1 text-xs font-medium"
+                    className="text-critico mt-1 text-xs font-medium"
                 >
                     {error}
                 </p>

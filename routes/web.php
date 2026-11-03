@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\Web\AnaliticaViewController;
 use App\Http\Controllers\Web\AuthWebController;
 use App\Http\Controllers\Web\ComprasViewController;
 use App\Http\Controllers\Web\ContextoController;
 use App\Http\Controllers\Web\DashboardViewController;
 use App\Http\Controllers\Web\LogisticaViewController;
+use App\Http\Controllers\Web\MapaOperativoViewController;
 use App\Http\Controllers\Web\PerfilController;
 use App\Http\Controllers\Web\PersonalSstViewController;
 use App\Http\Controllers\Web\PmiViewController;
@@ -68,6 +70,16 @@ Route::middleware(['auth'])->group(function () {
         // Finanzas y Control (dominio de obra)
         Route::get('/finanzas/adelantos', [PersonalSstViewController::class, 'adelantos'])->name('finanzas.adelantos');
         Route::get('/finanzas/presupuesto', [PersonalSstViewController::class, 'presupuesto'])->name('finanzas.presupuesto');
+    });
+
+    // Analítica predictiva (capa cognitiva)
+    Route::middleware('modulo:analitica')->group(function () {
+        Route::get('/analitica', [AnaliticaViewController::class, 'index'])->name('analitica');
+    });
+
+    // Mapa operativo geolocalizado
+    Route::middleware('modulo:mapa')->group(function () {
+        Route::get('/mapa-operativo', [MapaOperativoViewController::class, 'index'])->name('mapa-operativo');
     });
 
     // Almacén y Logística

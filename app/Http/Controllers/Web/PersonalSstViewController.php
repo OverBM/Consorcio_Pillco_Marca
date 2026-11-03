@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\Adelanto;
 use App\Models\Asistencia;
 use App\Models\Auditoria;
 use App\Models\Capacitacion;
@@ -10,9 +11,11 @@ use App\Models\EmpresaEors;
 use App\Models\EppAsignacion;
 use App\Models\Incidente;
 use App\Models\IndicadorAmbiental;
+use App\Models\LineaBaseCosto;
 use App\Models\MedicionAmbiental;
 use App\Models\Obra;
 use App\Models\ObservacionTecnica;
+use App\Models\Partida;
 use App\Models\Planilla;
 use App\Models\Residuo;
 use App\Models\Rol;
@@ -85,7 +88,7 @@ class PersonalSstViewController extends Controller
 
     public function incidentes(): Response
     {
-        $incidentes = Incidente::with('obra')->latest()->get();
+        $incidentes = Incidente::with(['obra', 'trabajador'])->latest()->get();
         $trabajadores = Trabajador::where('activo', true)->orderBy('nombres')->get(['id', 'nombres', 'cargo', 'obra_id']);
 
         return Inertia::render('IncidentesPage', [
@@ -138,19 +141,69 @@ class PersonalSstViewController extends Controller
 
     public function adelantos(): Response
     {
-        $obras = Obra::all();
+        $obras = Obra::orderBy('nombre')->get(['id', 'nombre']);
+
+        $adelantos = Adelanto::with('obra:id,nombre')
+            ->orderByDesc('id')
+            ->get()
+            ->map(fn (Adelanto $adelanto): array => [
+                'id' => (string) $adelanto->id,
+                'tipo' => $adelanto->tipo,
+                'monto' => (float) $adelanto->monto,
+                'banco' => $adelanto->banco_fideicomitente ?? 'No registrado',
+                'garantia' => $adelanto->garantia_fiel_cumplimiento
+                    ? 'Fiel cumplimiento registrada'
+                    : 'Pendiente de garantía',
+                'amortizado' => null,
+                'saldo' => (float) $adelanto->monto,
+                'estado' => $adelanto->estado,
+                'obra' => $adelanto->obra?->nombre ?? 'Sin obra',
+            ])
+            ->values();
 
         return Inertia::render('AdelantosPage', [
             'obrasDb' => $obras,
+            'adelantosDb' => $adelantos,
+            'totalOtorgado' => round((float) $adelantos->sum('monto'), 2),
         ]);
     }
 
     public function presupuesto(): Response
     {
-        $obras = Obra::all();
+        $obras = Obra::orderBy('nombre')->get(['id', 'nombre']);
+
+        $lineasBase = LineaBaseCosto::query()
+            ->where('vigente', true)
+            ->get(['obra_id', 'bac'])
+            ->keyBy('obra_id');
+
+        $partidas = Partida::with('obra:id,nombre')
+            ->orderBy('obra_id')
+            ->orderBy('codigo')
+            ->get()
+            ->map(function (Partida $partida) use ($lineasBase): array {
+                $presupuestado = (float) $partida->metrado * (float) $partida->costo_unitario;
+                $ejecutado = $presupuestado * ((float) $partida->avance_pct / 100);
+                $bac = (float) ($lineasBase[$partida->obra_id]->bac ?? 0);
+
+                return [
+                    'id' => (string) $partida->id,
+                    'obra_id' => (string) $partida->obra_id,
+                    'obra' => $partida->obra?->nombre ?? 'Sin obra',
+                    'rubro' => $partida->codigo.' · '.$partida->descripcion,
+                    'presupuestado' => round($presupuestado, 2),
+                    'ejecutado' => round($ejecutado, 2),
+                    'saldo' => round($presupuestado - $ejecutado, 2),
+                    'pct' => round((float) $partida->avance_pct, 2),
+                    'bac' => round($bac, 2),
+                ];
+            })
+            ->values();
 
         return Inertia::render('PresupuestoPage', [
             'obrasDb' => $obras,
+            'partidasDb' => $partidas,
+            'bacTotal' => round((float) $lineasBase->sum('bac'), 2),
         ]);
     }
 

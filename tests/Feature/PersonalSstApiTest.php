@@ -1,11 +1,13 @@
 <?php
 
 use App\Models\Asistencia;
+use App\Models\Marcacion;
 use App\Models\Obra;
 use App\Models\Programa;
 use App\Models\Trabajador;
 use App\Models\Usuario;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 
 uses(RefreshDatabase::class);
 
@@ -145,4 +147,27 @@ test('el endpoint de capacitaciones programa una capacitación SST', function ()
     $response->assertCreated()
         ->assertJsonPath('success', true)
         ->assertJsonPath('data.titulo', 'Trabajos en Altura y Uso de Arnés');
+});
+
+test('la marcación con uuid repetido no se duplica', function () {
+    [$usuario, , $obra, $trabajador] = contextoPersonalSst();
+    $this->actingAsConRol($usuario);
+
+    $uuid = (string) Str::uuid();
+    $payload = [
+        'trabajador_id' => $trabajador->id,
+        'obra_id' => $obra->id,
+        'tipo' => 'entrada',
+        'latitud' => -12.0650,
+        'longitud' => -75.2100,
+        'uuid' => $uuid,
+    ];
+
+    $this->postJson('/api/v1/personal/marcaciones', $payload)->assertCreated();
+
+    $this->postJson('/api/v1/personal/marcaciones', $payload)
+        ->assertOk()
+        ->assertJsonPath('duplicado', true);
+
+    expect(Marcacion::query()->where('uuid', $uuid)->count())->toBe(1);
 });

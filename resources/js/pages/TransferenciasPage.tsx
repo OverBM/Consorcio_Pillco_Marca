@@ -3,7 +3,7 @@
 // transporte inter-obra y confirmación de recepción en destino.
 // Datos desde props `transferenciasDb`; escrituras vía `useHttp`.
 
-import { useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useHttp, usePage } from '@inertiajs/react';
 import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
@@ -121,6 +121,21 @@ function materialPrincipal(t: { detalles?: TransferenciaDetalleDb[] }): string {
         : primero;
 }
 
+function etiquetaMotivo(motivo: string): string {
+    const etiquetas: Record<string, string> = {
+        excedente_cierre: 'Excedente de cierre',
+        traslado_programado: 'Traslado programado',
+        redistribucion: 'Redistribución',
+    };
+
+    return (
+        etiquetas[motivo] ??
+        motivo
+            .replace(/_/g, ' ')
+            .replace(/^\w/, (letra) => letra.toUpperCase())
+    );
+}
+
 function totalSolicitado(t: { detalles?: TransferenciaDetalleDb[] }): number {
     return (t.detalles ?? []).reduce(
         (acc, d) => acc + Number(d.cantidad_solicitada),
@@ -161,6 +176,35 @@ export default function TransferenciasPage({
     const [observaciones, setObservaciones] = useState('');
     const [busqueda, setBusqueda] = useState('');
     const [filtroEstado, setFiltroEstado] = useState('todos');
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const origen = params.get('origen') ?? '';
+        const destino = params.get('destino') ?? '';
+        const materialId = params.get('materialId') ?? '';
+        const cantidad = params.get('cantidad') ?? '';
+
+        if (!origen && !destino && !materialId) {
+            return;
+        }
+
+        crear.setData({
+            almacen_origen_id: origen,
+            almacen_destino_id: destino,
+            motivo:
+                params.get('crear') === 'sobrante'
+                    ? 'Redistribución sugerida por analítica predictiva'
+                    : '',
+            detalles: [
+                {
+                    material_id: materialId,
+                    cantidad_solicitada: cantidad,
+                },
+            ],
+        });
+        // Solo debe ejecutarse al montar la página con parámetros de origen.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const filas: TransferenciaFila[] = useMemo(
         () => transferenciasDb.map((t) => ({ ...t, id: String(t.id) })),
@@ -440,7 +484,7 @@ export default function TransferenciasPage({
                                         header: 'Motivo',
                                         cell: (t) => (
                                             <span className="text-muted block max-w-56 truncate text-xs">
-                                                {t.motivo}
+                                                {etiquetaMotivo(t.motivo)}
                                             </span>
                                         ),
                                     },

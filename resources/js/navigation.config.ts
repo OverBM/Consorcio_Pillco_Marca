@@ -1,4 +1,4 @@
-import { NavGroup, NavItem } from './design-system/DashboardSidebar';
+import { NavGroup, NavItem } from './types/navigation';
 
 export type AppRoleId =
     | 'gerente_general'
@@ -80,6 +80,10 @@ costos-valorizacion|Costos y Valorizaciones|/gestion-obra/valorizaciones|dollar|
 riesgos-alertas|Riesgos y Alertas|/gestion-obra/riesgos|alert|pmi.ver|SST/Stock|yellow
 control-cambios|Control de Cambios|/gestion-obra/cambios|edit|pmi.ver
 cierre-obra|Cierre y Liquidación|/gestion-obra/cierre|flag|pmi.ver
+# Mapa Operativo
+mapa-operativo|Mapa Operativo|/mapa-operativo|map-pin|mapa.ver
+# Analítica Predictiva
+analitica-predictiva|Analítica Predictiva|/analitica|trending-up|analitica.ver
 # Almacén y Logística
 matriz-stock|Matriz de Stock|/stock|box|logistica.ver
 recepcion-obra|Recepción de Obra|/recepcion|inbox|logistica.ver

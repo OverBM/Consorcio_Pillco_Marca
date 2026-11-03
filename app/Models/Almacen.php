@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\Auditable;
+use App\Models\Concerns\SincronizaGeografia;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 class Almacen extends Model
 {
     use Auditable;
+    use SincronizaGeografia;
     use SoftDeletes;
 
     protected $table = 'almacenes';
@@ -36,40 +38,6 @@ class Almacen extends Model
             'capacidad_referencial' => 'decimal:2',
             'activo' => 'boolean',
         ];
-    }
-
-    public function setLatitudAttribute($value): void
-    {
-        $currLng = $this->getLongitudAttribute() ?? '';
-        $this->attributes['ubicacion'] = $value.','.$currLng;
-    }
-
-    public function setLongitudAttribute($value): void
-    {
-        $currLat = $this->getLatitudAttribute() ?? '';
-        $this->attributes['ubicacion'] = $currLat.','.$value;
-    }
-
-    public function getLatitudAttribute(): ?float
-    {
-        if (! empty($this->attributes['ubicacion']) && str_contains($this->attributes['ubicacion'], ',')) {
-            $parts = explode(',', $this->attributes['ubicacion']);
-
-            return (float) $parts[0];
-        }
-
-        return null;
-    }
-
-    public function getLongitudAttribute(): ?float
-    {
-        if (! empty($this->attributes['ubicacion']) && str_contains($this->attributes['ubicacion'], ',')) {
-            $parts = explode(',', $this->attributes['ubicacion']);
-
-            return (float) ($parts[1] ?? 0);
-        }
-
-        return null;
     }
 
     public function obra(): BelongsTo

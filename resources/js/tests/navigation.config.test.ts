@@ -18,11 +18,11 @@ describe('navigation.config', () => {
         expect(APP_ROLES.map((rol) => rol.id)).toContain('auditor');
     });
 
-    it('expone los 8 grupos del menú con sus 36 módulos', () => {
-        expect(NAVIGATION_CONFIG).toHaveLength(8);
+    it('expone los 10 grupos del menú con sus 38 módulos', () => {
+        expect(NAVIGATION_CONFIG).toHaveLength(10);
         expect(NAVIGATION_CONFIG[0].title).toBe('Panel Principal');
         expect(NAVIGATION_CONFIG.flatMap((grupo) => grupo.items)).toHaveLength(
-            36,
+            38,
         );
     });
 

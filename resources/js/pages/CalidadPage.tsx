@@ -18,8 +18,10 @@ import {
 } from '../components/form';
 import { DataTable } from '../components/DataTable';
 import { EmptyState } from '../components/EmptyState';
+import { KpiTile } from '../design-system/KpiTile';
+import { MiniBarChart } from '../design-system/MiniBarChart';
 import { useNotifications } from '../components/notifications/NotificationProvider';
-import { formatFecha } from '../utils/format';
+import { formatFechaCalendario } from '../utils/format';
 import type { Catalogos } from '../types';
 import { IconCheckCircle, IconPlus } from '../components/icons';
 
@@ -84,6 +86,52 @@ export default function CalidadPage({
         () => filas.filter((o) => o.estado !== 'levantada').length,
         [filas],
     );
+
+    const resumenCalidad = useMemo(() => {
+        const levantadas = filas.filter(
+            (fila) => fila.estado === 'levantada',
+        ).length;
+        const asbuilt = filas.filter(
+            (fila) => fila.planos_asbuilt_actualizados,
+        ).length;
+
+        const origenes = [
+            { clave: 'supervision', label: 'Supervisión' },
+            { clave: 'control_interno', label: 'Control interno' },
+            { clave: 'auditoria', label: 'Auditoría' },
+        ]
+            .map((origen) => ({
+                label: origen.label,
+                valor: filas.filter((fila) => fila.origen === origen.clave)
+                    .length,
+                tono: 'brand' as const,
+            }))
+            .filter((item) => item.valor > 0);
+
+        const estados = [
+            {
+                label: 'Levantadas',
+                valor: levantadas,
+                tono: 'ok' as const,
+            },
+            {
+                label: 'Pendientes',
+                valor: filas.length - levantadas,
+                tono: 'warn' as const,
+            },
+        ].filter((item) => item.valor > 0);
+
+        return {
+            levantadas,
+            asbuilt,
+            origenes,
+            estados,
+            avance:
+                filas.length > 0
+                    ? Math.round((levantadas / filas.length) * 100)
+                    : null,
+        };
+    }, [filas]);
 
     const enviar = (event: FormEvent) => {
         event.preventDefault();
@@ -151,6 +199,55 @@ export default function CalidadPage({
                 subtitle="Gestión de no conformidades emitidas por supervisión de obra y actas de levantamiento con planos As-Built"
             />
 
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <KpiTile
+                    label="Observaciones totales"
+                    value={filas.length}
+                    detalle={`${notificadas} requieren atención`}
+                />
+                <KpiTile
+                    label="Avance de subsanación"
+                    value={resumenCalidad.avance}
+                    formato="porcentaje"
+                    variante="brand"
+                    detalle={`${resumenCalidad.levantadas} levantadas`}
+                    progreso={resumenCalidad.avance}
+                    progresoTono={
+                        (resumenCalidad.avance ?? 0) >= 80
+                            ? 'ok'
+                            : (resumenCalidad.avance ?? 0) >= 50
+                              ? 'warn'
+                              : 'danger'
+                    }
+                />
+                <KpiTile
+                    label="Planos As-Built"
+                    value={resumenCalidad.asbuilt}
+                    detalle={`${filas.length - resumenCalidad.asbuilt} pendientes de actualizar`}
+                />
+                <KpiTile
+                    label="No conformidades abiertas"
+                    value={notificadas}
+                    variante="dark"
+                    detalle="Pendientes de levantamiento"
+                />
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <MiniBarChart
+                    titulo="Observaciones por origen"
+                    subtitulo="Supervisión, control interno y auditoría"
+                    items={resumenCalidad.origenes}
+                    vacio="Sin observaciones por origen."
+                />
+                <MiniBarChart
+                    titulo="Estado de atención"
+                    subtitulo="Avance del levantamiento de no conformidades"
+                    items={resumenCalidad.estados}
+                    vacio="Sin observaciones registradas."
+                />
+            </div>
+
             <div className="grid gap-6 lg:grid-cols-3">
                 <div className="lg:col-span-2">
                     <Card title={`Observaciones (${filas.length})`}>
@@ -198,7 +295,7 @@ export default function CalidadPage({
                                         mono: true,
                                         cell: (o) =>
                                             o.plazo_subsanacion
-                                                ? formatFecha(
+                                                ? formatFechaCalendario(
                                                       o.plazo_subsanacion,
                                                   )
                                                 : '—',

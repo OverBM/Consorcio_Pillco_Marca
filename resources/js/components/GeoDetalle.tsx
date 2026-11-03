@@ -192,7 +192,7 @@ export function GeoDetalle({
                         className={cn(
                             'shrink-0 cursor-pointer rounded-lg border px-2 py-1 text-[10px] font-semibold transition',
                             copiado
-                                ? 'border-ok-soft bg-ok-soft text-emerald-800'
+                                ? 'border-exito-soft bg-exito-soft text-exito'
                                 : 'border-line bg-soft/60 text-muted hover:text-ink',
                         )}
                     >

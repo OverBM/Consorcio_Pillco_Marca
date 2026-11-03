@@ -37,10 +37,10 @@ describe('components/layout/AppLayout', () => {
         renderLayout();
 
         expect(screen.getByText('Contenido de la página')).toBeTruthy();
-        expect(screen.getByText('Consorcio Pillco Marca')).toBeTruthy();
+        expect(screen.getAllByText('Consorcio Pillco Marca')[0]).toBeTruthy();
         expect(screen.getAllByText('Panel General')[0]).toBeTruthy();
         expect(
-            screen.getByText(/OBRA: Mejoramiento Vía Huancayo/),
+            screen.getByText(/Mejoramiento Vía Huancayo/),
         ).toBeTruthy();
     });
 
@@ -51,7 +51,7 @@ describe('components/layout/AppLayout', () => {
         expect(screen.getAllByText('Mi Perfil')[0]).toBeTruthy();
     });
 
-    it('usa la primera obra cuando la activa no existe', () => {
+    it('muestra "Todas las obras" cuando la activa no existe', () => {
         setPageProps(
             props({
                 contexto: { obra_activa_id: 999, almacen_activo_id: null },
@@ -60,9 +60,33 @@ describe('components/layout/AppLayout', () => {
         );
         renderLayout();
 
-        expect(
-            screen.getByText(/OBRA: Mejoramiento Vía Huancayo/),
-        ).toBeTruthy();
+        expect(screen.getByText(/Todas las obras/)).toBeTruthy();
+    });
+
+    it('permite volver a "Todas las obras"', () => {
+        setPageProps(
+            props({
+                contexto: {
+                    obra_activa_id: catalogosFixture.obras[0].id,
+                    almacen_activo_id: null,
+                },
+            }),
+            '/panel',
+        );
+        renderLayout();
+
+        fireEvent.click(
+            screen
+                .getByText(/Mejoramiento Vía Huancayo/)
+                .closest('button') as Element,
+        );
+        fireEvent.click(screen.getByText('Todas las obras'));
+
+        expect(router.post).toHaveBeenCalledWith(
+            '/contexto',
+            { obra_activa_id: null },
+            { preserveScroll: true, preserveState: true },
+        );
     });
 
     it('permite cambiar de obra desde el menú', () => {
@@ -84,7 +108,7 @@ describe('components/layout/AppLayout', () => {
         setPageProps(props({ catalogos }), '/panel');
         renderLayout();
 
-        fireEvent.click(screen.getByText(/OBRA:/).closest('button') as Element);
+        fireEvent.click(screen.getByText(/Mejoramiento Vía Huancayo|Sin asignar/).closest('button') as Element);
         expect(screen.getByText('Seleccionar Frente / Obra')).toBeTruthy();
 
         fireEvent.click(screen.getByText('Obra Frente 2'));
@@ -104,31 +128,13 @@ describe('components/layout/AppLayout', () => {
         );
         renderLayout();
 
-        expect(screen.getByText(/Sin asignar/)).toBeTruthy();
+        expect(screen.getByText(/Todas las obras/)).toBeTruthy();
 
-        fireEvent.click(screen.getByText(/OBRA:/).closest('button') as Element);
+        fireEvent.click(
+            screen.getByText(/Todas las obras/).closest('button') as Element,
+        );
 
         expect(screen.getByText('No tiene obras asignadas.')).toBeTruthy();
-    });
-
-    it('abre y cierra el drawer móvil con botón, overlay y Escape', () => {
-        setPageProps(props(), '/panel');
-        const { container } = renderLayout();
-
-        fireEvent.click(screen.getByLabelText('Abrir menú de navegación'));
-
-        const overlay = screen.getByLabelText('Cerrar menú de navegación');
-
-        expect(overlay).toBeTruthy();
-
-        fireEvent.keyDown(window, { key: 'Escape' });
-        expect(screen.queryByLabelText('Cerrar menú de navegación')).toBeNull();
-
-        fireEvent.click(screen.getByLabelText('Abrir menú de navegación'));
-        fireEvent.click(screen.getByLabelText('Cerrar menú de navegación'));
-
-        expect(screen.queryByLabelText('Cerrar menú de navegación')).toBeNull();
-        expect(container.querySelector('.lg\\:sticky')).toBeTruthy();
     });
 
     it('cierra la sesión por el botón del header', () => {
@@ -138,26 +144,6 @@ describe('components/layout/AppLayout', () => {
         fireEvent.click(screen.getByLabelText('Cerrar sesión'));
 
         expect(router.post).toHaveBeenCalledWith('/logout');
-    });
-
-    it('colapsa el menú y guarda la preferencia', () => {
-        setPageProps(props(), '/panel');
-        renderLayout();
-
-        fireEvent.click(screen.getByLabelText('Contraer menú lateral'));
-
-        expect(window.localStorage.getItem('cicaao.sidebar.collapsed')).toBe(
-            '1',
-        );
-        expect(screen.getByLabelText('Expandir menú lateral')).toBeTruthy();
-    });
-
-    it('inicia colapsado si hay preferencia guardada', () => {
-        window.localStorage.setItem('cicaao.sidebar.collapsed', '1');
-        setPageProps(props(), '/panel');
-        renderLayout();
-
-        expect(screen.getByLabelText('Expandir menú lateral')).toBeTruthy();
     });
 
     it('tolera la ausencia de usuario autenticado', () => {
@@ -171,7 +157,7 @@ describe('components/layout/AppLayout', () => {
         renderLayout();
 
         expect(screen.getAllByText('Usuario')[0]).toBeTruthy();
-        expect(screen.getByText(/Sin asignar/)).toBeTruthy();
+        expect(screen.getAllByText(/Todas las obras/)[0]).toBeTruthy();
     });
 
     it('usa el nombre del rol cuando no está en el catálogo', () => {
@@ -189,7 +175,43 @@ describe('components/layout/AppLayout', () => {
         );
         renderLayout();
 
-        expect(screen.getAllByText('Rol X')[0]).toBeTruthy();
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Cuenta de Juan Pérez' }),
+        );
+
+        expect(screen.getAllByText(/Rol X/)[0]).toBeTruthy();
         expect(screen.getByText('JP')).toBeTruthy();
+    });
+
+    it('muestra la navegación de módulos y submódulos', () => {
+        setPageProps(props(), '/panel');
+        renderLayout();
+
+        expect(
+            screen.getByRole('navigation', { name: 'Módulos' }),
+        ).toBeTruthy();
+        expect(
+            screen.getByRole('navigation', { name: 'Submódulos' }),
+        ).toBeTruthy();
+        expect(screen.getByLabelText('Buscar')).toBeTruthy();
+    });
+
+    it('ya no renderiza el sidebar anterior', () => {
+        setPageProps(props(), '/panel');
+        renderLayout();
+
+        expect(screen.queryByLabelText('Contraer menú lateral')).toBeNull();
+        expect(screen.queryByLabelText('Abrir menú de navegación')).toBeNull();
+    });
+
+    it('abre la búsqueda global con Ctrl+K', () => {
+        setPageProps(props(), '/panel');
+        renderLayout();
+
+        fireEvent.keyDown(window, { key: 'k', ctrlKey: true });
+
+        expect(
+            screen.getByRole('dialog', { name: 'Búsqueda global' }),
+        ).toBeTruthy();
     });
 });

@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AbastecimientoController;
 use App\Http\Controllers\Api\V1\AmbienteController;
+use App\Http\Controllers\Api\V1\AnaliticaController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\AvanceFisicoController;
+use App\Http\Controllers\Api\V1\BusquedaGlobalController;
 use App\Http\Controllers\Api\V1\BusquedaMultialmacenController;
 use App\Http\Controllers\Api\V1\CalidadController;
 use App\Http\Controllers\Api\V1\CierreObraController;
@@ -11,6 +14,7 @@ use App\Http\Controllers\Api\V1\DespachoController;
 use App\Http\Controllers\Api\V1\DevolucionController;
 use App\Http\Controllers\Api\V1\ExcedenteController;
 use App\Http\Controllers\Api\V1\FaseConfigController;
+use App\Http\Controllers\Api\V1\GeoController;
 use App\Http\Controllers\Api\V1\InventarioFisicoController;
 use App\Http\Controllers\Api\V1\MermaController;
 use App\Http\Controllers\Api\V1\NotificacionController;
@@ -18,9 +22,11 @@ use App\Http\Controllers\Api\V1\OrdenCompraController;
 use App\Http\Controllers\Api\V1\ParametroSistemaController;
 use App\Http\Controllers\Api\V1\PartidaController;
 use App\Http\Controllers\Api\V1\PersonalController;
+use App\Http\Controllers\Api\V1\PosicionDespachoController;
 use App\Http\Controllers\Api\V1\ProveedorController;
 use App\Http\Controllers\Api\V1\ProyectoController;
 use App\Http\Controllers\Api\V1\RecepcionController;
+use App\Http\Controllers\Api\V1\ReporteLogisticoController;
 use App\Http\Controllers\Api\V1\RequerimientoController;
 use App\Http\Controllers\Api\V1\RiesgoController;
 use App\Http\Controllers\Api\V1\SolicitudAccesoController;
@@ -54,6 +60,8 @@ Route::middleware('auth')->group(function () {
     });
 
     // Centro de notificaciones (disponible para cualquier usuario autenticado).
+    Route::get('buscar', [BusquedaGlobalController::class, 'index']);
+
     Route::prefix('notificaciones')->group(function () {
         Route::get('/', [NotificacionController::class, 'index']);
         Route::post('/marcar-todas', [NotificacionController::class, 'marcarTodas']);
@@ -103,6 +111,13 @@ Route::middleware('auth')->group(function () {
     Route::prefix('despachos')->group(function () {
         Route::get('/', [DespachoController::class, 'index']);
         Route::middleware('modulo:logistica,editar')->post('/', [DespachoController::class, 'store']);
+        Route::middleware('modulo:tracking')->group(function () {
+            Route::get('/{despacho}/posiciones', [PosicionDespachoController::class, 'index'])
+                ->whereNumber('despacho');
+        });
+        Route::middleware('modulo:tracking,editar')
+            ->post('/{despacho}/posiciones', [PosicionDespachoController::class, 'store'])
+            ->whereNumber('despacho');
     });
 
     Route::prefix('mermas')->group(function () {
@@ -170,6 +185,52 @@ Route::middleware('auth')->group(function () {
     Route::prefix('proveedores')->group(function () {
         Route::get('/', [ProveedorController::class, 'index']);
         Route::middleware('modulo:compras,editar')->post('/', [ProveedorController::class, 'store']);
+    });
+
+    Route::prefix('geo')->group(function () {
+        Route::middleware('modulo:mapa')->group(function () {
+            Route::post('/ruta', [GeoController::class, 'ruta']);
+            Route::post('/optimizar', [GeoController::class, 'optimizar']);
+            Route::post('/geocodificar', [GeoController::class, 'geocodificar']);
+            Route::get('/sugerencias', [GeoController::class, 'sugerencias']);
+            Route::get('/reversa', [GeoController::class, 'reversa']);
+            Route::get('/reporte', [ReporteLogisticoController::class, 'index']);
+        });
+        Route::middleware('modulo:mapa,editar')
+            ->patch('/almacenes/{almacen}', [GeoController::class, 'actualizarAlmacen'])
+            ->whereNumber('almacen');
+    });
+
+    Route::prefix('analitica')->group(function () {
+        Route::middleware('modulo:analitica')->group(function () {
+            Route::get('/parametros', [AnaliticaController::class, 'parametros']);
+            Route::get('/pronosticos', [AnaliticaController::class, 'pronosticos']);
+            Route::get('/alertas', [AnaliticaController::class, 'alertas']);
+            Route::get('/resumen', [AnaliticaController::class, 'resumen']);
+            Route::get('/ejecuciones', [AnaliticaController::class, 'ejecuciones']);
+            Route::get('/redistribucion', [AnaliticaController::class, 'redistribucion']);
+        });
+        Route::middleware('modulo:analitica,editar')
+            ->post('/ejecutar', [AnaliticaController::class, 'ejecutar']);
+
+        Route::middleware('modulo:analitica,editar')
+            ->post('/alertas/{id}/reconocer', [AnaliticaController::class, 'reconocer'])
+            ->whereNumber('id');
+    });
+
+    Route::prefix('abastecimiento')->group(function () {
+        Route::get('/materiales/{material}/proveedores', [AbastecimientoController::class, 'index'])
+            ->whereNumber('material');
+        Route::middleware('modulo:compras,editar')->group(function () {
+            Route::post('/materiales/{material}/proveedores', [AbastecimientoController::class, 'store'])
+                ->whereNumber('material');
+            Route::put('/materiales/{material}/proveedores/{proveedor}', [AbastecimientoController::class, 'update'])
+                ->whereNumber('material')
+                ->whereNumber('proveedor');
+            Route::delete('/materiales/{material}/proveedores/{proveedor}', [AbastecimientoController::class, 'destroy'])
+                ->whereNumber('material')
+                ->whereNumber('proveedor');
+        });
     });
 
     /*

@@ -79,7 +79,21 @@ class PersonalController extends Controller
             'tipo' => 'required|string|in:entrada,salida',
             'latitud' => 'required|numeric|between:-90,90',
             'longitud' => 'required|numeric|between:-180,180',
+            'uuid' => 'nullable|uuid',
         ]);
+
+        if (! empty($validated['uuid'])) {
+            $existente = Marcacion::query()->where('uuid', $validated['uuid'])->first();
+
+            if ($existente !== null) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'La marcación ya había sido registrada.',
+                    'duplicado' => true,
+                    'data' => $existente->load(['trabajador', 'obra']),
+                ]);
+            }
+        }
 
         $obra = Obra::findOrFail($validated['obra_id']);
 
@@ -105,7 +119,9 @@ class PersonalController extends Controller
             'marcado_en' => now(),
             'distancia_a_obra_m' => round($distanciaM, 1),
             'dentro_geocerca' => $dentroGeocerca,
-            'ubicacion' => "{$validated['latitud']},{$validated['longitud']}",
+            'latitud' => $validated['latitud'],
+            'longitud' => $validated['longitud'],
+            'uuid' => $validated['uuid'] ?? null,
             'created_at' => now(),
         ]);
 

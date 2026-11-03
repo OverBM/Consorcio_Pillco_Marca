@@ -18,7 +18,7 @@ import {
 import { DataTable } from '../components/DataTable';
 import { EmptyState } from '../components/EmptyState';
 import { useNotifications } from '../components/notifications/NotificationProvider';
-import { formatMoneda } from '../utils/format';
+import { formatFechaCalendario, formatMoneda } from '../utils/format';
 import type { Catalogos } from '../types';
 import { IconPlus, IconSearch } from '../components/icons';
 
@@ -77,6 +77,8 @@ const ESTADO_META: Record<
     en_transporte: { tone: 'warn', label: 'En tránsito' },
     recepcionada_total: { tone: 'ok', label: 'Recepcionada' },
     recepcionada_parcial: { tone: 'warn', label: 'Recepción parcial' },
+    recibida: { tone: 'ok', label: 'Recibida' },
+    parcial: { tone: 'warn', label: 'Recepción parcial' },
     anulada: { tone: 'danger', label: 'Anulada' },
 };
 
@@ -339,7 +341,11 @@ export default function OrdenesCompraPage({
                                         header: 'Entrega prometida',
                                         mono: true,
                                         cell: (o) =>
-                                            o.fecha_entrega_prometida ?? '—',
+                                            o.fecha_entrega_prometida
+                                                ? formatFechaCalendario(
+                                                      o.fecha_entrega_prometida,
+                                                  )
+                                                : '—',
                                     },
                                     {
                                         key: 'estado',
@@ -512,7 +518,11 @@ export default function OrdenesCompraPage({
                                 </span>
                                 <p className="text-muted text-[11px]">
                                     Entrega:{' '}
-                                    {detalle.fecha_entrega_prometida ?? '—'}
+                                    {detalle.fecha_entrega_prometida
+                                        ? formatFechaCalendario(
+                                              detalle.fecha_entrega_prometida,
+                                          )
+                                        : '-'}
                                 </p>
                             </div>
                         </div>

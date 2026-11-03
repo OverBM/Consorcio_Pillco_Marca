@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -64,5 +65,17 @@ class Material extends Model
     public function kardex(): HasMany
     {
         return $this->hasMany(Kardex::class, 'material_id');
+    }
+
+    public function proveedores(): BelongsToMany
+    {
+        return $this->belongsToMany(Proveedor::class, 'material_proveedor', 'material_id', 'proveedor_id')
+            ->withPivot(['lead_time_dias', 'costo_pedido', 'precio_unitario', 'es_principal', 'activo'])
+            ->withTimestamps();
+    }
+
+    public function parametrosAbastecimiento(): HasMany
+    {
+        return $this->hasMany(MaterialProveedor::class, 'material_id');
     }
 }

@@ -189,7 +189,7 @@ describe('PanelGeneral', () => {
 
         expect(screen.getAllByText('Solicitudes')[0]).toBeTruthy();
         expect(screen.getAllByText('12')[0]).toBeTruthy();
-        expect(screen.getAllByText('4')[0]).toBeTruthy();
+        expect(screen.getAllByText('Incidencias')[0]).toBeTruthy();
         expect(
             screen.getAllByText(
                 'Redistribución de excedentes por cierre de obra',
@@ -203,8 +203,9 @@ describe('PanelGeneral', () => {
             screen.getAllByText('Generar orden de transferencia')[0],
         ).toBeTruthy();
         expect(screen.getAllByText('Matriz de Stock')[0]).toBeTruthy();
-        expect(screen.getAllByText('Huancayo · Junín')[0]).toBeTruthy();
-        expect(screen.getAllByText('Ingresos a almacén')[0]).toBeTruthy();
+        expect(
+            screen.getAllByText('Tendencias — últimos 30 días')[0],
+        ).toBeTruthy();
     });
 
     it('resalta la ruta al pasar el cursor por una alerta', () => {

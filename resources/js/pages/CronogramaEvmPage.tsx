@@ -18,7 +18,7 @@ import {
 import { DataTable } from '../components/DataTable';
 import { EmptyState } from '../components/EmptyState';
 import { useNotifications } from '../components/notifications/NotificationProvider';
-import { formatFecha, formatMoneda } from '../utils/format';
+import { formatFechaCalendario, formatMoneda } from '../utils/format';
 import { IconPlus } from '../components/icons';
 
 interface ObraDb {
@@ -236,7 +236,9 @@ export default function CronogramaEvmPage({
                                     header: 'Fecha Planificada',
                                     mono: true,
                                     cell: (h) =>
-                                        formatFecha(h.fecha_planificada),
+                                        formatFechaCalendario(
+                                            h.fecha_planificada,
+                                        ),
                                 },
                                 {
                                     key: 'fecha_real',
@@ -244,7 +246,9 @@ export default function CronogramaEvmPage({
                                     mono: true,
                                     cell: (h) =>
                                         h.fecha_real
-                                            ? formatFecha(h.fecha_real)
+                                            ? formatFechaCalendario(
+                                                  h.fecha_real,
+                                              )
                                             : '—',
                                 },
                                 {

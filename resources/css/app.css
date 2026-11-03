@@ -15,12 +15,12 @@
     /* ObraFlow Core Colors */
     --color-black: #000000;
     --color-white: #ffffff;
-    --color-canvas: #f1f5f9;
+    --color-canvas: #f1efea;
     --color-surface: #ffffff;
-    --color-soft: #f8fafc;
-    --color-line: #e2e8f0;
-    --color-ink: #0f172a;
-    --color-muted: #64748b;
+    --color-soft: #f6f4ef;
+    --color-line: #e4e0d7;
+    --color-ink: #12161f;
+    --color-muted: #6b7280;
 
     /* Brand Accents */
     --color-mint: #d1ffca;
@@ -40,19 +40,46 @@
     --color-brand-800: #2a3794;
     --color-brand-900: #26306f;
 
-    /* Semantic State Palette */
-    --color-danger: #dc2626;
-    --color-danger-soft: #fee2e2;
-    --color-ok: #16a34a;
-    --color-ok-soft: #dcfce7;
-    --color-warn: #ca8a04;
-    --color-warn-soft: #fef9c3;
-    --color-sobrante: #9333ea;
+    /* Escala tipográfica (6 pasos, sin valores sueltos) */
+    --text-micro: 0.6875rem; /* 11px — etiquetas y metadatos */
+    --text-label: 0.75rem; /* 12px — chips y ayudas */
+    --text-body: 0.875rem; /* 14px — texto general */
+    --text-title: 1.125rem; /* 18px — títulos de tarjeta */
+    --text-heading: 1.5rem; /* 24px — título de página secundario */
+    --text-display: 2rem; /* 32px — título de página */
+    --text-figure: 2.125rem; /* 34px — cifras de indicadores */
+
+    /* Color por significado: un estado = un token */
+    --color-exito: #15803d;
+    --color-exito-soft: #dcfce7;
+    --color-atencion: #b45309;
+    --color-atencion-soft: #fef3c7;
+    --color-critico: #b91c1c;
+    --color-critico-soft: #fee2e2;
+
+    /* Alias heredados: misma semántica, nombres antiguos */
+    --color-danger: var(--color-critico);
+    --color-danger-soft: var(--color-critico-soft);
+    --color-ok: var(--color-exito);
+    --color-ok-soft: var(--color-exito-soft);
+    --color-warn: var(--color-atencion);
+    --color-warn-soft: var(--color-atencion-soft);
+    --color-sobrante: #7c3aed;
     --color-sobrante-soft: #ede9fe;
+
+    /* Shape & Layout (rediseño tipo Cadra) */
+    --radius-card: 24px;
+    --radius-tile: 16px;
+    --radius-pill: 999px;
+    --gap: 12px;
+    --gutter: clamp(16px, 1.6vw, 28px);
+    --app-max: 1840px;
 
     /* Elevation */
     --shadow-card:
-        0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+        inset 0 1px 0 rgba(255, 255, 255, 0.7),
+        0 1px 2px rgba(15, 23, 42, 0.04),
+        0 12px 32px -24px rgba(15, 23, 42, 0.18);
     --shadow-pop:
         0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
 }
@@ -63,12 +90,12 @@
 @layer base {
     :root {
         color-scheme: light;
-        --color-canvas: #f1f5f9;
+        --color-canvas: #f1efea;
         --color-surface: #ffffff;
-        --color-soft: #f8fafc;
-        --color-line: #e2e8f0;
-        --color-ink: #0f172a;
-        --color-muted: #64748b;
+        --color-soft: #f6f4ef;
+        --color-line: #e4e0d7;
+        --color-ink: #12161f;
+        --color-muted: #6b7280;
         --color-mint: #d1ffca;
         --color-yellow: #fff100;
     }
@@ -106,6 +133,41 @@
 /* UI Components & Button Styles                                      */
 /* ------------------------------------------------------------------ */
 @layer components {
+    /* Anillo de foco único: accesible y consistente en todo el shell */
+    .focus-ring:focus-visible {
+        outline: 2px solid var(--color-brand-500);
+        outline-offset: 2px;
+    }
+
+    /* Elevación solo para tarjetas que realmente son clicables */
+    .card-clickable {
+        transition:
+            transform 140ms ease-out,
+            box-shadow 140ms ease-out;
+    }
+
+    .card-clickable:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-pop);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .card-clickable,
+        .card-clickable:hover {
+            transition: none;
+            transform: none;
+        }
+    }
+
+    /* Oculta la barra de scroll manteniendo el desplazamiento */
+    .no-scrollbar {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
     /* Sidebar scroll: slim, dark, blends with the black rail */
     .sidebar-scroll {
         scrollbar-width: thin;
@@ -386,6 +448,30 @@
     }
 }
 
+/* Scroll horizontal visible en tablas anchas (evita columnas "perdidas"). */
+.data-table-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+    overscroll-behavior-x: contain;
+}
+
+.data-table-scroll::-webkit-scrollbar {
+    height: 7px;
+}
+
+.data-table-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.data-table-scroll::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 9999px;
+}
+
+.data-table-scroll::-webkit-scrollbar-thumb:hover {
+    background-color: #94a3b8;
+}
+
 /* Animaciones de Redistribución Leaflet */
 @keyframes cpm-dash {
     to {
@@ -395,4 +481,147 @@
 .leaflet-redistribucion-path {
     stroke-dasharray: 8 6;
     animation: cpm-dash 1.2s linear infinite;
+}
+
+.cpm-ruta-restante {
+    animation: cpm-route-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes cpm-route-pulse {
+    0%,
+    100% {
+        opacity: 0.9;
+    }
+    50% {
+        opacity: 0.55;
+    }
+}
+
+/* ------------------------------------------------------------------ */
+/* Microinteracciones de cards, KPIs y gráficos                       */
+/* ------------------------------------------------------------------ */
+@keyframes cpm-card-enter {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.995);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.card {
+    transition:
+        transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1),
+        border-color 180ms ease;
+    animation: cpm-card-enter 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    border-color: #c7d0ff;
+    box-shadow:
+        0 1px 2px rgba(15, 23, 42, 0.04),
+        0 18px 40px -24px rgba(48, 64, 184, 0.35);
+}
+
+@keyframes cpm-kpi-enter {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.cpm-kpi {
+    animation: cpm-kpi-enter 460ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    transition:
+        transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 200ms ease,
+        border-color 200ms ease;
+}
+
+.cpm-kpi:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 34px -22px rgba(15, 23, 42, 0.45);
+}
+
+/* Trazo animado para las líneas de los gráficos SVG. */
+@keyframes cpm-draw-line {
+    from {
+        stroke-dashoffset: 1;
+    }
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+.cpm-chart-line {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: cpm-draw-line 1100ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes cpm-fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.cpm-fade-in {
+    animation: cpm-fade-in 700ms ease-out both;
+}
+
+@keyframes cpm-grow-bar {
+    from {
+        transform: scaleX(0);
+    }
+    to {
+        transform: scaleX(1);
+    }
+}
+
+.cpm-bar-grow {
+    transform-origin: left center;
+    animation: cpm-grow-bar 850ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes cpm-donut-in {
+    from {
+        opacity: 0;
+        transform: scale(0.82) rotate(-12deg);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) rotate(0);
+    }
+}
+
+.cpm-donut {
+    transform-origin: center;
+    animation: cpm-donut-in 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .card,
+    .card:hover,
+    .cpm-kpi,
+    .cpm-kpi:hover,
+    .cpm-chart-line,
+    .cpm-fade-in,
+    .cpm-bar-grow,
+    .cpm-donut,
+    .cpm-ruta-restante {
+        animation: none;
+        transition: none;
+        transform: none;
+    }
 }

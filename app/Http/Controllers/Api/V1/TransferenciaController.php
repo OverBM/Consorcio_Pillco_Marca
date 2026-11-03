@@ -30,7 +30,7 @@ class TransferenciaController extends Controller
             'almacenDestino.obra',
             'creador',
             'aprobador',
-            'detalles.material',
+            'detalles.material.unidadMedida',
             'despacho',
             'confirmacionRecepcion',
         ])->orderBy('id', 'desc');

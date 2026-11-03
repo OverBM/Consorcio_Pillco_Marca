@@ -7,6 +7,7 @@ import { createInertiaApp, usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 
 import { AppLayout } from '@/components/layout/AppLayout';
+import { OfflineIndicator } from '@/components/OfflineIndicator';
 import { NotificationProvider } from '@/components/notifications/NotificationProvider';
 import type { Auth } from '@/types/auth';
 
@@ -19,8 +20,15 @@ function AppShell({ children }: { children: ReactNode }) {
     return (
         <NotificationProvider>
             {auth?.user ? <AppLayout>{children}</AppLayout> : children}
+            <OfflineIndicator />
         </NotificationProvider>
     );
+}
+
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        void navigator.serviceWorker.register('/sw.js');
+    });
 }
 
 void createInertiaApp({

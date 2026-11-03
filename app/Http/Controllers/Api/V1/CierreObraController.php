@@ -108,6 +108,14 @@ class CierreObraController extends Controller
     public function finalizar(Request $request, int $obraId): JsonResponse
     {
         $obra = Obra::findOrFail($obraId);
+        $cierre = CierreObra::where('obra_id', $obra->id)->first();
+
+        if ($cierre === null || $cierre->estado !== 'en_cierre') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Primero inicia el proceso de cierre de la obra antes de liquidarla.',
+            ], 422);
+        }
 
         DB::transaction(function () use ($obra) {
             CierreObra::updateOrCreate(

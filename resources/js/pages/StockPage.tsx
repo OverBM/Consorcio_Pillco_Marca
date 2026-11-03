@@ -6,6 +6,8 @@ import { useMemo, useState } from 'react';
 import { useHttp } from '@inertiajs/react';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge, Modal } from '../components/ui';
+import { KpiTile } from '../design-system/KpiTile';
+import { MiniBarChart } from '../design-system/MiniBarChart';
 import { Select } from '../components/form';
 import { EmptyState } from '../components/EmptyState';
 import { DataTable } from '../components/DataTable';
@@ -184,6 +186,62 @@ export default function StockPage({
         ? stockDb.filter((r) => r.materialId === materialDetalle.id)
         : [];
 
+    const resumenStock = useMemo(() => {
+        const criticos = stockDb.filter((r) => r.estado === 'critico').length;
+        const bajos = stockDb.filter((r) => r.estado === 'bajo').length;
+        const unidades = stockDb.reduce(
+            (acc, r) => acc + Number(r.cantidad ?? 0),
+            0,
+        );
+        const reservadas = stockDb.reduce(
+            (acc, r) => acc + Number(r.cantidadReservada ?? 0),
+            0,
+        );
+
+        const porAlmacen = almacenes
+            .map((almacen) => ({
+                label: almacen.nombre,
+                valor: stockDb
+                    .filter((r) => r.almacenId === almacen.id)
+                    .reduce((acc, r) => acc + Number(r.cantidad ?? 0), 0),
+                detalle: `${
+                    stockDb.filter(
+                        (r) =>
+                            r.almacenId === almacen.id &&
+                            (r.estado === 'critico' || r.estado === 'bajo'),
+                    ).length
+                } materiales en alerta`,
+                tono: 'brand' as const,
+            }))
+            .sort((a, b) => b.valor - a.valor);
+
+        const porMaterial = materiales
+            .map((material) => ({
+                label: material.nombre,
+                valor: stockDb
+                    .filter((r) => r.materialId === material.id)
+                    .reduce((acc, r) => acc + Number(r.cantidad ?? 0), 0),
+                detalle: `${material.unidad} · mínimo ${material.stockMinimo}`,
+                tono: 'ok' as const,
+            }))
+            .sort((a, b) => b.valor - a.valor)
+            .slice(0, 6);
+
+        return {
+            criticos,
+            bajos,
+            unidades,
+            reservadas,
+            porAlmacen,
+            porMaterial,
+            disponibilidad:
+                stockDb.length > 0
+                    ? ((stockDb.length - criticos - bajos) / stockDb.length) *
+                      100
+                    : null,
+        };
+    }, [stockDb, almacenes, materiales]);
+
     const verKardex = (almacenId: string) => {
         if (!materialDetalle) return;
         setKardexAlmacen(almacenId);
@@ -213,6 +271,61 @@ export default function StockPage({
                     </button>
                 }
             />
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <KpiTile
+                    label="SKUs monitoreados"
+                    value={materiales.length}
+                    detalle={`${almacenes.length} almacenes en la red`}
+                />
+                <KpiTile
+                    label="Unidades en red"
+                    value={resumenStock.unidades}
+                    variante="dark"
+                    detalle={`${resumenStock.reservadas} unidades reservadas`}
+                />
+                <KpiTile
+                    label="Stock crítico"
+                    value={resumenStock.criticos}
+                    detalle={`${resumenStock.bajos} adicionales en nivel bajo`}
+                    progreso={
+                        stockDb.length > 0
+                            ? (resumenStock.criticos / stockDb.length) * 100
+                            : null
+                    }
+                    progresoTono="danger"
+                />
+                <KpiTile
+                    label="Disponibilidad"
+                    value={resumenStock.disponibilidad}
+                    formato="porcentaje"
+                    variante="brand"
+                    detalle="Pares almacén-material sin alerta"
+                    progreso={resumenStock.disponibilidad}
+                    progresoTono={
+                        (resumenStock.disponibilidad ?? 0) >= 80
+                            ? 'ok'
+                            : (resumenStock.disponibilidad ?? 0) >= 50
+                              ? 'warn'
+                              : 'danger'
+                    }
+                />
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <MiniBarChart
+                    titulo="Unidades por almacén"
+                    subtitulo="Volumen físico disponible en cada frente"
+                    items={resumenStock.porAlmacen}
+                    vacio="Sin stock registrado por almacén."
+                />
+                <MiniBarChart
+                    titulo="Materiales con mayor volumen"
+                    subtitulo="Top 6 por unidades acumuladas en la red"
+                    items={resumenStock.porMaterial}
+                    vacio="Sin materiales con stock."
+                />
+            </div>
 
             <Card className="p-4">
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

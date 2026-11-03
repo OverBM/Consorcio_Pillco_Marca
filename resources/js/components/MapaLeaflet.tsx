@@ -8,7 +8,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import { cn } from '../utils/cn';
 import { estadoDeAlmacen, ESTADO_META } from '../utils/estados';
-import { formatCantidad } from '../utils/format';
+import { formatCantidad, formatFechaHora } from '../utils/format';
 import type { StockState } from '../types/stock';
 import type { Almacen, Material, Obra } from '../types';
 import { IconMapPin } from './icons';
@@ -19,11 +19,50 @@ export interface RutaMapa {
     origenId: string;
     destinoId: string;
     estado: 'en-transito' | 'pendiente' | 'entregado';
+    etaMin?: number | null;
+    etaRestanteMin?: number | null;
+    distanciaRestanteM?: number | null;
+    despachoId?: number | null;
+    posicionActual?: {
+        lat: number;
+        lng: number;
+        velocidadKmh?: number | null;
+        capturadaEn?: string | null;
+    } | null;
+    geometria?: Array<{ lat: number; lng: number }>;
+    geometriaRestante?: Array<{ lat: number; lng: number }>;
+}
+
+export interface GeocercaMapa {
+    lat: number;
+    lng: number;
+    radioM: number;
+    nombre?: string;
+}
+
+export interface PosicionMapa {
+    lat: number;
+    lng: number;
+    codigo?: string;
+    despachoId?: number;
+}
+
+export interface PuntoCalorMapa {
+    lat: number;
+    lng: number;
+    peso: number;
 }
 
 export interface SugerenciaMapa {
     origenId: string;
     destinoId: string;
+    material?: string | null;
+    cantidad?: number | null;
+    unidad?: string | null;
+    prioridad?: string | null;
+    distanciaKm?: number | null;
+    etaMin?: number | null;
+    geometria?: Array<{ lat: number; lng: number }>;
 }
 
 export interface MapaLeafletProps {
@@ -33,24 +72,76 @@ export interface MapaLeafletProps {
     materiales: Material[];
     rutas?: RutaMapa[];
     sugerencias?: SugerenciaMapa[];
+    geocercas?: GeocercaMapa[];
+    posiciones?: PosicionMapa[];
+    calor?: PuntoCalorMapa[];
+    centrarEn?: { lat: number; lng: number } | null;
     seleccionadaId?: string;
     resaltarAlertaOrigenId?: string | null;
     resaltarAlertaDestinoId?: string | null;
     onPinClick?: (obraId: string) => void;
+    onDespachoClick?: (despachoId: number) => void;
+    onSugerenciaClick?: (sugerencia: SugerenciaMapa) => void;
     className?: string;
 }
-
-const NOMBRE_CORTO: Record<string, string> = {
-    'obra-central': 'Alm. Central San Jerónimo',
-    'obra-eltambo': 'Frente El Tambo',
-    'obra-puentecunas': 'Puente Cunas',
-    'obra-chilca': 'Conexión Chilca',
-    'obra-ielosandes': 'IE Los Andes (cierre)',
-};
 
 // Coordenadas centrales del Valle del Mantaro (Huancayo, Junín)
 const MANTARO_CENTER: [number, number] = [-12.068, -75.21];
 const DEFAULT_ZOOM = 12;
+
+/**
+ * Punto real a mitad del recorrido, medido sobre la longitud acumulada de la
+ * polilínea. Evita que la etiqueta caiga en una curva o en un extremo cuando
+ * la geometría de ORS tiene muchos vértices.
+ */
+function puntoMedioTramo(
+    puntos: Array<{ lat: number; lng: number }>,
+): [number, number] | null {
+    if (puntos.length === 0) {
+        return null;
+    }
+
+    if (puntos.length === 1) {
+        return [puntos[0].lat, puntos[0].lng];
+    }
+
+    const distancias: number[] = [0];
+
+    for (let indice = 1; indice < puntos.length; indice += 1) {
+        const anterior = puntos[indice - 1];
+        const actual = puntos[indice];
+        const dx = (actual.lng - anterior.lng) * Math.cos(
+            ((actual.lat + anterior.lat) / 2) * (Math.PI / 180),
+        );
+        const dy = actual.lat - anterior.lat;
+        distancias.push(
+            distancias[indice - 1] + Math.sqrt(dx * dx + dy * dy),
+        );
+    }
+
+    const mitad = distancias[distancias.length - 1] / 2;
+
+    for (let indice = 1; indice < puntos.length; indice += 1) {
+        if (distancias[indice] < mitad) {
+            continue;
+        }
+
+        const inicio = distancias[indice - 1];
+        const fin = distancias[indice];
+        const proporcion = fin > inicio ? (mitad - inicio) / (fin - inicio) : 0;
+
+        return [
+            puntos[indice - 1].lat +
+                (puntos[indice].lat - puntos[indice - 1].lat) *
+                    proporcion,
+            puntos[indice - 1].lng +
+                (puntos[indice].lng - puntos[indice - 1].lng) *
+                    proporcion,
+        ];
+    }
+
+    return [puntos[puntos.length - 1].lat, puntos[puntos.length - 1].lng];
+}
 
 export function MapaLeaflet({
     obras,
@@ -59,10 +150,16 @@ export function MapaLeaflet({
     materiales,
     rutas = [],
     sugerencias = [],
+    geocercas = [],
+    posiciones = [],
+    calor = [],
+    centrarEn = null,
     seleccionadaId,
     resaltarAlertaOrigenId,
     resaltarAlertaDestinoId,
     onPinClick,
+    onDespachoClick,
+    onSugerenciaClick,
     className,
 }: MapaLeafletProps) {
     const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -230,7 +327,7 @@ export function MapaLeaflet({
         markersLayer.clearLayers();
         routesLayer.clearLayers();
 
-        // 3.1 Dibujar Rutas de Despachos en Tránsito (líneas continuas índigo + camión SVG en punto medio)
+        // 3.1 Dibujar Rutas de Despachos en Tránsito (tramos ORS + ETA real)
         rutas.forEach((ruta) => {
             const almOrigen = almacenesMap.get(ruta.origenId);
             const almDestino = almacenesMap.get(ruta.destinoId);
@@ -238,20 +335,23 @@ export function MapaLeaflet({
                 return;
             }
 
-            const latlngs: [number, number][] = [
-                [almOrigen.coords.lat, almOrigen.coords.lng],
-                [almDestino.coords.lat, almDestino.coords.lng],
-            ];
+            const latlngs: [number, number][] =
+                ruta.geometria !== undefined && ruta.geometria.length > 1
+                    ? ruta.geometria.map((punto) => [punto.lat, punto.lng])
+                    : [
+                          [almOrigen.coords.lat, almOrigen.coords.lng],
+                          [almDestino.coords.lat, almDestino.coords.lng],
+                      ];
 
             const polyline = L.polyline(latlngs, {
-                color: '#4f46e5',
-                weight: 3.5,
-                opacity: 0.85,
+                color: '#6366f1',
+                weight: 2.5,
+                opacity: 0.45,
                 lineJoin: 'round',
             });
 
             polyline.bindTooltip(
-                `Despacho ${ruta.codigo}: ${almOrigen.nombre} -> ${almDestino.nombre}`,
+                `Despacho ${ruta.codigo}: ${almOrigen.nombre} → ${almDestino.nombre}`,
                 {
                     sticky: true,
                     className: 'cpm-leaflet-tooltip',
@@ -259,23 +359,105 @@ export function MapaLeaflet({
             );
             routesLayer.addLayer(polyline);
 
-            // Marcador de camión con SVG en el punto medio
-            const midLat = (almOrigen.coords.lat + almDestino.coords.lat) / 2;
-            const midLng = (almOrigen.coords.lng + almDestino.coords.lng) / 2;
+            // Tramo pendiente desde la última posición hasta el destino.
+            const restante =
+                ruta.geometriaRestante && ruta.geometriaRestante.length > 1
+                    ? ruta.geometriaRestante
+                    : ruta.posicionActual
+                      ? [
+                            {
+                                lat: ruta.posicionActual.lat,
+                                lng: ruta.posicionActual.lng,
+                            },
+                            { lat: almDestino.coords.lat, lng: almDestino.coords.lng },
+                        ]
+                      : [];
+
+            if (restante.length > 1) {
+                L.polyline(
+                    restante.map((punto) => [punto.lat, punto.lng]),
+                    {
+                        color: '#4338ca',
+                        weight: 4.5,
+                        opacity: 0.9,
+                        lineJoin: 'round',
+                        className: 'cpm-ruta-restante',
+                    },
+                ).addTo(routesLayer);
+            }
+
+            if (ruta.posicionActual) {
+                L.circleMarker(
+                    [ruta.posicionActual.lat, ruta.posicionActual.lng],
+                    {
+                        radius: 5,
+                        color: '#ffffff',
+                        weight: 2,
+                        fillColor: '#4338ca',
+                        fillOpacity: 1,
+                    },
+                )
+                    .bindTooltip(
+                        `Última señal${ruta.posicionActual.capturadaEn ? ` · ${formatFechaHora(ruta.posicionActual.capturadaEn)}` : ''}${ruta.posicionActual.velocidadKmh !== null && ruta.posicionActual.velocidadKmh !== undefined ? ` · ${Math.round(Number(ruta.posicionActual.velocidadKmh))} km/h` : ''}`,
+                        { direction: 'top' },
+                    )
+                    .addTo(routesLayer);
+            }
+
+            // La etiqueta se ubica en el centro real del tramo A→B, no al
+            // inicio ni en un vértice arbitrario de la geometría.
+            const puntoEtiqueta =
+                puntoMedioTramo(
+                    latlngs.map(([lat, lng]) => ({ lat, lng })),
+                ) ?? [almDestino.coords.lat, almDestino.coords.lng];
+
+            const eta = ruta.etaRestanteMin ?? ruta.etaMin;
+
+            const etiquetaEta =
+                eta !== null && eta !== undefined
+                    ? `ETA ${Math.round(Number(eta))}m`
+                    : 's/ETA';
+
+            const distancia =
+                ruta.distanciaRestanteM !== null &&
+                ruta.distanciaRestanteM !== undefined
+                    ? `${(Number(ruta.distanciaRestanteM) / 1000).toFixed(1)} km`
+                    : null;
 
             const truckIcon = L.divIcon({
                 className: 'cpm-truck-marker',
                 html: `
-                    <div style="transform: translate(-50%, -50%); display: inline-flex; align-items: center; gap: 5px; background: #ffffff; padding: 3px 8px; border-radius: 9999px; box-shadow: 0 4px 12px rgba(16,18,51,0.18); border: 1.5px solid #c3c9ff; font-family: sans-serif; cursor: pointer;">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14v10Z"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg>
-                        <span style="font-size: 10px; font-weight: 700; color: #333fd1;">${ruta.codigo}</span>
-                        <span style="font-size: 9px; font-weight: 600; background: #eef0ff; color: #4f46e5; padding: 1px 4px; border-radius: 4px;">ETA 25m</span>
+                    <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-family: sans-serif; cursor: pointer;">
+                        <div style="display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; background: #ffffff; padding: 4px 9px; border-radius: 9999px; box-shadow: 0 6px 16px rgba(16,18,51,0.22); border: 1.5px solid #c3c9ff;">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14v10Z"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg>
+                            <span style="font-size: 10px; font-weight: 700; color: #333fd1; white-space: nowrap;">${ruta.codigo}</span>
+                            <span style="font-size: 9px; font-weight: 600; background: #eef0ff; color: #4f46e5; padding: 1px 5px; border-radius: 4px; white-space: nowrap;">${etiquetaEta}</span>
+                        </div>
                     </div>
                 `,
-                iconSize: [0, 0],
+                iconSize: [210, 30],
+                iconAnchor: [105, 15],
             });
 
-            const truckMarker = L.marker([midLat, midLng], { icon: truckIcon });
+            const truckMarker = L.marker(puntoEtiqueta, { icon: truckIcon });
+
+            truckMarker.bindTooltip(
+                `${ruta.codigo} · ${almOrigen.nombre} → ${almDestino.nombre} · ${etiquetaEta}${distancia ? ` · ${distancia}` : ''}`,
+                { direction: 'top', offset: L.point(0, -14) },
+            );
+
+            truckMarker.on('click', () => {
+                if (ruta.despachoId !== null && ruta.despachoId !== undefined && onDespachoClick) {
+                    onDespachoClick(ruta.despachoId);
+                }
+            });
+
+            polyline.on('click', () => {
+                if (ruta.despachoId !== null && ruta.despachoId !== undefined && onDespachoClick) {
+                    onDespachoClick(ruta.despachoId);
+                }
+            });
+
             routesLayer.addLayer(truckMarker);
         });
 
@@ -291,25 +473,50 @@ export function MapaLeaflet({
                 resaltarAlertaOrigenId === sug.origenId ||
                 resaltarAlertaDestinoId === sug.destinoId;
 
-            const latlngs: [number, number][] = [
-                [almOrigen.coords.lat, almOrigen.coords.lng],
-                [almDestino.coords.lat, almDestino.coords.lng],
-            ];
+            const latlngs: [number, number][] =
+                sug.geometria && sug.geometria.length > 1
+                    ? sug.geometria.map((punto) => [punto.lat, punto.lng])
+                    : [
+                          [almOrigen.coords.lat, almOrigen.coords.lng],
+                          [almDestino.coords.lat, almDestino.coords.lng],
+                      ];
 
             const polyline = L.polyline(latlngs, {
                 color: '#7c3aed',
                 weight: isHighlighted ? 4.5 : 2.5,
-                opacity: isHighlighted ? 1 : 0.65,
+                opacity: isHighlighted ? 1 : 0.75,
                 dashArray: isHighlighted ? '8, 8' : '6, 8',
                 className: 'leaflet-redistribucion-path',
             });
 
+            const detalle = [
+                sug.material,
+                sug.cantidad !== null && sug.cantidad !== undefined
+                    ? formatCantidad(sug.cantidad, sug.unidad ?? undefined)
+                    : null,
+                sug.etaMin !== null && sug.etaMin !== undefined
+                    ? `ETA ${Math.round(Number(sug.etaMin))} min`
+                    : null,
+                sug.distanciaKm !== null && sug.distanciaKm !== undefined
+                    ? `${sug.distanciaKm} km`
+                    : null,
+            ]
+                .filter(Boolean)
+                .join(' · ');
+
             polyline.bindTooltip(
-                `Redistribución sugerida: ${almOrigen.nombre} -> ${almDestino.nombre}`,
+                `<strong>Redistribución sugerida</strong><br/>${almOrigen.nombre} → ${almDestino.nombre}${detalle ? `<br/>${detalle}` : ''}`,
                 {
                     sticky: true,
                 },
             );
+
+            polyline.on('click', () => {
+                if (onSugerenciaClick) {
+                    onSugerenciaClick(sug);
+                }
+            });
+
             routesLayer.addLayer(polyline);
         });
 
@@ -329,7 +536,7 @@ export function MapaLeaflet({
 
             const meta = ESTADO_META[estado];
             const isSelected = seleccionadaId === obra.id;
-            const shortName = NOMBRE_CORTO[obra.id] ?? obra.nombre;
+            const shortName = obra.nombre;
 
             // Colores según estado
             let bgBadge = '#ffffff';
@@ -454,6 +661,74 @@ export function MapaLeaflet({
 
             markersLayer.addLayer(marker);
         });
+
+        // 3.4 Geocercas de almacenes
+        geocercas.forEach((zona) => {
+            const circulo = L.circle([zona.lat, zona.lng], {
+                radius: zona.radioM,
+                color: '#5468ff',
+                weight: 1.5,
+                opacity: 0.7,
+                fillColor: '#5468ff',
+                fillOpacity: 0.06,
+                dashArray: '4, 4',
+            });
+
+            if (zona.nombre) {
+                circulo.bindTooltip(`Geocerca · ${zona.nombre}`, {
+                    sticky: true,
+                });
+            }
+
+            routesLayer.addLayer(circulo);
+        });
+
+        // 3.5 Capa de calor operativa (stock crítico agregado)
+        calor.forEach((punto) => {
+            const color =
+                punto.peso >= 4
+                    ? '#dc2626'
+                    : punto.peso >= 2
+                      ? '#f59e0b'
+                      : '#22c55e';
+
+            const circulo = L.circle([punto.lat, punto.lng], {
+                radius: 280 + punto.peso * 140,
+                stroke: false,
+                fillColor: color,
+                fillOpacity: Math.min(0.12 + punto.peso * 0.12, 0.6),
+            });
+
+            routesLayer.addLayer(circulo);
+        });
+
+        // 3.6 Última posición conocida de cada despacho activo
+        posiciones.forEach((posicion) => {
+            const icono = L.divIcon({
+                className: 'cpm-posicion-marker',
+                html: `
+                    <div style="transform: translate(-50%, -50%); display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 9999px; background: #4f46e5; border: 2px solid #ffffff; box-shadow: 0 0 0 3px rgba(79,70,229,0.25);"></div>
+                `,
+                iconSize: [0, 0],
+            });
+
+            const marcador = L.marker([posicion.lat, posicion.lng], {
+                icon: icono,
+            });
+
+            marcador.bindTooltip(
+                `${posicion.codigo ?? 'Despacho'} · última posición`,
+                { direction: 'top' },
+            );
+
+            marcador.on('click', () => {
+                if (posicion.despachoId && onDespachoClick) {
+                    onDespachoClick(posicion.despachoId);
+                }
+            });
+
+            markersLayer.addLayer(marcador);
+        });
     }, [
         almacenes,
         obras,
@@ -461,16 +736,21 @@ export function MapaLeaflet({
         materiales,
         rutas,
         sugerencias,
+        geocercas,
+        posiciones,
+        calor,
         seleccionadaId,
         resaltarAlertaOrigenId,
         resaltarAlertaDestinoId,
         filtroEstado,
         onPinClick,
+        onDespachoClick,
+        onSugerenciaClick,
         obrasMap,
         almacenesMap,
     ]);
 
-    // 4. Centrado suave al seleccionar una obra desde fuera del mapa
+    // 4. Centrado suave al seleccionar una obra o una dirección sugerida
     useEffect(() => {
         const map = mapInstanceRef.current;
         if (!map || !seleccionadaId) {
@@ -482,6 +762,14 @@ export function MapaLeaflet({
             map.flyTo([alm.coords.lat, alm.coords.lng], 14, { duration: 0.8 });
         }
     }, [seleccionadaId, almacenes]);
+
+    useEffect(() => {
+        const map = mapInstanceRef.current;
+
+        if (map && centrarEn !== null) {
+            map.flyTo([centrarEn.lat, centrarEn.lng], 16, { duration: 0.8 });
+        }
+    }, [centrarEn]);
 
     // Handler para recentrar el mapa al Valle del Mantaro
     const handleRecenter = () => {
@@ -583,15 +871,15 @@ export function MapaLeaflet({
                             </button>
                         </div>
                         <div className="text-ink flex items-center gap-2">
-                            <span className="bg-ok inline-block h-2.5 w-2.5 shrink-0 rounded-full" />
+                            <span className="bg-exito inline-block h-2.5 w-2.5 shrink-0 rounded-full" />
                             <span>Stock óptimo</span>
                         </div>
                         <div className="text-ink flex items-center gap-2">
-                            <span className="bg-warn inline-block h-2.5 w-2.5 shrink-0 rounded-full" />
+                            <span className="bg-atencion inline-block h-2.5 w-2.5 shrink-0 rounded-full" />
                             <span>Stock bajo</span>
                         </div>
                         <div className="text-ink flex items-center gap-2">
-                            <span className="bg-danger inline-block h-2.5 w-2.5 shrink-0 rounded-full" />
+                            <span className="bg-critico inline-block h-2.5 w-2.5 shrink-0 rounded-full" />
                             <span>Stock crítico</span>
                         </div>
                         <div className="text-ink flex items-center gap-2">

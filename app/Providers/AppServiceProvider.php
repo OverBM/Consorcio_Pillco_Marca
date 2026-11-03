@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Domain\Geo\Contracts\RuteadorInterface;
+use App\Domain\Geo\Drivers\HaversineDriver;
+use App\Domain\Geo\Drivers\OpenRouteServiceDriver;
+use App\Domain\Geo\Drivers\OsrmDriver;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +21,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(RuteadorInterface::class, function (): RuteadorInterface {
+            return match ((string) config('ruteo.driver', 'ors')) {
+                'osrm' => new OsrmDriver,
+                'haversine' => new HaversineDriver,
+                default => new OpenRouteServiceDriver,
+            };
+        });
     }
 
     /**

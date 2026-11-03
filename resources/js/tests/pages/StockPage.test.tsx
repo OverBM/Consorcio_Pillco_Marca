@@ -1,4 +1,4 @@
-import { fireEvent, screen } from '@testing-library/react';
+import { fireEvent, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import StockPage from '../../pages/StockPage';
@@ -107,6 +107,10 @@ function renderStock() {
     return renderPagina(StockPage, { stockDb: stock, almacenesDb: almacenes });
 }
 
+function tablaStock() {
+    return within(screen.getAllByRole('table')[0]);
+}
+
 describe('StockPage', () => {
     beforeEach(() => {
         setPageProps(propsBase());
@@ -133,11 +137,11 @@ describe('StockPage', () => {
 
         const buscador = screen.getByPlaceholderText('Buscar código o nombre…');
         fireEvent.change(buscador, { target: { value: 'acero' } });
-        expect(screen.queryByText('Cemento Portland')).toBeNull();
-        expect(screen.getAllByText('Acero corrugado 1/2"')[0]).toBeTruthy();
+        expect(tablaStock().queryByText('Cemento Portland')).toBeNull();
+        expect(tablaStock().getAllByText('Acero corrugado 1/2"')[0]).toBeTruthy();
 
         fireEvent.change(buscador, { target: { value: 'MAT-01' } });
-        expect(screen.getAllByText('Cemento Portland')[0]).toBeTruthy();
+        expect(tablaStock().getAllByText('Cemento Portland')[0]).toBeTruthy();
 
         fireEvent.change(buscador, { target: { value: 'inexistente' } });
         expect(screen.getByText('Sin resultados')).toBeTruthy();
@@ -148,16 +152,16 @@ describe('StockPage', () => {
 
         const filtroEstado = screen.getByLabelText('Filtrar por estado');
         fireEvent.change(filtroEstado, { target: { value: 'bajo' } });
-        expect(screen.getAllByText('Cemento Portland')[0]).toBeTruthy();
-        expect(screen.queryByText('Acero corrugado 1/2"')).toBeNull();
+        expect(tablaStock().getAllByText('Cemento Portland')[0]).toBeTruthy();
+        expect(tablaStock().queryByText('Acero corrugado 1/2"')).toBeNull();
 
         fireEvent.change(filtroEstado, { target: { value: 'reservado' } });
-        expect(screen.queryByText('Cemento Portland')).toBeNull();
-        expect(screen.getAllByText('Acero corrugado 1/2"')[0]).toBeTruthy();
+        expect(tablaStock().queryByText('Cemento Portland')).toBeNull();
+        expect(tablaStock().getAllByText('Acero corrugado 1/2"')[0]).toBeTruthy();
 
         fireEvent.change(filtroEstado, { target: { value: 'critico' } });
-        expect(screen.getAllByText('Cemento Portland')[0]).toBeTruthy();
-        expect(screen.getAllByText('Acero corrugado 1/2"')[0]).toBeTruthy();
+        expect(tablaStock().getAllByText('Cemento Portland')[0]).toBeTruthy();
+        expect(tablaStock().getAllByText('Acero corrugado 1/2"')[0]).toBeTruthy();
 
         fireEvent.change(filtroEstado, { target: { value: 'todos' } });
         fireEvent.change(screen.getByLabelText('Filtrar por almacén'), {
@@ -202,7 +206,7 @@ describe('StockPage', () => {
         respuestaHttp.data = [];
         renderStock();
 
-        fireEvent.click(screen.getAllByText('Cemento Portland')[0]);
+        fireEvent.click(tablaStock().getAllByText('Cemento Portland')[0]);
         expect(
             screen.getAllByText('Disponibilidad por almacén')[0],
         ).toBeTruthy();
@@ -234,7 +238,7 @@ describe('StockPage', () => {
         respuestaHttp.data = kardex;
         renderStock();
 
-        fireEvent.click(screen.getAllByText('Acero corrugado 1/2"')[0]);
+        fireEvent.click(tablaStock().getAllByText('Acero corrugado 1/2"')[0]);
         fireEvent.click(screen.getAllByText('Ver kardex')[0]);
 
         expect(llamadasHttp).toContainEqual(

@@ -28,7 +28,7 @@ class LogisticaViewController extends Controller
             ->map(fn ($s) => [
                 'id' => (string) $s->id,
                 'almacenId' => (string) $s->almacen_id,
-                'almacenNombre' => $s->almacen?->nombre ?? 'Almacén',
+                'almacenNombre' => $s->almacen?->nombre ?? 'AlmacÃ©n',
                 'materialId' => (string) $s->material_id,
                 'materialCodigo' => $s->material?->codigo ?? 'MAT-00',
                 'materialNombre' => $s->material?->nombre ?? 'Material',
@@ -60,10 +60,10 @@ class LogisticaViewController extends Controller
     public function recepcion(): Response
     {
         $recepciones = $this->filtrarContextoAlmacen(Recepcion::query())
-            ->with(['almacen', 'ordenCompra.proveedor', 'detalles.material'])
+            ->with(['almacen', 'ordenCompra.proveedor', 'detalles.material.unidadMedida'])
             ->get();
         $ordenesCompra = $this->filtrarContexto(OrdenCompra::query(), 'obra_id', 'almacen_destino_id')
-            ->with(['proveedor', 'detalles.material'])
+            ->with(['proveedor', 'detalles.material.unidadMedida'])
             ->get();
 
         return Inertia::render('RecepcionPage', [
@@ -75,7 +75,7 @@ class LogisticaViewController extends Controller
     public function solicitudes(): Response
     {
         $solicitudes = $this->filtrarContexto(SolicitudMaterial::query())
-            ->with(['obra', 'detalles.material'])
+            ->with(['obra', 'detalles.material.unidadMedida'])
             ->get();
 
         return Inertia::render('SolicitudesPage', [
@@ -88,14 +88,14 @@ class LogisticaViewController extends Controller
         $despachos = Despacho::with([
             'transferencia.almacenOrigen',
             'transferencia.almacenDestino',
-            'transferencia.detalles.material',
+            'transferencia.detalles.material.unidadMedida',
             'despachador',
         ])->orderBy('id', 'desc')->get();
 
         $transferenciasAprobadas = Transferencia::with([
             'almacenOrigen',
             'almacenDestino',
-            'detalles.material',
+            'detalles.material.unidadMedida',
         ])
             ->where('estado', 'aprobada')
             ->whereDoesntHave('despacho')
@@ -111,7 +111,7 @@ class LogisticaViewController extends Controller
     public function transferencias(): Response
     {
         $query = Transferencia::query()
-            ->with(['almacenOrigen', 'almacenDestino', 'detalles.material']);
+            ->with(['almacenOrigen', 'almacenDestino', 'detalles.material.unidadMedida']);
 
         $almacenId = $this->almacenActivoId();
         $obraId = $this->obraActivaId();
@@ -138,7 +138,7 @@ class LogisticaViewController extends Controller
     public function inventarioFisico(): Response
     {
         $inventarios = $this->filtrarContextoAlmacen(InventarioFisico::query())
-            ->with(['almacen', 'detalles.material'])
+            ->with(['almacen', 'detalles.material.unidadMedida'])
             ->get();
 
         return Inertia::render('InventarioFisicoPage', [

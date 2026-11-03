@@ -56,7 +56,7 @@ test('el endpoint de usuarios registra un usuario con su rol y alcance', functio
     $response = $this->postJson('/api/v1/usuarios', [
         'name' => 'Lic. Mariana Rojas',
         'email' => 'logistica@pillcomarca.pe',
-        'password' => 'password123',
+        'password' => 'Password123!',
         'dni' => '46789012',
         'rol_codigo' => 'residente_obra',
         'obra_id' => $obra->id,
@@ -85,7 +85,7 @@ test('el endpoint de usuarios rechaza correos duplicados', function () {
     $response = $this->postJson('/api/v1/usuarios', [
         'name' => 'Nuevo',
         'email' => 'duplicado@pillcomarca.pe',
-        'password' => 'password123',
+        'password' => 'Password123!',
         'rol_codigo' => $rol->codigo,
     ]);
 
@@ -119,4 +119,55 @@ test('el endpoint de usuarios actualiza el estado y rol de un usuario', function
         'name' => 'Usuario Actualizado',
         'activo' => false,
     ]);
+});
+
+test('el registro de usuarios rechaza contraseñas que no cumplen la política', function () {
+    [$rol] = contextoUsuarios();
+
+    $this->actingAsConRol($this->usuarioConRol());
+
+    $this->postJson('/api/v1/usuarios', [
+        'name' => 'Sin Símbolo',
+        'email' => 'sin.simbolo@pillcomarca.pe',
+        'password' => 'Password123',
+        'rol_codigo' => $rol->codigo,
+    ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('password');
+
+    $this->postJson('/api/v1/usuarios', [
+        'name' => 'Sin Mayúscula',
+        'email' => 'sin.mayuscula@pillcomarca.pe',
+        'password' => 'password123!',
+        'rol_codigo' => $rol->codigo,
+    ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('password');
+});
+
+test('la edición de usuarios rechaza contraseñas débiles solo si se envían', function () {
+    [$rol] = contextoUsuarios();
+
+    $usuario = Usuario::create([
+        'name' => 'Usuario Clave',
+        'email' => 'clave@pillcomarca.pe',
+        'password' => bcrypt('password123'),
+        'activo' => true,
+    ]);
+
+    $this->actingAsConRol($usuario);
+
+    $this->putJson("/api/v1/usuarios/{$usuario->id}", [
+        'password' => 'corta',
+    ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('password');
+
+    // Sin contraseña en el payload, la edición sigue funcionando.
+    $this->putJson("/api/v1/usuarios/{$usuario->id}", [
+        'name' => 'Usuario Clave Editado',
+        'rol_codigo' => $rol->codigo,
+    ])
+        ->assertOk()
+        ->assertJsonPath('data.name', 'Usuario Clave Editado');
 });

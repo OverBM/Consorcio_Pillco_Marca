@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Domain\Metricas\ContadoresModulosService;
 use App\Models\Almacen;
 use App\Models\Material;
 use App\Models\Obra;
@@ -47,6 +48,9 @@ class HandleInertiaRequests extends Middleware
                 'user' => fn () => $this->usuarioPayload($request),
             ],
             'notificacionesFeed' => fn () => $this->notificacionesPayload($request),
+            'badges' => fn () => $request->user() instanceof Usuario
+                ? app(ContadoresModulosService::class)->contadores()
+                : [],
             'contexto' => [
                 'obra_activa_id' => $request->session()->get('obra_activa_id'),
                 'almacen_activo_id' => $request->session()->get('almacen_activo_id'),

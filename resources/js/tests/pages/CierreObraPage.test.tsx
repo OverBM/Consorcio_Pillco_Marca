@@ -1,5 +1,5 @@
-import { fireEvent, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import CierreObraPage from '../../pages/CierreObraPage';
 import { formatCantidad, formatFecha } from '../../utils/format';
@@ -119,12 +119,20 @@ describe('CierreObraPage', () => {
         expect(router.reload).toHaveBeenCalledWith({ only: ['obrasDb'] });
     });
 
-    it('finaliza y liquida la obra', () => {
+    it('finaliza y liquida la obra', async () => {
+        const confirmar = vi
+            .spyOn(window, 'confirm')
+            .mockReturnValue(true);
+
         renderPagina(CierreObraPage, { obrasDb: obras });
 
-        fireEvent.click(
-            screen.getByRole('button', { name: /Finalizar y Liquidar/ }),
-        );
+        const boton = screen.getByRole('button', {
+            name: /Finalizar y Liquidar/,
+        });
+
+        await waitFor(() => expect((boton as HTMLButtonElement).disabled).toBe(false));
+
+        fireEvent.click(boton);
 
         expect(llamadasHttp).toContainEqual(
             expect.objectContaining({
@@ -133,6 +141,7 @@ describe('CierreObraPage', () => {
             }),
         );
         expect(screen.getByText('Obra liquidada y cerrada.')).toBeTruthy();
+        confirmar.mockRestore();
     });
 
     it('deshabilita las acciones con el cierre cerrado', () => {

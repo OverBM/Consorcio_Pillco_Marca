@@ -83,8 +83,8 @@ const ICONS: Record<NotificationKind, ReactNode> = {
 };
 
 const STYLES: Record<NotificationKind, string> = {
-    success: 'border-emerald-300 bg-ok-soft text-emerald-900',
-    error: 'border-orange-300 bg-danger-soft text-orange-900',
+    success: 'border-exito-soft bg-exito-soft text-exito',
+    error: 'border-critico-soft bg-critico-soft text-critico',
     info: 'border-brand-200 bg-brand-50 text-brand-800',
 };
 

@@ -27,6 +27,9 @@ class PermisoSeeder extends Seeder
         'personal',
         'calidad',
         'admin',
+        'analitica',
+        'mapa',
+        'tracking',
     ];
 
     /**
@@ -40,13 +43,15 @@ class PermisoSeeder extends Seeder
         'gerente_general' => [
             'panel' => 'ver', 'programa' => 'ver', 'pmi' => 'ver', 'logistica' => 'ver',
             'compras' => 'ver', 'personal' => 'ver', 'calidad' => 'ver',
+            'analitica' => 'ver', 'mapa' => 'ver',
         ],
         'planificacion_administracion' => [
             'panel' => 'ver', 'programa' => 'ver', 'pmi' => 'ver', 'personal' => 'ver',
-            'calidad' => 'ver', 'admin' => 'editar',
+            'calidad' => 'ver', 'admin' => 'editar', 'analitica' => 'ver', 'mapa' => 'editar',
         ],
         'area_tecnica' => [
             'panel' => 'ver', 'programa' => 'ver', 'pmi' => 'editar', 'calidad' => 'ver',
+            'mapa' => 'ver',
         ],
         'area_financiera' => [
             'panel' => 'ver', 'programa' => 'ver', 'pmi' => 'ver', 'compras' => 'ver',
@@ -54,19 +59,22 @@ class PermisoSeeder extends Seeder
         'residente_obra' => [
             'panel' => 'ver', 'pmi' => 'editar', 'logistica' => 'editar',
             'compras' => 'ver', 'personal' => 'ver', 'calidad' => 'editar',
+            'analitica' => 'ver', 'mapa' => 'ver', 'tracking' => 'ver',
         ],
         'maestro_obra' => [
             'panel' => 'ver', 'pmi' => 'ver', 'logistica' => 'ver',
-            'personal' => 'ver', 'calidad' => 'ver',
+            'personal' => 'ver', 'calidad' => 'ver', 'mapa' => 'ver',
         ],
         'obrero_obra' => [
             'panel' => 'ver', 'personal' => 'ver',
         ],
         'almacenero_obra' => [
-            'panel' => 'ver', 'logistica' => 'editar',
+            'panel' => 'ver', 'logistica' => 'editar', 'analitica' => 'ver',
+            'mapa' => 'ver', 'tracking' => 'editar',
         ],
         'jefe_logistica_compras' => [
             'panel' => 'ver', 'logistica' => 'editar', 'compras' => 'editar',
+            'analitica' => 'editar', 'mapa' => 'editar', 'tracking' => 'editar',
         ],
         'jefe_recursos_humanos' => [
             'panel' => 'ver', 'personal' => 'editar',
@@ -79,7 +87,7 @@ class PermisoSeeder extends Seeder
         ],
         'oficina_tecnica' => [
             'panel' => 'ver', 'programa' => 'ver', 'pmi' => 'editar',
-            'logistica' => 'ver', 'calidad' => 'ver',
+            'logistica' => 'ver', 'calidad' => 'ver', 'analitica' => 'ver', 'mapa' => 'ver',
         ],
         'proveedor' => [
             'panel' => 'ver', 'compras' => 'ver',
@@ -89,16 +97,18 @@ class PermisoSeeder extends Seeder
         ],
         'supervision_obra_entidad' => [
             'panel' => 'ver', 'programa' => 'ver', 'pmi' => 'ver',
-            'logistica' => 'ver', 'calidad' => 'ver',
+            'logistica' => 'ver', 'calidad' => 'ver', 'mapa' => 'ver',
         ],
         'administrador_sistema' => [
             'panel' => 'editar', 'programa' => 'editar', 'pmi' => 'editar',
             'logistica' => 'editar', 'compras' => 'editar', 'personal' => 'editar',
-            'calidad' => 'editar', 'admin' => 'editar',
+            'calidad' => 'editar', 'admin' => 'editar', 'analitica' => 'editar',
+            'mapa' => 'editar', 'tracking' => 'editar',
         ],
         'auditor' => [
             'panel' => 'ver', 'programa' => 'ver', 'pmi' => 'ver', 'logistica' => 'ver',
             'compras' => 'ver', 'personal' => 'ver', 'calidad' => 'ver', 'admin' => 'ver',
+            'analitica' => 'ver', 'mapa' => 'ver', 'tracking' => 'ver',
         ],
     ];
 

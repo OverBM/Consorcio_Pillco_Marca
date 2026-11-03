@@ -17,12 +17,12 @@ export function AlertaBanner({
         sobrante: {
             border: 'border-violet-300',
             bg: 'bg-sobrante-soft/60',
-            fg: 'text-violet-800',
+            fg: 'text-sobrante',
             icon: <IconAlert size={16} />,
         },
         critico: {
             border: 'border-orange-300',
-            bg: 'bg-danger-soft/60',
+            bg: 'bg-critico-soft/60',
             fg: 'text-orange-800',
             icon: <IconAlert size={16} />,
         },

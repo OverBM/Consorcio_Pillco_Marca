@@ -59,6 +59,7 @@ const ESTADO_META: Record<
     { tone: 'ok' | 'warn' | 'violet' | 'neutral'; label: string }
 > = {
     en_conteo: { tone: 'warn', label: 'En conteo' },
+    en_proceso: { tone: 'warn', label: 'En proceso' },
     cerrado: { tone: 'ok', label: 'Cerrado' },
 };
 
@@ -270,7 +271,8 @@ export default function InventarioFisicoPage({
                                     header: 'Acciones',
                                     align: 'right',
                                     cell: (i) =>
-                                        i.estado === 'en_conteo' ? (
+                                        i.estado === 'en_conteo' ||
+                                        i.estado === 'en_proceso' ? (
                                             <button
                                                 className="btn-primary !px-2.5 !py-1 text-xs"
                                                 onClick={() => abrirConteo(i)}

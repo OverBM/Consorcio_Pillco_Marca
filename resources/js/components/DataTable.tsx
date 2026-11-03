@@ -51,7 +51,7 @@ export function DataTable<T extends { id: string }>({
     return (
         <div>
             {/* Vista de tabla (pantallas medianas y superiores) */}
-            <div className="hidden overflow-x-auto md:block">
+            <div className="data-table-scroll hidden overflow-x-auto pb-1 md:block">
                 <table className="w-full border-collapse text-sm">
                     <thead>
                         <tr className="border-line border-b text-left">

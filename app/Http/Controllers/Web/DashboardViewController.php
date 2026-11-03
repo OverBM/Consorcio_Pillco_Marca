@@ -2,15 +2,22 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Domain\Analitica\SerieAnaliticaService;
+use App\Domain\Metricas\MetricasInventarioService;
+use App\Domain\Metricas\NivelServicioService;
+use App\Domain\Metricas\ProgramaPanelService;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Web\Concerns\FiltraContextoOperativo;
+use App\Models\AlertaAbastecimiento;
 use App\Models\Almacen;
+use App\Models\EjecucionAnalitica;
 use App\Models\ExcedenteDetectado;
 use App\Models\Kardex;
 use App\Models\Material;
 use App\Models\Merma;
 use App\Models\Obra;
 use App\Models\OrdenCompra;
+use App\Models\ParametroInventario;
 use App\Models\ParametroSistema;
 use App\Models\Requerimiento;
 use App\Models\SolicitudMaterial;
@@ -25,6 +32,13 @@ use Inertia\Response;
 class DashboardViewController extends Controller
 {
     use FiltraContextoOperativo;
+
+    public function __construct(
+        private readonly MetricasInventarioService $metricasInventario,
+        private readonly NivelServicioService $nivelServicio,
+        private readonly ProgramaPanelService $programaPanel,
+        private readonly SerieAnaliticaService $serieAnalitica,
+    ) {}
 
     private const MANTARO_LAT = -12.068;
 
@@ -90,8 +104,57 @@ class DashboardViewController extends Controller
             'sobrantes' => Inertia::defer(fn () => $this->construirSobrantes($obrasRedModel, $almacenesRedModel, $disponibleRed, $minPorMaterialRed)),
             'rutas' => Inertia::defer(fn () => $this->construirRutas()),
             'movimientos7d' => Inertia::defer(fn () => $this->construirMovimientos7d()),
+            'metricasInventario' => Inertia::defer(fn () => $this->metricasInventario->resumen(
+                $this->obraActivaId(),
+                $this->almacenActivoId(),
+            )),
+            'nivelServicio' => Inertia::defer(fn () => $this->nivelServicio->resumen(
+                $this->obraActivaId(),
+                $this->almacenActivoId(),
+            )),
+            'programaPmi' => Inertia::defer(fn () => $this->programaPanel->resumen()),
+            'analiticaResumen' => Inertia::defer(fn () => $this->construirAnaliticaResumen($stockModel)),
+            'analiticaHero' => $this->serieAnalitica->resumen(30, 30),
+            'eventosDia' => $this->construirEventosDia(),
             'obraActivaId' => $this->obraActivaId(),
         ]);
+    }
+
+    /**
+     * Indicadores de la capa cognitiva para el panel. Se leen de los
+     * resultados persistidos; nunca se recalcula en el frontend.
+     *
+     * @param  Collection<int, StockAlmacen>  $stockModel
+     * @return array<string, mixed>
+     */
+    private function construirAnaliticaResumen(Collection $stockModel): array
+    {
+        $parametros = ParametroInventario::query()
+            ->where('vigente', true)
+            ->get();
+
+        $demanda = (float) $parametros->sum('demanda_media_diaria');
+        $stockTotal = (float) $stockModel->sum('cantidad');
+        $ultima = EjecucionAnalitica::query()->latest('inicio')->first();
+
+        return [
+            'cobertura_dias' => $demanda > 0 ? round($stockTotal / $demanda, 1) : null,
+            'quiebres_7d' => AlertaAbastecimiento::query()
+                ->where('estado', 'vigente')
+                ->where('tipo', 'quiebre_proyectado')
+                ->whereDate('fecha_estimada', '<=', now()->addDays(7)->toDateString())
+                ->count(),
+            'skus_bajo_rop' => AlertaAbastecimiento::query()
+                ->where('estado', 'vigente')
+                ->where('tipo', 'bajo_punto_reorden')
+                ->distinct()
+                ->count('material_id'),
+            'eoq_sugerido' => $parametros
+                ->where('clase_abc', 'A')
+                ->whereNotNull('eoq')
+                ->avg('eoq'),
+            'calculado_en' => $ultima?->fin?->toIso8601String(),
+        ];
     }
 
     /**
@@ -390,6 +453,58 @@ class DashboardViewController extends Controller
             });
 
         return array_values($buckets);
+    }
+
+    /**
+     * Eventos del día para la línea de tiempo del hero: despachos realizados
+     * y llegadas estimadas de transferencias en tránsito.
+     *
+     * @return list<array{hora: string, tipo: string, etiqueta: string}>
+     */
+    private function construirEventosDia(): array
+    {
+        $inicio = CarbonImmutable::now()->startOfDay();
+        $fin = CarbonImmutable::now()->endOfDay();
+        $eventos = [];
+
+        try {
+            DB::table('despachos as d')
+                ->join('transferencias as t', 't.id', '=', 'd.transferencia_id')
+                ->whereBetween('d.despachado_en', [$inicio, $fin])
+                ->orderBy('d.despachado_en')
+                ->get(['d.despachado_en', 't.codigo'])
+                ->each(function ($fila) use (&$eventos): void {
+                    $eventos[] = [
+                        'hora' => CarbonImmutable::parse($fila->despachado_en)->format('H:i'),
+                        'tipo' => 'despacho',
+                        'etiqueta' => 'Despacho '.$fila->codigo,
+                    ];
+                });
+
+            DB::table('transferencias')
+                ->where('estado', 'en_transito')
+                ->whereNotNull('eta_min')
+                ->whereNotNull('updated_at')
+                ->orderBy('id')
+                ->limit(8)
+                ->get(['codigo', 'eta_min', 'updated_at'])
+                ->each(function ($fila) use (&$eventos): void {
+                    $hora = CarbonImmutable::parse($fila->updated_at)
+                        ->addMinutes((int) $fila->eta_min);
+
+                    $eventos[] = [
+                        'hora' => $hora->format('H:i'),
+                        'tipo' => 'eta',
+                        'etiqueta' => 'Llegada estimada '.$fila->codigo,
+                    ];
+                });
+        } catch (\Throwable) {
+            return [];
+        }
+
+        usort($eventos, fn (array $a, array $b): int => strcmp($a['hora'], $b['hora']));
+
+        return array_slice($eventos, 0, 10);
     }
 
     private function mapearEstadoObra(?string $estado): string

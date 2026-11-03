@@ -82,6 +82,16 @@ export default function CierreObraPage({ obrasDb = [] }: CierreObraPageProps) {
             notify.error('Selecciona una obra.');
             return;
         }
+
+        if (
+            etapa === 'finalizar' &&
+            !window.confirm(
+                'La obra quedará liquidada y cerrada definitivamente. ¿Continuar?',
+            )
+        ) {
+            return;
+        }
+
         void accion.post(`/api/v1/cierres-obra/${obraId}/${etapa}`, {
             onSuccess: () => {
                 notify.success(
@@ -218,7 +228,7 @@ export default function CierreObraPage({ obrasDb = [] }: CierreObraPageProps) {
                                         variant="primary"
                                         disabled={
                                             accion.processing ||
-                                            estadoCierre === 'cerrado'
+                                            estadoCierre !== 'en_cierre'
                                         }
                                         onClick={() => ejecutar('finalizar')}
                                     >

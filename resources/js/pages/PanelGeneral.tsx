@@ -7,6 +7,12 @@ import { Deferred, Link, router, usePage } from '@inertiajs/react';
 import contexto from '@/routes/contexto';
 import { PageHeader } from '../components/PageHeader';
 import { KpiCard } from '../components/KpiCard';
+import { KpiTile } from '../design-system/KpiTile';
+import { PanelAside } from '../design-system/PanelAside';
+import { PanelHero } from '../design-system/PanelHero';
+import { TendenciasChart } from '../design-system/TendenciasChart';
+import { SaludAlmacen } from '../design-system/SaludAlmacen';
+import { AccesosRapidos } from '../design-system/PanelExtras';
 import {
     Skeleton,
     SkeletonKpiGrid,
@@ -19,7 +25,6 @@ import {
     type SugerenciaMapa,
 } from '../components/MapaLeaflet';
 import { GeoDetalle } from '../components/GeoDetalle';
-import { BarChart7d, ChartLegend } from '../components/charts';
 import { Card, Badge } from '../components/ui';
 import { EmptyState } from '../components/EmptyState';
 import { estadoDeAlmacen, ESTADO_META } from '../utils/estados';
@@ -28,13 +33,11 @@ import { formatKm, formatNum, formatCantidad } from '../utils/format';
 import type { Almacen, Material, Obra } from '../types';
 import type { StockState } from '../types/stock';
 import {
-    IconAlert,
     IconAlertTriangle,
     IconArrowUpRight,
     IconBoxes,
     IconCheck,
     IconClipboardList,
-    IconInbox,
     IconRepeat,
     IconShoppingCart,
     IconSparkles,
@@ -88,6 +91,35 @@ interface PanelIndicadores {
     mermas: number;
 }
 
+interface PanelMetricas {
+    valor: number;
+    valorAnterior: number | null;
+    variacionPct: number | null;
+    stockCritico: number;
+    skusTotales: number;
+    transferenciasTransito: number;
+    serie30d: { fecha: string; ingreso: number; salida: number }[];
+    serieCriticos30d?: number[];
+    serieTransferencias30d?: number[];
+    saludAlmacenes: {
+        almacenId: number;
+        nombre: string;
+        criticos: number;
+        total: number;
+        pctCritico: number;
+    }[];
+}
+
+interface PanelNivelServicio {
+    indice: number | null;
+    componentes: {
+        cumplimiento: number | null;
+        puntualidad: number | null;
+        disponibilidad: number | null;
+        precision: number | null;
+    };
+}
+
 interface PanelProps {
     obrasDb: Obra[];
     almacenesDb: Almacen[];
@@ -106,6 +138,43 @@ interface PanelProps {
         ingreso: number;
         salida: number;
     }[];
+    metricasInventario?: PanelMetricas;
+    analiticaResumen?: {
+        cobertura_dias: number | null;
+        quiebres_7d: number;
+        skus_bajo_rop: number;
+        eoq_sugerido: number | string | null;
+        calculado_en: string | null;
+    };
+    analiticaHero?: {
+        serie: Array<{
+            fecha: string;
+            real: number | null;
+            pronostico: number | null;
+            inferior: number | null;
+            superior: number | null;
+        }>;
+        cobertura_dias: number | null;
+        mape: number | null;
+        quiebres_7d: number;
+        alertas: number;
+        demanda_media: number;
+    };
+    nivelServicio?: PanelNivelServicio;
+    programaPmi?: {
+        obrasActivas: number;
+        avancePonderado: number;
+        spi: number;
+        cpi: number;
+        hitosProximos: number;
+    };
+    eventosDia?: { hora: string; tipo: string; etiqueta: string }[];
+    stockDb?: {
+        materialId: string;
+        almacenId: string;
+        disponible: number;
+        stockMinimo: number;
+    }[];
     obraActivaId: number | null;
 }
 
@@ -119,7 +188,54 @@ export default function PanelGeneral() {
     const stock = props.stockRed ?? props.stock ?? { stock: {}, reservas: {} };
     const sobrantes = props.sobrantes ?? [];
     const rutas = props.rutas ?? [];
-    const movimientos7d = props.movimientos7d ?? [];
+    const metricas = props.metricasInventario;
+    const analitica = props.analiticaResumen;
+    const eventosDia = props.eventosDia ?? [];
+
+    const disponibilidadStock = useMemo(() => {
+        if (!metricas || metricas.skusTotales === 0) {
+            return null;
+        }
+
+        return (
+            ((metricas.skusTotales - metricas.stockCritico) /
+                metricas.skusTotales) *
+            100
+        );
+    }, [metricas]);
+
+    const criticosLaterales = useMemo(() => {
+        const nombreMaterial = new Map(
+            materiales.map((m) => [String(m.id), m.nombre]),
+        );
+        const nombreAlmacen = new Map(
+            almacenes.map((a) => [String(a.id), a.nombre]),
+        );
+
+        return (props.stockDb ?? [])
+            .filter((fila) => fila.disponible < fila.stockMinimo)
+            .sort((a, b) => a.disponible - b.disponible)
+            .slice(0, 5)
+            .map((fila) => ({
+                material:
+                    nombreMaterial.get(String(fila.materialId)) ?? 'Material',
+                almacen: nombreAlmacen.get(String(fila.almacenId)) ?? 'Almacén',
+                disponible: fila.disponible,
+                minimo: fila.stockMinimo,
+            }));
+    }, [props.stockDb, materiales, almacenes]);
+
+    const rutasLaterales = useMemo(() => {
+        const nombreAlmacen = new Map(
+            almacenes.map((a) => [String(a.id), a.nombre]),
+        );
+
+        return rutas.slice(0, 5).map((ruta) => ({
+            codigo: ruta.codigo,
+            origen: nombreAlmacen.get(String(ruta.origenId)) ?? 'Origen',
+            destino: nombreAlmacen.get(String(ruta.destinoId)) ?? 'Destino',
+        }));
+    }, [rutas, almacenes]);
     const indicadores: PanelIndicadores = props.indicadores ?? {
         solicitudes: 0,
         requerimientosSobrecosto: 0,
@@ -258,12 +374,10 @@ export default function PanelGeneral() {
         };
     }, [obras, almacenes, materiales, stock, selectObra]);
 
-    // 7 Grupos de Indicadores PMI / PMU (Bizagi 16-30) — calculados en el backend.
+    // Indicadores operativos PMI / PMU (Bizagi 16-30) — calculados en el backend.
     const kpiSolicitudesPendientes = indicadores.solicitudes;
     const kpiReqSobrecosto = indicadores.requerimientosSobrecosto;
     const kpiOCEnTransito = indicadores.ocFletes;
-    const kpiStockCritico = indicadores.stockCritico;
-    const kpiTransferenciasActivas = indicadores.transferencias;
     const kpiIncidencias = indicadores.incidencias;
     const kpiMermasSobreUmbral = indicadores.mermas;
 
@@ -313,9 +427,153 @@ export default function PanelGeneral() {
                 subtitle="Consolidado de inventarios multi-almacén y control operativo — Valle del Mantaro"
             />
 
-            {/* 7 Indicadores consolidados PMI / PMU (Bizagi 16-30) */}
+            <PanelHero
+                obrasActivas={obras.filter((o) => o.estado === 'activa').length}
+                almacenes={almacenes.length}
+                despachosEnRuta={rutas.length}
+                requerimientosUrgentes={
+                    indicadores.requerimientosSobrecosto ?? 0
+                }
+                eventos={eventosDia.map((evento) => ({
+                    hora: evento.hora,
+                    tipo:
+                        evento.tipo === 'despacho'
+                            ? ('despacho' as const)
+                            : ('eta' as const),
+                    etiqueta: evento.etiqueta,
+                }))}
+                cargando={
+                    props.rutas === undefined ||
+                    props.indicadores === undefined
+                }
+                analitica={props.analiticaHero}
+            />
+
+            <Deferred data="metricasInventario" fallback={<SkeletonKpiGrid />}>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    <KpiTile
+                        label="Valor de inventario"
+                        value={metricas?.valor ?? null}
+                        formato="moneda"
+                        delta={metricas?.variacionPct ?? null}
+                        serie={metricas?.serie30d.map(
+                            (dia) => dia.ingreso - dia.salida,
+                        )}
+                        variante="dark"
+                        detalle={
+                            metricas
+                                ? `${metricas.skusTotales} SKUs en red`
+                                : undefined
+                        }
+                    />
+                    <KpiTile
+                        label="Stock crítico"
+                        value={metricas?.stockCritico ?? null}
+                        icon={<IconAlertTriangle size={16} />}
+                        serie={metricas?.serieCriticos30d ?? []}
+                        detalle={
+                            metricas
+                                ? `${metricas.stockCritico} de ${metricas.skusTotales} SKUs bajo mínimo`
+                                : undefined
+                        }
+                        progreso={
+                            metricas && metricas.skusTotales > 0
+                                ? (metricas.stockCritico /
+                                      metricas.skusTotales) *
+                                  100
+                                : null
+                        }
+                        progresoTono="danger"
+                    />
+                    <KpiTile
+                        label="Transferencias"
+                        value={metricas?.transferenciasTransito ?? null}
+                        variante="brand"
+                        icon={<IconTruck size={16} />}
+                        serie={metricas?.serieTransferencias30d ?? []}
+                        detalle="En tránsito o por aprobar"
+                    />
+                    <KpiTile
+                        label="Disponibilidad de stock"
+                        value={disponibilidadStock}
+                        formato="porcentaje"
+                        variante="light"
+                        icon={<IconCheck size={16} />}
+                        serie={
+                            metricas?.serieCriticos30d?.map((criticos) =>
+                                metricas.skusTotales > 0
+                                    ? ((metricas.skusTotales - criticos) /
+                                          metricas.skusTotales) *
+                                      100
+                                    : 0,
+                            ) ?? []
+                        }
+                        detalle={
+                            metricas
+                                ? `${metricas.skusTotales - metricas.stockCritico} de ${metricas.skusTotales} SKUs sobre el mínimo`
+                                : 'SKUs sobre el mínimo'
+                        }
+                        progreso={disponibilidadStock}
+                        progresoTono={
+                            disponibilidadStock !== null &&
+                            disponibilidadStock >= 80
+                                ? 'ok'
+                                : disponibilidadStock !== null &&
+                                    disponibilidadStock >= 50
+                                  ? 'warn'
+                                  : 'danger'
+                        }
+                    />
+                </div>
+            </Deferred>
+
+            <Deferred data="analiticaResumen" fallback={<SkeletonKpiGrid />}>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    <KpiTile
+                        label="Cobertura de stock"
+                        value={analitica?.cobertura_dias ?? null}
+                        detalle={
+                            analitica?.calculado_en
+                                ? 'Días de demanda cubiertos'
+                                : 'Sin ejecución del motor'
+                        }
+                    />
+                    <KpiTile
+                        label="Quiebres a 7 días"
+                        value={analitica?.quiebres_7d ?? null}
+                        variante="dark"
+                        detalle="Proyección del motor"
+                    />
+                    <KpiTile
+                        label="SKUs bajo ROP"
+                        value={analitica?.skus_bajo_rop ?? null}
+                        detalle="Punto de reorden calculado"
+                    />
+                    <KpiTile
+                        label="EOQ sugerido"
+                        value={
+                            analitica?.eoq_sugerido !== null &&
+                            analitica?.eoq_sugerido !== undefined
+                                ? Number(analitica.eoq_sugerido)
+                                : null
+                        }
+                        variante="brand"
+                        detalle="Promedio clase A"
+                    />
+                </div>
+                <div className="mt-2 text-right">
+                    <a
+                        href="/analitica"
+                        className="text-brand-600 text-xs font-semibold hover:underline"
+                    >
+                        Ver analítica predictiva →
+                    </a>
+                </div>
+            </Deferred>
+
+            {/* Indicadores operativos consolidados PMI / PMU (Bizagi 16-30) */}
             <Deferred data="indicadores" fallback={<SkeletonKpiGrid />}>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-7">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
                     <KpiCard
                         icon={<IconClipboardList size={18} />}
                         label="Solicitudes"
@@ -328,7 +586,7 @@ export default function PanelGeneral() {
                         label="Requerimientos"
                         value={kpiReqSobrecosto}
                         hint="con sobrecosto"
-                        tone={kpiReqSobrecosto > 0 ? 'danger' : 'ok'}
+                        tone={kpiReqSobrecosto > 0 ? 'critico' : 'exito'}
                     />
                     <KpiCard
                         icon={<IconTruck size={18} />}
@@ -338,32 +596,18 @@ export default function PanelGeneral() {
                         tone="indigo"
                     />
                     <KpiCard
-                        icon={<IconAlert size={18} />}
-                        label="Stock Crítico"
-                        value={kpiStockCritico}
-                        hint="alertas activas"
-                        tone={kpiStockCritico > 0 ? 'danger' : 'ok'}
-                    />
-                    <KpiCard
-                        icon={<IconRepeat size={18} />}
-                        label="Transferencias"
-                        value={kpiTransferenciasActivas}
-                        hint="en curso"
-                        tone="violet"
-                    />
-                    <KpiCard
                         icon={<IconAlertTriangle size={18} />}
                         label="Incidencias"
                         value={kpiIncidencias}
                         hint="por conciliar"
-                        tone={kpiIncidencias > 0 ? 'danger' : 'ok'}
+                        tone={kpiIncidencias > 0 ? 'critico' : 'exito'}
                     />
                     <KpiCard
                         icon={<IconTrash size={18} />}
                         label="Mermas"
                         value={kpiMermasSobreUmbral}
                         hint="sobre umbral"
-                        tone={kpiMermasSobreUmbral > 0 ? 'danger' : 'ok'}
+                        tone={kpiMermasSobreUmbral > 0 ? 'critico' : 'exito'}
                     />
                 </div>
             </Deferred>
@@ -437,115 +681,150 @@ export default function PanelGeneral() {
                 </Deferred>
             </section>
 
-            {/* Mapa Interactivo Leaflet */}
-            <Card
-                title="Mapa geolocalizado de la red — Valle del Mantaro"
-                subtitle="OpenStreetMap / Satélite • Coordenadas dinámicas, despachos en tránsito y rutas de redistribución"
+            {/* Mapa Interactivo Leaflet + panel lateral */}
+            <section
+                id="mapa-red"
+                className="grid scroll-mt-20 gap-[var(--gap)] lg:grid-cols-12"
             >
-                <MapaLeaflet
-                    obras={obras}
-                    almacenes={almacenes}
-                    stock={stock}
-                    materiales={materiales}
-                    rutas={rutas}
-                    sugerencias={sugerencias}
-                    seleccionadaId={seleccionObraId ?? undefined}
-                    resaltarAlertaOrigenId={
-                        prediccionDinamica
-                            ? prediccionDinamica.almacenOrigenId
-                            : alertaHover?.almacenId
-                    }
-                    resaltarAlertaDestinoId={
-                        prediccionDinamica
-                            ? prediccionDinamica.almacenDestinoId
-                            : alertaHover?.receptoras?.[0]?.almacenId
-                    }
-                    onPinClick={(obraId) => {
-                        setSeleccionObraId(obraId);
-                        agregarAFrentesComparados(obraId);
-                    }}
-                />
-
-                {prediccionDinamica && (
-                    <div className="mt-4 rounded-xl border border-violet-200 bg-violet-50/80 p-4 shadow-sm">
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                            <div className="flex items-start gap-3">
-                                <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-violet-600 text-white">
-                                    <IconSparkles size={18} />
-                                </span>
-                                <div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xs font-bold tracking-wider text-violet-700 uppercase">
-                                            Redistribución sugerida por cercanía
-                                        </span>
-                                        <Badge tone="violet">
-                                            {formatKm(prediccionDinamica.km)}
-                                        </Badge>
-                                    </div>
-                                    <p className="text-ink mt-1 text-sm font-semibold">
-                                        Trasladar{' '}
-                                        {formatNum(prediccionDinamica.cantidad)}{' '}
-                                        {prediccionDinamica.unidad} de{' '}
-                                        <span className="text-violet-700">
-                                            {prediccionDinamica.nombreMaterial}
-                                        </span>{' '}
-                                        desde{' '}
-                                        <strong>
-                                            {prediccionDinamica.nombreOrigen}
-                                        </strong>{' '}
-                                        hacia{' '}
-                                        <strong>
-                                            {prediccionDinamica.nombreDestino}
-                                        </strong>
-                                        .
-                                    </p>
-                                    <p className="text-muted mt-0.5 text-xs">
-                                        Ahorro estimado en fletes y compras de
-                                        urgencia:{' '}
-                                        <strong className="text-ink">
-                                            S/{' '}
-                                            {formatNum(
-                                                prediccionDinamica.ahorroSoles,
-                                            )}
-                                        </strong>
-                                        .
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="flex shrink-0 items-center gap-2">
-                                <Link
-                                    href={`/transferencias?crear=sobrante&materialId=${prediccionDinamica.materialId}&origen=${prediccionDinamica.almacenOrigenId}&destino=${prediccionDinamica.almacenDestinoId}`}
-                                    className="btn-primary text-xs"
-                                >
-                                    <IconRepeat size={14} />
-                                    Generar transferencia
-                                </Link>
-                                <button
-                                    type="button"
-                                    onClick={() => setPrediccionDinamica(null)}
-                                    className="btn-secondary !p-2 text-xs"
-                                    title="Descartar predicción"
-                                >
-                                    <IconX size={14} />
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {almSeleccionado && (
-                    <div className="border-line mt-4 border-t pt-4">
-                        <GeoDetalle
-                            alm={almSeleccionado}
+                <div className="lg:col-span-8">
+                    <Card
+                        title="Mapa geolocalizado de la red — Valle del Mantaro"
+                        subtitle="OpenStreetMap / Satélite • Coordenadas dinámicas, despachos en tránsito y rutas de redistribución"
+                    >
+                        <MapaLeaflet
                             obras={obras}
                             almacenes={almacenes}
                             stock={stock}
                             materiales={materiales}
-                            onClose={() => setSeleccionObraId(null)}
+                            rutas={rutas}
+                            sugerencias={sugerencias}
+                            seleccionadaId={seleccionObraId ?? undefined}
+                            resaltarAlertaOrigenId={
+                                prediccionDinamica
+                                    ? prediccionDinamica.almacenOrigenId
+                                    : alertaHover?.almacenId
+                            }
+                            resaltarAlertaDestinoId={
+                                prediccionDinamica
+                                    ? prediccionDinamica.almacenDestinoId
+                                    : alertaHover?.receptoras?.[0]?.almacenId
+                            }
+                            onPinClick={(obraId) => {
+                                setSeleccionObraId(obraId);
+                                agregarAFrentesComparados(obraId);
+                            }}
                         />
-                    </div>
-                )}
-            </Card>
+
+                        {prediccionDinamica && (
+                            <div className="border-sobrante/30 bg-sobrante-soft/60 mt-4 rounded-xl border p-4 shadow-sm">
+                                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                    <div className="flex items-start gap-3">
+                                        <span className="bg-sobrante mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg text-white">
+                                            <IconSparkles size={18} />
+                                        </span>
+                                        <div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-sobrante text-xs font-bold tracking-wider uppercase">
+                                                    Redistribución sugerida por
+                                                    cercanía
+                                                </span>
+                                                <Badge tone="violet">
+                                                    {formatKm(
+                                                        prediccionDinamica.km,
+                                                    )}
+                                                </Badge>
+                                            </div>
+                                            <p className="text-ink mt-1 text-sm font-semibold">
+                                                Trasladar{' '}
+                                                {formatNum(
+                                                    prediccionDinamica.cantidad,
+                                                )}{' '}
+                                                {prediccionDinamica.unidad} de{' '}
+                                                <span className="text-sobrante">
+                                                    {
+                                                        prediccionDinamica.nombreMaterial
+                                                    }
+                                                </span>{' '}
+                                                desde{' '}
+                                                <strong>
+                                                    {
+                                                        prediccionDinamica.nombreOrigen
+                                                    }
+                                                </strong>{' '}
+                                                hacia{' '}
+                                                <strong>
+                                                    {
+                                                        prediccionDinamica.nombreDestino
+                                                    }
+                                                </strong>
+                                                .
+                                            </p>
+                                            <p className="text-muted mt-0.5 text-xs">
+                                                Ahorro estimado en fletes y
+                                                compras de urgencia:{' '}
+                                                <strong className="text-ink">
+                                                    S/{' '}
+                                                    {formatNum(
+                                                        prediccionDinamica.ahorroSoles,
+                                                    )}
+                                                </strong>
+                                                .
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="flex shrink-0 items-center gap-2">
+                                        <Link
+                                            href={`/transferencias?crear=sobrante&materialId=${prediccionDinamica.materialId}&origen=${prediccionDinamica.almacenOrigenId}&destino=${prediccionDinamica.almacenDestinoId}`}
+                                            className="btn-primary text-xs"
+                                        >
+                                            <IconRepeat size={14} />
+                                            Generar transferencia
+                                        </Link>
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setPrediccionDinamica(null)
+                                            }
+                                            className="btn-secondary !p-2 text-xs"
+                                            title="Descartar predicción"
+                                        >
+                                            <IconX size={14} />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {almSeleccionado && (
+                            <div className="border-line mt-4 border-t pt-4">
+                                <GeoDetalle
+                                    alm={almSeleccionado}
+                                    obras={obras}
+                                    almacenes={almacenes}
+                                    stock={stock}
+                                    materiales={materiales}
+                                    onClose={() => setSeleccionObraId(null)}
+                                />
+                            </div>
+                        )}
+                    </Card>
+                </div>
+
+                <aside className="lg:col-span-4">
+                    <PanelAside
+                        criticos={criticosLaterales}
+                        rutas={rutasLaterales}
+                        eventos={eventosDia.map((evento) => ({
+                            hora: evento.hora,
+                            tipo:
+                                evento.tipo === 'despacho'
+                                    ? ('despacho' as const)
+                                    : ('eta' as const),
+                            etiqueta: evento.etiqueta,
+                        }))}
+                    />
+                </aside>
+            </section>
 
             {/* Comparativa de Frentes Activos */}
             <Card
@@ -806,7 +1085,7 @@ export default function PanelGeneral() {
                                                     alm.id,
                                                 )
                                             }
-                                            className="btn-primary justify-center !bg-violet-600 !px-2.5 !py-1.5 text-center text-xs hover:!bg-violet-700"
+                                            className="btn-primary !bg-sobrante hover:!bg-sobrante/90 justify-center !px-2.5 !py-1.5 text-center text-xs"
                                         >
                                             <IconSparkles size={13} />
                                             Calcular redistribución
@@ -819,31 +1098,29 @@ export default function PanelGeneral() {
                 )}
             </Card>
 
+            <Card
+                title="Salud por almacén"
+                subtitle="Proporción de materiales bajo stock mínimo"
+            >
+                <Deferred
+                    data="metricasInventario"
+                    fallback={<Skeleton className="h-40 w-full" />}
+                >
+                    <SaludAlmacen almacenes={metricas?.saludAlmacenes ?? []} />
+                </Deferred>
+            </Card>
+
             {/* Accesos rápidos a los 8 módulos del sistema */}
             <div className="grid gap-6 lg:grid-cols-3">
                 <Card
-                    title="Movimientos de almacén — últimos 7 días"
+                    title="Tendencias — últimos 30 días"
                     subtitle="Ingresos y salidas agregadas en la red"
                 >
                     <Deferred
-                        data="movimientos7d"
+                        data="metricasInventario"
                         fallback={<Skeleton className="h-56 w-full" />}
                     >
-                        <BarChart7d data={movimientos7d} />
-                        <div className="mt-4">
-                            <ChartLegend
-                                items={[
-                                    {
-                                        label: 'Ingresos a almacén',
-                                        className: 'bg-brand-500',
-                                    },
-                                    {
-                                        label: 'Despachos / Salidas',
-                                        className: 'bg-ok-soft',
-                                    },
-                                ]}
-                            />
-                        </div>
+                        <TendenciasChart serie={metricas?.serie30d ?? []} />
                     </Deferred>
                 </Card>
 
@@ -852,88 +1129,22 @@ export default function PanelGeneral() {
                     title="Módulos de Almacén y Logística"
                     subtitle="Accesos directos a los flujos operativos"
                 >
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                        <QuickLink
-                            to="/stock"
-                            icon={<IconBoxes size={18} />}
-                            label="Matriz de Stock"
-                            desc="Saldos multi-almacén"
-                        />
-                        <QuickLink
-                            to="/solicitudes"
-                            icon={<IconClipboardList size={18} />}
-                            label="Solicitudes"
-                            desc="Pedidos GPS de frente"
-                        />
-                        <QuickLink
-                            to="/compras"
-                            icon={<IconShoppingCart size={18} />}
-                            label="Compras"
-                            desc="Requerimientos y OC"
-                        />
-                        <QuickLink
-                            to="/recepcion"
-                            icon={<IconInbox size={18} />}
-                            label="Recepción"
-                            desc="Ingreso contra OC"
-                        />
-                        <QuickLink
-                            to="/despachos"
-                            icon={<IconTruck size={18} />}
-                            label="Despachos"
-                            desc="Guías y rutas"
-                        />
-                        <QuickLink
-                            to="/transferencias"
-                            icon={<IconRepeat size={18} />}
-                            label="Transferencias"
-                            desc="Movimientos inter-obra"
-                        />
-                        <QuickLink
-                            to="/mermas"
-                            icon={<IconAlertTriangle size={18} />}
-                            label="Mermas"
-                            desc="Pérdidas y devoluciones"
-                        />
-                        <div className="border-brand-200 bg-brand-50/50 flex flex-col justify-between rounded-xl border p-3 text-xs">
-                            <span className="text-brand-900 font-bold">
-                                Enfoque PMI / PMU
-                            </span>
-                            <p className="text-brand-700 text-[11px]">
-                                Trazabilidad operativa multi-obra
-                            </p>
-                            <span className="text-brand-800 mt-1 font-semibold">
-                                Huancayo · Junín
-                            </span>
-                        </div>
-                    </div>
+                    <AccesosRapidos
+                        accesos={[
+                            { href: '/stock', label: 'Matriz de Stock' },
+                            { href: '/solicitudes', label: 'Solicitudes' },
+                            { href: '/compras', label: 'Compras' },
+                            { href: '/recepcion', label: 'Recepción' },
+                            { href: '/despachos', label: 'Despachos' },
+                            {
+                                href: '/transferencias',
+                                label: 'Transferencias',
+                            },
+                            { href: '/mermas', label: 'Mermas' },
+                        ]}
+                    />
                 </Card>
             </div>
         </div>
-    );
-}
-
-function QuickLink({
-    to,
-    icon,
-    label,
-    desc,
-}: {
-    to: string;
-    icon: React.ReactNode;
-    label: string;
-    desc: string;
-}) {
-    return (
-        <Link
-            href={to}
-            className="group border-line bg-surface text-ink shadow-card hover:border-brand-300 hover:shadow-pop flex flex-col gap-1.5 rounded-xl border p-3 transition-all hover:-translate-y-0.5"
-        >
-            <span className="bg-brand-50 text-brand-600 group-hover:bg-brand-500 grid h-8 w-8 place-items-center rounded-lg transition-colors group-hover:text-white">
-                {icon}
-            </span>
-            <span className="truncate text-xs font-bold">{label}</span>
-            <span className="text-muted truncate text-[10px]">{desc}</span>
-        </Link>
     );
 }

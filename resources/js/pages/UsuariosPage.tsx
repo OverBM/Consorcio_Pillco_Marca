@@ -17,6 +17,8 @@ import {
 import { DataTable } from '../components/DataTable';
 import { EmptyState } from '../components/EmptyState';
 import { SkeletonTable } from '../components/Skeleton';
+import { PasswordRules } from '../components/PasswordRules';
+import { erroresPassword } from '../utils/password';
 import { useNotifications } from '../components/notifications/NotificationProvider';
 import type { Catalogos } from '../types';
 import { IconPlus, IconSave } from '../components/icons';
@@ -62,7 +64,7 @@ const VACIO = {
 };
 
 export default function UsuariosPage({
-    usuariosDb = [],
+    usuariosDb,
     rolesDb = [],
 }: UsuariosPageProps) {
     const notify = useNotifications();
@@ -72,7 +74,8 @@ export default function UsuariosPage({
     const obras = catalogos?.obras ?? [];
 
     const filas = useMemo(
-        () => usuariosDb.map((u) => ({ ...u, id: String(u.id) })),
+        () =>
+            (usuariosDb ?? []).map((u) => ({ ...u, id: String(u.id) })),
         [usuariosDb],
     );
 
@@ -95,6 +98,13 @@ export default function UsuariosPage({
         }
         if (crear.data.password.length < 8) {
             notify.error('La contraseña debe tener al menos 8 caracteres.');
+            return;
+        }
+        const fallosPassword = erroresPassword(crear.data.password);
+        if (fallosPassword.length > 0) {
+            notify.error(
+                `La contraseña debe cumplir: ${fallosPassword.join(', ')}.`,
+            );
             return;
         }
         if (!crear.data.rol_codigo) {
@@ -167,6 +177,17 @@ export default function UsuariosPage({
             return;
         }
 
+        if (editar.data.password) {
+            const fallos = erroresPassword(editar.data.password);
+
+            if (fallos.length > 0) {
+                notify.error(
+                    `La contraseña debe cumplir: ${fallos.join(', ')}.`,
+                );
+                return;
+            }
+        }
+
         editar.transform(() => ({
             name: editar.data.name.trim(),
             email: editar.data.email.trim(),
@@ -200,7 +221,13 @@ export default function UsuariosPage({
 
             <div className="grid gap-6 lg:grid-cols-3">
                 <div className="lg:col-span-2">
-                    <Card title={`Usuarios Registrados (${filas.length})`}>
+                    <Card
+                        title={
+                            usuariosDb === undefined
+                                ? 'Usuarios Registrados'
+                                : `Usuarios Registrados (${filas.length})`
+                        }
+                    >
                         <Deferred
                             data="usuariosDb"
                             fallback={<SkeletonTable />}
@@ -312,7 +339,7 @@ export default function UsuariosPage({
                         <Field
                             label="Contraseña"
                             required
-                            hint="Mínimo 8 caracteres."
+                            hint="Mínimo 8 caracteres, con mayúscula, minúscula, número y símbolo."
                         >
                             <Input
                                 type="password"
@@ -321,6 +348,7 @@ export default function UsuariosPage({
                                     crear.setData('password', e.target.value)
                                 }
                             />
+                            <PasswordRules valor={crear.data.password} />
                         </Field>
                         <div className="grid grid-cols-2 gap-3">
                             <Field label="DNI">
@@ -479,7 +507,7 @@ export default function UsuariosPage({
 
                         <Field
                             label="Nueva Contraseña"
-                            hint="Déjala vacía para conservar la actual."
+                            hint="Déjala vacía para conservar la actual. Si la cambias: mínimo 8 caracteres, con mayúscula, minúscula, número y símbolo."
                         >
                             <Input
                                 type="password"
@@ -488,6 +516,7 @@ export default function UsuariosPage({
                                     editar.setData('password', e.target.value)
                                 }
                             />
+                            <PasswordRules valor={editar.data.password} />
                         </Field>
 
                         <div className="flex justify-end gap-2 pt-2">

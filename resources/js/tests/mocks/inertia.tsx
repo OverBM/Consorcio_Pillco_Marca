@@ -214,17 +214,22 @@ interface PropsEnlace extends Omit<
 export function Link(props: PropsEnlace) {
     const destino =
         typeof props.href === 'string' ? props.href : props.href.url;
+    const {
+        href: _href,
+        children,
+        method: _method,
+        data: _data,
+        only: _only,
+        preserveState: _preserveState,
+        preserveScroll: _preserveScroll,
+        replace: _replace,
+        as: _as,
+        ...resto
+    } = props;
 
     return (
-        <a
-            href={destino}
-            className={props.className}
-            title={props.title}
-            aria-label={props['aria-label']}
-            onClick={props.onClick}
-            id={props.id}
-        >
-            {props.children}
+        <a href={destino} {...resto}>
+            {children}
         </a>
     );
 }

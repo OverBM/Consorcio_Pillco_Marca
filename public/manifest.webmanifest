@@ -1,0 +1,25 @@
+{
+    "name": "ObraFlow · Consorcio Pillco Marca",
+    "short_name": "ObraFlow",
+    "description": "Inventarios multi-almacén geolocalizados y control de obra PMI/PMU",
+    "start_url": "/panel",
+    "scope": "/",
+    "display": "standalone",
+    "background_color": "#f1f5f9",
+    "theme_color": "#5468ff",
+    "lang": "es-PE",
+    "icons": [
+        {
+            "src": "/favicon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any"
+        },
+        {
+            "src": "/apple-touch-icon.png",
+            "sizes": "180x180",
+            "type": "image/png",
+            "purpose": "any"
+        }
+    ]
+}

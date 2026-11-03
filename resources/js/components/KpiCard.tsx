@@ -14,13 +14,13 @@ export function KpiCard({
     value: ReactNode;
     unit?: string;
     hint?: ReactNode;
-    tone?: 'indigo' | 'ok' | 'danger' | 'violet';
+    tone?: 'indigo' | 'exito' | 'critico' | 'sobrante';
 }) {
     const tones: Record<string, string> = {
         indigo: 'bg-brand-50 text-brand-600',
-        ok: 'bg-ok-soft text-emerald-700',
-        danger: 'bg-danger-soft text-orange-700',
-        violet: 'bg-sobrante-soft text-violet-700',
+        exito: 'bg-exito-soft text-exito',
+        critico: 'bg-critico-soft text-critico',
+        sobrante: 'bg-sobrante-soft text-sobrante',
     };
     return (
         <div className="card flex items-center gap-4 p-5">

@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             ParametrosSeeder::class,
             FaseCatalogoSeeder::class,
             EjemploValleMantaroSeeder::class,
+            AnaliticaDemoSeeder::class,
         ]);
     }
 }

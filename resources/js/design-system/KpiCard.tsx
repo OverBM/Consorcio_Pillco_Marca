@@ -30,7 +30,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
 
     return (
         <div
-            className={`flex min-h-[135px] flex-col rounded-[16px] p-4 transition-all ${
+            className={`cpm-kpi flex min-h-[135px] flex-col rounded-[16px] p-4 transition-all ${
                 isDark
                     ? 'border border-black bg-[#000000] text-white shadow-md'
                     : isAlert

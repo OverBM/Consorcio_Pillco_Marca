@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Rol;
 use App\Models\Usuario;
+use App\Support\PasswordPolicy;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -35,7 +36,7 @@ class UsuarioController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:150',
             'email' => 'required|email|max:160|unique:usuarios,email',
-            'password' => 'required|string|min:8',
+            'password' => ['required', 'string', new PasswordPolicy],
             'dni' => 'nullable|string|max:12|unique:usuarios,dni',
             'telefono' => 'nullable|string|max:30',
             'rol_codigo' => 'required|string|exists:roles,codigo',
@@ -75,7 +76,7 @@ class UsuarioController extends Controller
                 'max:160',
                 Rule::unique('usuarios', 'email')->ignore($usuario->id),
             ],
-            'password' => 'sometimes|nullable|string|min:8',
+            'password' => ['sometimes', 'nullable', 'string', new PasswordPolicy],
             'dni' => [
                 'sometimes',
                 'nullable',

@@ -85,7 +85,7 @@ describe('design-system/HeaderBar', () => {
         setPageProps({ notificacionesFeed: feed });
     });
 
-    it('muestra migas, entorno, usuario y contador recortado', () => {
+    it('muestra migas, usuario y contador recortado', () => {
         renderPagina(HeaderBar, {
             title: 'Mi Panel',
             subtitle: 'Subtítulo',
@@ -100,7 +100,6 @@ describe('design-system/HeaderBar', () => {
         expect(screen.getAllByText('Mi Panel')[0]).toBeTruthy();
         expect(screen.getByText('Subtítulo')).toBeTruthy();
         expect(screen.getByText('Acción')).toBeTruthy();
-        expect(screen.getByText('HUANCAYO · EN LÍNEA')).toBeTruthy();
         expect(screen.getByText('Residente de Obra')).toBeTruthy();
         expect(screen.getByText('RO')).toBeTruthy();
         expect(screen.getByText('99+')).toBeTruthy();

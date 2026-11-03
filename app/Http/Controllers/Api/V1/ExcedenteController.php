@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Domain\Optimization\AhpOptimizationService;
+use App\Domain\Excedentes\RankingReceptoresService;
 use App\Http\Controllers\Controller;
 use App\Models\ExcedenteDetectado;
 use App\Models\Material;
@@ -21,7 +21,7 @@ use Illuminate\Validation\Rule;
 class ExcedenteController extends Controller
 {
     public function __construct(
-        protected AhpOptimizationService $ahpService
+        protected RankingReceptoresService $rankingReceptores,
     ) {}
 
     public function index(Request $request): JsonResponse
@@ -86,11 +86,19 @@ class ExcedenteController extends Controller
 
         $sugerencias = [];
         if ($obraOrigen && $material) {
-            $sugerencias = $this->ahpService->calcularRankingTransferencias(
-                $obraOrigen->id,
-                $material->id,
-                (float) $excedente->cantidad
-            );
+            try {
+                $ranking = $this->rankingReceptores->obtenerRankingObrasReceptoras(
+                    (int) $excedente->almacen_id,
+                    (int) $material->id,
+                    (float) $excedente->cantidad,
+                    $excedente->origen === 'cierre_obra'
+                );
+
+                $sugerencias = $ranking['resultados'] ?? [];
+            } catch (\Throwable) {
+                // Sin PostGIS no se inventan receptores: el flujo manual sigue disponible.
+                $sugerencias = [];
+            }
         }
 
         return response()->json([

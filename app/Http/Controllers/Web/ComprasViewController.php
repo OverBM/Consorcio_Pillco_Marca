@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Web\Concerns\FiltraContextoOperativo;
 use App\Models\Cotizacion;
 use App\Models\DevolucionProveedor;
+use App\Models\Material;
+use App\Models\MaterialProveedor;
 use App\Models\OrdenCompra;
 use App\Models\Proveedor;
 use App\Models\Recepcion;
@@ -19,7 +21,52 @@ class ComprasViewController extends Controller
 
     public function index(): Response
     {
-        return Inertia::render('ComprasPage');
+        $ordenes = $this->filtrarContexto(OrdenCompra::query(), 'obra_id', 'almacen_destino_id');
+
+        $porEstado = (clone $ordenes)
+            ->selectRaw('estado, COUNT(*) as ordenes, COALESCE(SUM(total), 0) as monto')
+            ->groupBy('estado')
+            ->orderByDesc('monto')
+            ->get()
+            ->map(fn ($fila): array => [
+                'label' => ucfirst(str_replace('_', ' ', (string) $fila->estado)),
+                'valor' => (int) $fila->ordenes,
+                'detalle' => 'S/ '.number_format((float) $fila->monto, 0),
+                'tono' => 'brand',
+            ])
+            ->values()
+            ->all();
+
+        $porProveedor = OrdenCompra::query()
+            ->with('proveedor:id,razon_social')
+            ->selectRaw('proveedor_id, COUNT(*) as ordenes, COALESCE(SUM(total), 0) as monto')
+            ->groupBy('proveedor_id')
+            ->orderByDesc('monto')
+            ->limit(6)
+            ->get()
+            ->map(fn ($fila): array => [
+                'label' => $fila->proveedor?->razon_social ?? 'Sin proveedor',
+                'valor' => round((float) $fila->monto, 0),
+                'detalle' => $fila->ordenes.' órdenes',
+                'tono' => 'ok',
+            ])
+            ->values()
+            ->all();
+
+        return Inertia::render('ComprasPage', [
+            'resumenCompras' => [
+                'requerimientos' => Requerimiento::count(),
+                'requerimientosPendientes' => Requerimiento::whereNotIn('estado', ['atendido', 'cerrado', 'rechazado'])->count(),
+                'cotizaciones' => Cotizacion::count(),
+                'ordenes' => OrdenCompra::count(),
+                'montoOrdenes' => round((float) OrdenCompra::sum('total'), 2),
+                'proveedores' => Proveedor::count(),
+                'recepciones' => Recepcion::count(),
+                'devoluciones' => DevolucionProveedor::count(),
+            ],
+            'ordenesPorEstado' => $porEstado,
+            'comprasPorProveedor' => $porProveedor,
+        ]);
     }
 
     public function requerimientos(): Response
@@ -74,6 +121,21 @@ class ComprasViewController extends Controller
 
         return Inertia::render('ProveedoresPage', [
             'proveedoresDb' => $proveedores,
+            'materialesDb' => Material::query()
+                ->where('activo', true)
+                ->orderBy('nombre')
+                ->get(['id', 'codigo', 'nombre']),
+            'parametrosAbastecimientoDb' => MaterialProveedor::query()
+                ->where('activo', true)
+                ->get([
+                    'id',
+                    'material_id',
+                    'proveedor_id',
+                    'lead_time_dias',
+                    'costo_pedido',
+                    'precio_unitario',
+                    'es_principal',
+                ]),
         ]);
     }
 

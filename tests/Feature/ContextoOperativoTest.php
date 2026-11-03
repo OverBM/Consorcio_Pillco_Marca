@@ -74,6 +74,19 @@ test('el usuario autenticado fija su obra activa en la sesión', function () {
     $response->assertSessionHas('obra_activa_id', $obraA->id);
 });
 
+test('el usuario puede volver a ver todas las obras', function () {
+    ['usuario' => $usuario] = crearContextoOperativo();
+
+    $response = $this->actingAsConRol($usuario)
+        ->from('/panel')
+        ->withSession(['obra_activa_id' => 1])
+        ->post('/contexto', ['obra_activa_id' => null]);
+
+    $response->assertRedirect('/panel');
+    $response->assertSessionMissing('obra_activa_id');
+    $response->assertSessionMissing('almacen_activo_id');
+});
+
 test('el usuario no puede activar una obra sin acceso', function () {
     ['usuario' => $usuario, 'obraC' => $obraC] = crearContextoOperativo();
 

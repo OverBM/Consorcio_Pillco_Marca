@@ -69,7 +69,24 @@ function resumirCambio(
         return '—';
     }
 
-    const detalle = JSON.stringify(fuente);
+    const detalle = Object.entries(fuente)
+        .filter(
+            ([clave]) =>
+                !['password', 'remember_token', 'updated_at'].includes(
+                    clave.toLowerCase(),
+                ),
+        )
+        .slice(0, 3)
+        .map(([clave, valor]) => {
+            const texto =
+                valor !== null && typeof valor === 'object'
+                    ? JSON.stringify(valor)
+                    : String(valor ?? '—');
+
+            return `${clave.replace(/_/g, ' ')}: ${texto}`;
+        })
+        .join(' · ');
+
     return detalle.length > 140 ? `${detalle.slice(0, 137)}…` : detalle;
 }
 

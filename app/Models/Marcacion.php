@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\SincronizaGeografia;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Marcacion extends Model
 {
     use HasFactory;
+    use SincronizaGeografia;
 
     public $timestamps = false;
 
@@ -22,6 +24,9 @@ class Marcacion extends Model
         'distancia_a_obra_m',
         'dentro_geocerca',
         'ubicacion',
+        'latitud',
+        'longitud',
+        'uuid',
         'created_at',
     ];
 

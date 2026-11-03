@@ -23,7 +23,7 @@ describe('components/KpiCard', () => {
     });
 
     it('aplica cada tono disponible', () => {
-        const tonos = ['indigo', 'ok', 'danger', 'violet'] as const;
+        const tonos = ['indigo', 'exito', 'critico', 'sobrante'] as const;
 
         for (const tone of tonos) {
             const { container, unmount } = render(

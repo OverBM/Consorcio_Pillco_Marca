@@ -21,6 +21,7 @@ import { EmptyState } from '../components/EmptyState';
 import { useNotifications } from '../components/notifications/NotificationProvider';
 import type { Catalogos } from '../types';
 import { IconCheck, IconPlus, IconSearch, IconX } from '../components/icons';
+import { formatFechaCalendario } from '../utils/format';
 
 interface MaterialRef {
     id: number;
@@ -67,6 +68,7 @@ const ESTADO_META: Record<
     string,
     { tone: 'ok' | 'warn' | 'danger' | 'neutral'; label: string }
 > = {
+    borrador: { tone: 'neutral', label: 'Borrador' },
     solicitado: { tone: 'warn', label: 'Solicitado' },
     aprobado: { tone: 'ok', label: 'Aprobado' },
     rechazado: { tone: 'danger', label: 'Rechazado' },
@@ -139,7 +141,12 @@ export default function RequerimientosPage({
     );
 
     const total = filas.length;
-    const pendientes = filas.filter((r) => r.estado === 'solicitado').length;
+    const pendientes = filas.filter(
+        (r) =>
+            !['aprobado', 'rechazado', 'atendido', 'cerrado'].includes(
+                r.estado,
+            ),
+    ).length;
     const aprobados = filas.filter((r) => r.estado === 'aprobado').length;
     const materialesTotales = filas.reduce(
         (acc, r) => acc + (r.detalles?.length ?? 0),
@@ -328,6 +335,7 @@ export default function RequerimientosPage({
                                 aria-label="Filtrar estado"
                             >
                                 <option value="todos">Todos los estados</option>
+                                <option value="borrador">Borrador</option>
                                 <option value="solicitado">Solicitado</option>
                                 <option value="aprobado">Aprobado</option>
                                 <option value="rechazado">Rechazado</option>
@@ -394,7 +402,12 @@ export default function RequerimientosPage({
                                         key: 'fecha',
                                         header: 'Requerido para',
                                         mono: true,
-                                        cell: (r) => r.fecha_requerida ?? '—',
+                                        cell: (r) =>
+                                            r.fecha_requerida
+                                                ? formatFechaCalendario(
+                                                      r.fecha_requerida,
+                                                  )
+                                                : '-',
                                     },
                                     {
                                         key: 'estado',

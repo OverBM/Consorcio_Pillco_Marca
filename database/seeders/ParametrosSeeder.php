@@ -23,6 +23,14 @@ class ParametrosSeeder extends Seeder
             ['clave' => 'inventario.tolerancia_pct', 'valor' => '2', 'tipo' => 'numero', 'descripcion' => 'Tolerancia de diferencia en inventario físico'],
             ['clave' => 'asistencia.radio_geocerca_m', 'valor' => '150', 'tipo' => 'numero', 'descripcion' => 'Radio de geocerca por defecto'],
             ['clave' => 'pmu.denominacion', 'valor' => 'Program Management Unit', 'tipo' => 'texto', 'descripcion' => 'Denominación oficial de la unidad de gestión a nivel programa'],
+            ['clave' => 'analitica.nivel_servicio', 'valor' => '0.95', 'tipo' => 'numero', 'descripcion' => 'Nivel de servicio objetivo para el stock de seguridad'],
+            ['clave' => 'analitica.nivel_servicio_clase_a', 'valor' => '0.975', 'tipo' => 'numero', 'descripcion' => 'Nivel de servicio para materiales clase A'],
+            ['clave' => 'analitica.costo_mantenimiento_pct', 'valor' => '0.18', 'tipo' => 'numero', 'descripcion' => 'Tasa anual de costo de mantenimiento sobre el valor unitario'],
+            ['clave' => 'analitica.min_dias_historia', 'valor' => '60', 'tipo' => 'numero', 'descripcion' => 'Días mínimos de historia para pronosticar'],
+            ['clave' => 'analitica.horizonte_dias', 'valor' => '30', 'tipo' => 'numero', 'descripcion' => 'Horizonte de pronóstico por defecto'],
+            ['clave' => 'tracking.retencion_dias', 'valor' => '30', 'tipo' => 'numero', 'descripcion' => 'Días de retención de posiciones de despacho'],
+            ['clave' => 'tracking.intervalo_seg', 'valor' => '45', 'tipo' => 'numero', 'descripcion' => 'Intervalo de envío de posición desde la PWA'],
+            ['clave' => 'ruteo.presupuesto_diario', 'valor' => '1500', 'tipo' => 'numero', 'descripcion' => 'Llamadas diarias máximas al proveedor de ruteo'],
         ];
 
         foreach ($parametros as $p) {

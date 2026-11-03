@@ -67,3 +67,33 @@ sonar-duplicaciones.json
 /phpunit-report.xml
 /coverage/*
 !/coverage/lcov.info
+
+# Python / motor analítico
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+.coverage
+htmlcov/
+
+# Artefactos locales de Inertia y del navegador
+/storage/inertia-devtools/
+
+# Herramientas locales de IA / especificaciones
+/.freebuff
+/.specsmd
+/.github/agents
+/.github/prompts
+/memory-bank
+
+# Variables de entorno locales (se conserva el ejemplo)
+.env.*
+!.env.example
+
+# Scaffolding Docker no utilizado por este proyecto
+/backend
+/frontend

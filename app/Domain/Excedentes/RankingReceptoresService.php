@@ -3,6 +3,8 @@
 namespace App\Domain\Excedentes;
 
 use App\Domain\Geo\GeoService;
+use App\Models\Almacen;
+use App\Models\Material;
 use App\Models\ParametroSistema;
 use Illuminate\Support\Facades\DB;
 
@@ -36,11 +38,17 @@ class RankingReceptoresService
             FROM fn_obras_con_deficit(?, ?, ?)
         ', [$materialId, $almacenOrigenId, $radioM]);
 
+        $material = Material::with('unidadMedida:id,codigo')->find($materialId);
+        $unidad = $material?->unidadMedida?->codigo ?? 'UND';
+        $costoUnitario = (float) ($material?->costo_referencial ?? 0);
+
         $resultados = [];
 
         foreach ($candidatos as $c) {
             $distanciaM = (float) $c->distancia_m;
             $deficit = (float) $c->deficit;
+            $almacenDestino = Almacen::with('obra:id,nombre')->find($c->almacen_id);
+            $cantidadSugerida = round(min($cantidadDisponible, $deficit), 3);
             $etaMin = $this->geoService->estimarEtaMinutos($distanciaM);
 
             // Factor de cercanía normalizado (menor distancia -> mayor puntaje)
@@ -71,6 +79,16 @@ class RankingReceptoresService
                 'distancia_m' => $distanciaM,
                 'eta_min' => $etaMin,
                 'puntaje' => round($puntaje, 4),
+                'almacenDestinoId' => (string) $c->almacen_id,
+                'almacenDestinoNombre' => $almacenDestino?->nombre ?? 'Almacén',
+                'obraDestinoNombre' => $almacenDestino?->obra?->nombre ?? 'Obra',
+                'cantidadSugerida' => $cantidadSugerida,
+                'unidad' => $unidad,
+                'distanciaKm' => round($distanciaM / 1000, 2),
+                'tiempoEstimadoMin' => $etaMin,
+                'puntajeAhp' => round($puntaje * 100, 1),
+                'prioridad' => $puntaje >= 0.75 ? 'alta' : ($puntaje >= 0.5 ? 'media' : 'baja'),
+                'ahorroEstimadoSoles' => round($cantidadSugerida * $costoUnitario, 2),
             ];
         }
 

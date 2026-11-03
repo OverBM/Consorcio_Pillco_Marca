@@ -7,6 +7,8 @@ import { useHttp } from '@inertiajs/react';
 import { refrescarProps } from '../utils/refrescar';
 import { PageHeader } from '../components/PageHeader';
 import { Card, Badge, Button, Modal } from '../components/ui';
+import { KpiTile } from '../design-system/KpiTile';
+import { MiniBarChart } from '../design-system/MiniBarChart';
 import { Field, Select } from '../components/form';
 import { DataTable } from '../components/DataTable';
 import { EmptyState } from '../components/EmptyState';
@@ -78,6 +80,70 @@ export default function AsistenciaPage({
         () => filas.filter((a) => a.inconsistencia).length,
         [filas],
     );
+
+    const resumenAsistencia = useMemo(() => {
+        const porObra = obrasDb
+            .map((obra) => {
+                const registros = filas.filter(
+                    (fila) => fila.obra?.id === obra.id,
+                );
+                const horas = registros.reduce(
+                    (acc, fila) =>
+                        acc + Number(fila.horas_trabajadas ?? 0),
+                    0,
+                );
+
+                return {
+                    label: obra.nombre,
+                    valor: registros.length,
+                    detalle: `${formatNum(horas)} horas-hombre`,
+                    tono: 'brand' as const,
+                };
+            })
+            .sort((a, b) => b.valor - a.valor);
+
+        const conteoEstados = new Map<string, number>();
+
+        filas.forEach((fila) => {
+            const estado = fila.estado?.trim() || 'sin_estado';
+            conteoEstados.set(estado, (conteoEstados.get(estado) ?? 0) + 1);
+        });
+
+        const porEstado = Array.from(conteoEstados.entries())
+            .map(([estado, valor]) => {
+                const normalizado = estado.toLowerCase();
+                const tono = normalizado.includes('observ')
+                    ? ('warn' as const)
+                    : normalizado.includes('conform') ||
+                        normalizado.includes('present') ||
+                        normalizado.includes('consolid')
+                      ? ('ok' as const)
+                      : ('danger' as const);
+
+                return {
+                    label:
+                        estado.charAt(0).toUpperCase() +
+                        estado.slice(1).replace(/_/g, ' '),
+                    valor,
+                    tono,
+                };
+            })
+            .sort((a, b) => b.valor - a.valor);
+
+        const trabajadoresUnicos = new Set(
+            filas
+                .map((fila) => fila.trabajador?.id)
+                .filter((id): id is number => id !== undefined),
+        ).size;
+
+        return {
+            porObra,
+            porEstado,
+            trabajadoresUnicos,
+            promedioHoras:
+                filas.length > 0 ? totalHoras / filas.length : null,
+        };
+    }, [filas, obrasDb, totalHoras]);
 
     const trabajadoresFiltrados = useMemo(() => {
         if (!marcar.data.obra_id) return trabajadoresDb;
@@ -176,40 +242,52 @@ export default function AsistenciaPage({
                 }
             />
 
-            <div className="grid gap-4 sm:grid-cols-3">
-                <Card className="p-4">
-                    <span className="text-muted font-mono text-xs uppercase">
-                        Asistencias Registradas
-                    </span>
-                    <p className="text-ink mt-1 font-mono text-2xl font-bold">
-                        {filas.length}
-                    </p>
-                    <span className="text-muted text-xs">
-                        Consolidado de los últimos 50 registros
-                    </span>
-                </Card>
-                <Card className="p-4">
-                    <span className="text-muted font-mono text-xs uppercase">
-                        Horas-Hombre Acumuladas
-                    </span>
-                    <p className="mt-1 font-mono text-2xl font-bold text-emerald-600">
-                        {formatNum(totalHoras)}
-                    </p>
-                    <span className="text-muted text-xs">
-                        Total de horas trabajadas registradas
-                    </span>
-                </Card>
-                <Card className="p-4">
-                    <span className="text-muted font-mono text-xs uppercase">
-                        Inconsistencias
-                    </span>
-                    <p className="mt-1 font-mono text-2xl font-bold text-amber-600">
-                        {inconsistencias}
-                    </p>
-                    <span className="text-muted text-xs">
-                        Requieren corrección del residente
-                    </span>
-                </Card>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <KpiTile
+                    label="Asistencias Registradas"
+                    value={filas.length}
+                    detalle="Consolidado de los últimos 50 registros"
+                />
+                <KpiTile
+                    label="Horas-hombre"
+                    value={totalHoras}
+                    variante="dark"
+                    detalle={`${resumenAsistencia.trabajadoresUnicos} trabajadores con marcación`}
+                />
+                <KpiTile
+                    label="Promedio por marcación"
+                    value={resumenAsistencia.promedioHoras}
+                    detalle="Horas trabajadas por registro"
+                />
+                <KpiTile
+                    label="Inconsistencias"
+                    value={inconsistencias}
+                    variante="brand"
+                    detalle="Requieren corrección del residente"
+                    progreso={
+                        filas.length > 0
+                            ? (inconsistencias / filas.length) * 100
+                            : null
+                    }
+                    progresoTono="warn"
+                />
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                <div className="lg:col-span-2">
+                    <MiniBarChart
+                        titulo="Marcaciones por frente de obra"
+                        subtitulo="Cobertura de asistencia en cada obra"
+                        items={resumenAsistencia.porObra}
+                        vacio="Sin marcaciones por obra."
+                    />
+                </div>
+                <MiniBarChart
+                    titulo="Distribución por estado"
+                    subtitulo="Presentes, tardanzas y ausencias"
+                    items={resumenAsistencia.porEstado}
+                    vacio="Sin estados registrados."
+                />
             </div>
 
             <Card className="p-5">

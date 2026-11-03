@@ -78,7 +78,7 @@ class PmiViewController extends Controller
             'transferenciasAhpDb' => $transferenciasSugeridas,
             'obrasDb' => Obra::orderBy('nombre')->get(['id', 'nombre']),
             'almacenesDb' => Almacen::with('obra:id,nombre')->orderBy('nombre')->get(['id', 'nombre', 'obra_id']),
-            'materialesDb' => Material::with('unidadMedida')->orderBy('nombre')->get(['id', 'nombre', 'unidad_medida_id']),
+            'materialesDb' => Material::with('unidadMedida')->orderBy('nombre')->get(['id', 'nombre', 'unidad_id']),
         ]);
     }
 

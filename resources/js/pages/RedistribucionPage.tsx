@@ -148,6 +148,25 @@ function tonoEstado(estado: string): 'ok' | 'warn' | 'violet' | 'neutral' {
     return 'warn';
 }
 
+const ETIQUETAS_ORIGEN: Record<string, string> = {
+    cierre_obra: 'Cierre de obra',
+    liquidacion: 'Liquidación',
+    sobrante: 'Sobrante',
+};
+
+const ETIQUETAS_ESTADO: Record<string, string> = {
+    sugerido: 'Sugerido',
+    redistribuido: 'Redistribuido',
+    descartado: 'Descartado',
+    detectado: 'Detectado',
+};
+
+const etiquetaTexto = (valor: string, mapa: Record<string, string>): string =>
+    mapa[valor] ??
+    valor
+        .replace(/_/g, ' ')
+        .replace(/^\w/, (letra) => letra.toUpperCase());
+
 export default function RedistribucionPage({
     excedentesDb = [],
     transferenciasAhpDb = [],
@@ -560,7 +579,12 @@ export default function RedistribucionPage({
                                 key: 'origen',
                                 header: 'Procedencia',
                                 cell: (e) => (
-                                    <Badge tone="violet">{e.origen}</Badge>
+                                    <Badge tone="violet">
+                                        {etiquetaTexto(
+                                            e.origen,
+                                            ETIQUETAS_ORIGEN,
+                                        )}
+                                    </Badge>
                                 ),
                             },
                             {
@@ -569,7 +593,10 @@ export default function RedistribucionPage({
                                 align: 'center',
                                 cell: (e) => (
                                     <Badge tone={tonoEstado(e.estado)}>
-                                        {e.estado}
+                                        {etiquetaTexto(
+                                            e.estado,
+                                            ETIQUETAS_ESTADO,
+                                        )}
                                     </Badge>
                                 ),
                             },

@@ -113,7 +113,7 @@ describe('UsuariosPage', () => {
             target: { value: 'carlos@pillco.pe' },
         });
         fireEvent.change(screen.getByLabelText(/^Contraseña/), {
-            target: { value: 'secreto123' },
+            target: { value: 'Secreto123!' },
         });
         fireEvent.click(
             screen.getByRole('button', { name: /Registrar Usuario/ }),
@@ -135,7 +135,7 @@ describe('UsuariosPage', () => {
             target: { value: ' carlos@pillco.pe ' },
         });
         fireEvent.change(screen.getByLabelText(/^Contraseña/), {
-            target: { value: 'secreto123' },
+            target: { value: 'Secreto123!' },
         });
         fireEvent.change(screen.getByLabelText(/^DNI/), {
             target: { value: ' 70123456 ' },
@@ -157,7 +157,7 @@ describe('UsuariosPage', () => {
                 datos: {
                     name: 'Carlos Mendoza',
                     email: 'carlos@pillco.pe',
-                    password: 'secreto123',
+                    password: 'Secreto123!',
                     dni: '70123456',
                     telefono: null,
                     rol_codigo: 'residente',

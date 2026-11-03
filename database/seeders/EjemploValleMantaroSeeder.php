@@ -581,8 +581,8 @@ class EjemploValleMantaroSeeder extends Seeder
             'created_at' => now()->subDays(3), 'updated_at' => now()->subDays(3),
         ]);
         DB::table('inventario_fisico_detalles')->insert([
-            ['inventario_id' => $inventarioId, 'material_id' => $matCementoAndino, 'cantidad_sistema' => 120.000, 'cantidad_contada' => 118.000, 'diferencia' => -2.000],
-            ['inventario_id' => $inventarioId, 'material_id' => $matFierroMedia, 'cantidad_sistema' => 0.000, 'cantidad_contada' => 0.000, 'diferencia' => 0.000],
+            ['inventario_id' => $inventarioId, 'material_id' => $matCementoAndino, 'cantidad_sistema' => 120.000, 'cantidad_contada' => 118.000],
+            ['inventario_id' => $inventarioId, 'material_id' => $matFierroMedia, 'cantidad_sistema' => 0.000, 'cantidad_contada' => 0.000],
         ]);
 
         // 20. Kardex (últimos días para el panel)

@@ -2,7 +2,7 @@ import { fireEvent, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import CronogramaEvmPage from '../../pages/CronogramaEvmPage';
-import { formatFecha, formatMoneda } from '../../utils/format';
+import { formatFechaCalendario, formatMoneda } from '../../utils/format';
 import { propsBase } from '../fixtures';
 import { renderPagina } from '../harness';
 import { llamadasHttp, router, setPageProps } from '../mocks/inertia';
@@ -87,8 +87,8 @@ describe('CronogramaEvmPage', () => {
         expect(
             screen.getAllByText('Culminación movimiento de tierras')[0],
         ).toBeTruthy();
-        expect(screen.getAllByText(formatFecha('2026-03-15'))[0]).toBeTruthy();
-        expect(screen.getAllByText(formatFecha('2026-06-28'))[0]).toBeTruthy();
+        expect(screen.getAllByText(formatFechaCalendario('2026-03-15'))[0]).toBeTruthy();
+        expect(screen.getAllByText(formatFechaCalendario('2026-06-28'))[0]).toBeTruthy();
         expect(screen.getAllByText('en proceso')[0]).toBeTruthy();
         expect(screen.getAllByText('cumplido')[0]).toBeTruthy();
         expect(screen.queryAllByText('Hito de otra obra')).toHaveLength(0);
@@ -174,3 +174,4 @@ describe('CronogramaEvmPage', () => {
         expect(router.reload).toHaveBeenCalledWith({ only: ['hitosDb'] });
     });
 });
+
