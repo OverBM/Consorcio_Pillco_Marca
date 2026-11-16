@@ -94,6 +94,20 @@ htmlcov/
 .env.*
 !.env.example
 
-# Scaffolding Docker no utilizado por este proyecto
-/backend
-/frontend
+# Cypress: código sí, artefactos generados no
+/cypress/screenshots/
+/cypress/videos/
+/cypress/downloads/
+/cypress/last-run.txt
+/cypress/run-output.txt
+
+# Salidas de escaneo Sonar
+/sonar-scan-output*.txt
+
+# Documentos generados y material de evidencia local
+/docs/*.docx
+/docs/*.py
+/docs/*.cjs
+/docs/SKILL.md
+/docs/diagramas/
+/docs/evidencias/

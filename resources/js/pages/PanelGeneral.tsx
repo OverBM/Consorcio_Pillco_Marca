@@ -1111,21 +1111,26 @@ export default function PanelGeneral() {
             </Card>
 
             {/* Accesos rápidos a los 8 módulos del sistema */}
-            <div className="grid gap-6 lg:grid-cols-3">
+            <div className="grid items-stretch gap-4 xl:grid-cols-5">
                 <Card
+                    className="flex h-full flex-col xl:col-span-3"
                     title="Tendencias — últimos 30 días"
                     subtitle="Ingresos y salidas agregadas en la red"
                 >
-                    <Deferred
-                        data="metricasInventario"
-                        fallback={<Skeleton className="h-56 w-full" />}
-                    >
-                        <TendenciasChart serie={metricas?.serie30d ?? []} />
-                    </Deferred>
+                    <div className="flex min-h-0 flex-1 flex-col">
+                        <Deferred
+                            data="metricasInventario"
+                            fallback={<Skeleton className="h-56 w-full" />}
+                        >
+                            <TendenciasChart
+                                serie={metricas?.serie30d ?? []}
+                            />
+                        </Deferred>
+                    </div>
                 </Card>
 
                 <Card
-                    className="lg:col-span-2"
+                    className="flex h-full flex-col xl:col-span-2"
                     title="Módulos de Almacén y Logística"
                     subtitle="Accesos directos a los flujos operativos"
                 >

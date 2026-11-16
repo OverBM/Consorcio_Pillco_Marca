@@ -98,7 +98,8 @@ export function GlobalSearch({ abierto, onCerrar }: GlobalSearchProps) {
 
     return (
         <div
-            className="bg-ink/40 fixed inset-0 z-[60] flex items-start justify-center p-4 pt-24 backdrop-blur-sm"
+            data-testid="buscador-global-overlay"
+            className="bg-ink/40 fixed inset-0 z-[2600] flex items-start justify-center p-4 pt-24 backdrop-blur-sm"
             role="presentation"
             onMouseDown={(evento) => {
                 if (evento.target === evento.currentTarget) {
@@ -118,7 +119,7 @@ export function GlobalSearch({ abierto, onCerrar }: GlobalSearchProps) {
                         type="search"
                         value={termino}
                         onChange={(evento) => setTermino(evento.target.value)}
-                        placeholder="Buscar obra, almacén, material, OC o proveedor…"
+                        placeholder="Buscar módulo, obra, almacén, material, OC o proveedor…"
                         aria-label="Término de búsqueda"
                         className="rounded-tile bg-soft text-ink focus-ring w-full px-4 py-3 text-sm outline-none"
                     />
@@ -127,7 +128,7 @@ export function GlobalSearch({ abierto, onCerrar }: GlobalSearchProps) {
                 <div className="max-h-[60vh] overflow-y-auto p-2">
                     {estado === 'idle' && (
                         <p className="text-muted px-3 py-6 text-center text-xs">
-                            Escribe al menos 2 caracteres
+                            Escribe al menos 2 caracteres para buscar módulos y registros
                         </p>
                     )}
 

@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToAlmacenYMaterial;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Merma extends Model
 {
+    use BelongsToAlmacenYMaterial;
     use HasFactory;
 
     protected $table = 'mermas';
@@ -30,16 +32,6 @@ class Merma extends Model
         'cantidad' => 'decimal:3',
         'aprobada_en' => 'datetime',
     ];
-
-    public function almacen(): BelongsTo
-    {
-        return $this->belongsTo(Almacen::class, 'almacen_id');
-    }
-
-    public function material(): BelongsTo
-    {
-        return $this->belongsTo(Material::class, 'material_id');
-    }
 
     public function lote(): BelongsTo
     {

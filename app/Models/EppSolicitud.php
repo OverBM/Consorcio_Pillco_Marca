@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToAlmacenYMaterial;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class EppSolicitud extends Model
 {
+    use BelongsToAlmacenYMaterial;
     use HasFactory;
 
     protected $table = 'epp_solicitudes';
@@ -29,15 +31,5 @@ class EppSolicitud extends Model
     public function trabajador(): BelongsTo
     {
         return $this->belongsTo(Trabajador::class, 'trabajador_id');
-    }
-
-    public function material(): BelongsTo
-    {
-        return $this->belongsTo(Material::class, 'material_id');
-    }
-
-    public function almacen(): BelongsTo
-    {
-        return $this->belongsTo(Almacen::class, 'almacen_id');
     }
 }

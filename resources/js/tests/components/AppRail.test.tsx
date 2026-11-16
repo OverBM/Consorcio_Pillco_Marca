@@ -13,7 +13,7 @@ describe('design-system/AppRail', () => {
         expect(screen.getByLabelText('Crear')).toBeTruthy();
         expect(screen.getByLabelText('Ayuda')).toBeTruthy();
         expect(screen.getByLabelText('Ajustes')).toBeTruthy();
-        expect(screen.getByLabelText('Modo oscuro próximamente')).toBeTruthy();
+        expect(screen.getByLabelText('Cambiar a modo oscuro')).toBeTruthy();
     });
 
     it('deshabilita la búsqueda cuando no hay disparador', () => {

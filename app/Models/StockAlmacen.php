@@ -3,13 +3,14 @@
 namespace App\Models;
 
 use App\Models\Concerns\Auditable;
+use App\Models\Concerns\BelongsToAlmacenYMaterial;
 use App\Support\NotificadorOperativo;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class StockAlmacen extends Model
 {
     use Auditable;
+    use BelongsToAlmacenYMaterial;
 
     protected $table = 'stock_almacen';
 
@@ -69,16 +70,6 @@ class StockAlmacen extends Model
                 $stock->material_id,
             );
         });
-    }
-
-    public function almacen(): BelongsTo
-    {
-        return $this->belongsTo(Almacen::class, 'almacen_id');
-    }
-
-    public function material(): BelongsTo
-    {
-        return $this->belongsTo(Material::class, 'material_id');
     }
 
     public function getCantidadDisponibleAttribute(): float

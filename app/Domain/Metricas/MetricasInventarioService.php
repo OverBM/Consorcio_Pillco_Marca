@@ -70,11 +70,7 @@ final class MetricasInventarioService
      */
     private function stockQuery(?int $obraId, ?int $almacenId)
     {
-        return DB::table('stock_almacen as s')
-            ->join('materiales as m', 'm.id', '=', 's.material_id')
-            ->join('almacenes as a', 'a.id', '=', 's.almacen_id')
-            ->when($almacenId !== null, fn ($q) => $q->where('s.almacen_id', $almacenId))
-            ->when($almacenId === null && $obraId !== null, fn ($q) => $q->where('a.obra_id', $obraId));
+        return ConsultasInventario::stockQuery($almacenId, $obraId);
     }
 
     /**
@@ -82,11 +78,7 @@ final class MetricasInventarioService
      */
     private function kardexQuery(?int $obraId, ?int $almacenId)
     {
-        return DB::table('kardex as k')
-            ->join('materiales as m', 'm.id', '=', 'k.material_id')
-            ->join('almacenes as a', 'a.id', '=', 'k.almacen_id')
-            ->when($almacenId !== null, fn ($q) => $q->where('k.almacen_id', $almacenId))
-            ->when($almacenId === null && $obraId !== null, fn ($q) => $q->where('a.obra_id', $obraId));
+        return ConsultasInventario::kardexQuery($almacenId, $obraId);
     }
 
     private function transferenciasEnTransito(?int $obraId, ?int $almacenId): int

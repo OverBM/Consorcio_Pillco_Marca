@@ -9,6 +9,20 @@
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
         <link rel="manifest" href="/manifest.webmanifest">
         <meta name="theme-color" content="#5468ff">
+        <script>
+            (function () {
+                try {
+                    var guardado = localStorage.getItem('cpm_tema');
+                    var oscuro = guardado
+                        ? guardado === 'oscuro'
+                        : window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    var tema = oscuro ? 'oscuro' : 'claro';
+                    document.documentElement.dataset.theme = tema;
+                    document.documentElement.classList.toggle('dark', oscuro);
+                    document.documentElement.style.colorScheme = oscuro ? 'dark' : 'light';
+                } catch (e) {}
+            })();
+        </script>
 
         <!-- Google Fonts: Plus Jakarta Sans, Barlow Condensed, JetBrains Mono -->
         <link rel="preconnect" href="https://fonts.googleapis.com">

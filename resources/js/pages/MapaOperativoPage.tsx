@@ -137,8 +137,22 @@ const tonoSeveridad = (severidad: string) => {
     return 'neutral' as const;
 };
 
-const formatearDetalleAlerta = (detalle: string): string =>
-    detalle.replace(/(\d+)\.\d+\s+minutos/g, '$1 minutos');
+const formatearDetalleAlerta = (detalle: string): string => {
+    const indice = detalle.indexOf(' minutos');
+
+    if (indice < 0) {
+        return detalle;
+    }
+
+    const inicio = detalle.lastIndexOf(' ', indice - 1) + 1;
+    const valor = Number(detalle.slice(inicio, indice));
+
+    if (Number.isNaN(valor)) {
+        return detalle;
+    }
+
+    return `${detalle.slice(0, inicio)}${Math.trunc(valor)}${detalle.slice(indice)}`;
+};
 
 const formatoEta = (minutos: number | null): string => {
     if (minutos === null) {

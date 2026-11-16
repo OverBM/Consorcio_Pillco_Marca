@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToAlmacenYMaterial;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AlertaAbastecimiento extends Model
 {
+    use BelongsToAlmacenYMaterial;
+
     protected $table = 'alertas_abastecimiento';
 
     protected $fillable = [
@@ -30,16 +33,6 @@ class AlertaAbastecimiento extends Model
             'cantidad_sugerida' => 'decimal:3',
             'reconocida_en' => 'datetime',
         ];
-    }
-
-    public function almacen(): BelongsTo
-    {
-        return $this->belongsTo(Almacen::class, 'almacen_id');
-    }
-
-    public function material(): BelongsTo
-    {
-        return $this->belongsTo(Material::class, 'material_id');
     }
 
     public function reconocidaPor(): BelongsTo

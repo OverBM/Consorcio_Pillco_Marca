@@ -1,39 +1,47 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
 import {
+    cabecerasJson,
     construirLote,
+    contarPendientes,
     deduplicarEventos,
+    sincronizarCola,
     type EventoOffline,
 } from '../../utils/offlineQueue';
 
 function evento(
     uuid: string,
     created_at: string,
-    intentos = 0,
+    tipo: EventoOffline['tipo'] = 'posicion',
 ): EventoOffline {
     return {
         uuid,
-        tipo: 'posicion',
-        url: '/api/v1/despachos/1/posiciones',
-        payload: { lat: -12.06, lng: -75.21 },
+        tipo,
+        url: '/api/v1/geo/posiciones',
+        payload: { lat: -12.06, lng: -75.2 },
         created_at,
-        intentos,
+        intentos: 0,
     };
 }
 
-describe('offlineQueue', () => {
-    it('deduplica eventos por uuid conservando el primero', () => {
-        const original = evento('a', '2026-11-02T10:00:00Z');
-        const duplicado = evento('a', '2026-11-02T10:05:00Z', 3);
+describe('utils/offlineQueue', () => {
+    it('deduplica eventos conservando el primero de cada uuid', () => {
+        const resultado = deduplicarEventos([
+            evento('a', '2026-11-10T10:00:00Z'),
+            evento('a', '2026-11-10T11:00:00Z'),
+            evento('b', '2026-11-10T09:00:00Z'),
+        ]);
 
-        expect(deduplicarEventos([original, duplicado])).toEqual([original]);
+        expect(resultado).toHaveLength(2);
+        expect(resultado[0].created_at).toBe('2026-11-10T10:00:00Z');
     });
 
-    it('ordena por fecha ascendente y respeta el máximo del lote', () => {
+    it('ordena por fecha y respeta el máximo del lote', () => {
         const lote = construirLote(
             [
-                evento('b', '2026-11-02T10:02:00Z'),
-                evento('a', '2026-11-02T10:01:00Z'),
-                evento('c', '2026-11-02T10:03:00Z'),
+                evento('c', '2026-11-10T12:00:00Z'),
+                evento('a', '2026-11-10T08:00:00Z'),
+                evento('b', '2026-11-10T10:00:00Z'),
             ],
             2,
         );
@@ -41,14 +49,31 @@ describe('offlineQueue', () => {
         expect(lote.map((item) => item.uuid)).toEqual(['a', 'b']);
     });
 
-    it('limita el lote a 50 elementos por defecto', () => {
-        const eventos = Array.from({ length: 60 }, (_, indice) =>
-            evento(
-                `uuid-${indice}`,
-                `2026-11-02T10:${String(indice).padStart(2, '0')}:00Z`,
-            ),
-        );
+    it('construye las cabeceras JSON con el token CSRF del documento', () => {
+        document.head.innerHTML =
+            '<meta name="csrf-token" content="token-prueba">';
 
-        expect(construirLote(eventos)).toHaveLength(50);
+        expect(cabecerasJson()).toEqual({
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            'X-CSRF-TOKEN': 'token-prueba',
+        });
+
+        document.head.innerHTML = '';
+    });
+
+    it('cuenta cero pendientes cuando IndexedDB no está disponible', async () => {
+        expect(await contarPendientes()).toBe(0);
+    });
+
+    it('no sincroniza nada cuando el navegador está sin conexión', async () => {
+        vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+
+        await expect(sincronizarCola()).resolves.toEqual({
+            enviadas: 0,
+            fallidas: 0,
+        });
+
+        vi.restoreAllMocks();
     });
 });

@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToAlmacenYMaterial;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Kardex extends Model
 {
+    use BelongsToAlmacenYMaterial;
+
     protected $table = 'kardex';
 
     public $timestamps = false;
@@ -34,16 +37,6 @@ class Kardex extends Model
             'costo_unitario' => 'decimal:4',
             'created_at' => 'datetime',
         ];
-    }
-
-    public function almacen(): BelongsTo
-    {
-        return $this->belongsTo(Almacen::class, 'almacen_id');
-    }
-
-    public function material(): BelongsTo
-    {
-        return $this->belongsTo(Material::class, 'material_id');
     }
 
     public function usuario(): BelongsTo

@@ -9,15 +9,21 @@ use App\Models\Obra;
 use App\Models\OrdenCompra;
 use App\Models\Proveedor;
 use App\Models\Usuario;
+use App\Support\CatalogoModulos;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
  * Búsqueda global agrupada para el command palette.
  *
- * Devuelve como máximo cinco resultados por grupo y respeta los permisos del
- * usuario: sin `compras.ver` no se exponen órdenes de compra ni proveedores.
+ * Devuelve módulos navegables y como máximo cinco registros por grupo.
+ * Respeta los permisos del usuario: sin `compras.ver` no se exponen órdenes
+ * de compra ni proveedores. La comparación es insensible a mayúsculas y
+ * acentos para que "mermas", "Almacen" o "almacén" encuentren el módulo o
+ * el registro correcto.
  */
 class BusquedaGlobalController extends Controller
 {
@@ -28,8 +34,6 @@ class BusquedaGlobalController extends Controller
         ]);
 
         $termino = trim($validated['q']);
-        $like = '%'.str_replace(['%', '_'], ['\%', '\_'], $termino).'%';
-
         $usuario = $request->user();
         $permisos = collect();
 
@@ -41,34 +45,46 @@ class BusquedaGlobalController extends Controller
                 ->pluck('p.codigo');
         }
 
-        $grupos = [
+        $grupos = [];
+
+        $modulos = CatalogoModulos::buscar($termino, $permisos->all());
+
+        if ($modulos !== []) {
+            $grupos[] = [
+                'tipo' => 'modulos',
+                'etiqueta' => 'Módulos',
+                'items' => $modulos,
+            ];
+        }
+
+        $grupos = array_merge($grupos, [
             [
                 'tipo' => 'obras',
                 'etiqueta' => 'Obras',
-                'items' => $this->obras($like),
+                'items' => $this->obras($termino),
             ],
             [
                 'tipo' => 'almacenes',
                 'etiqueta' => 'Almacenes',
-                'items' => $this->almacenes($like),
+                'items' => $this->almacenes($termino),
             ],
             [
                 'tipo' => 'materiales',
                 'etiqueta' => 'Materiales',
-                'items' => $this->materiales($like),
+                'items' => $this->materiales($termino),
             ],
-        ];
+        ]);
 
         if ($permisos->contains('compras.ver')) {
             $grupos[] = [
                 'tipo' => 'ordenes_compra',
                 'etiqueta' => 'Órdenes de compra',
-                'items' => $this->ordenesCompra($like),
+                'items' => $this->ordenesCompra($termino),
             ];
             $grupos[] = [
                 'tipo' => 'proveedores',
                 'etiqueta' => 'Proveedores',
-                'items' => $this->proveedores($like),
+                'items' => $this->proveedores($termino),
             ];
         }
 
@@ -81,10 +97,12 @@ class BusquedaGlobalController extends Controller
     /**
      * @return array<int, array{id: string, titulo: string, subtitulo: string, href: string}>
      */
-    private function obras(string $like): array
+    private function obras(string $termino): array
     {
-        return Obra::query()
-            ->where(fn ($q) => $q->where('nombre', 'like', $like)->orWhere('codigo', 'like', $like))
+        $query = Obra::query();
+        $this->filtrar($query, ['nombre', 'codigo', 'distrito'], $termino);
+
+        return $query
             ->orderBy('nombre')
             ->limit(5)
             ->get(['id', 'codigo', 'nombre', 'distrito'])
@@ -101,10 +119,12 @@ class BusquedaGlobalController extends Controller
     /**
      * @return array<int, array{id: string, titulo: string, subtitulo: string, href: string}>
      */
-    private function almacenes(string $like): array
+    private function almacenes(string $termino): array
     {
-        return Almacen::query()
-            ->where(fn ($q) => $q->where('nombre', 'like', $like)->orWhere('codigo', 'like', $like))
+        $query = Almacen::query();
+        $this->filtrar($query, ['nombre', 'codigo'], $termino);
+
+        return $query
             ->orderBy('nombre')
             ->limit(5)
             ->get(['id', 'codigo', 'nombre'])
@@ -121,10 +141,12 @@ class BusquedaGlobalController extends Controller
     /**
      * @return array<int, array{id: string, titulo: string, subtitulo: string, href: string}>
      */
-    private function materiales(string $like): array
+    private function materiales(string $termino): array
     {
-        return Material::query()
-            ->where(fn ($q) => $q->where('nombre', 'like', $like)->orWhere('codigo', 'like', $like))
+        $query = Material::query();
+        $this->filtrar($query, ['nombre', 'codigo'], $termino);
+
+        return $query
             ->orderBy('nombre')
             ->limit(5)
             ->get(['id', 'codigo', 'nombre'])
@@ -141,10 +163,12 @@ class BusquedaGlobalController extends Controller
     /**
      * @return array<int, array{id: string, titulo: string, subtitulo: string, href: string}>
      */
-    private function ordenesCompra(string $like): array
+    private function ordenesCompra(string $termino): array
     {
-        return OrdenCompra::query()
-            ->where('codigo', 'like', $like)
+        $query = OrdenCompra::query();
+        $this->filtrar($query, ['codigo', 'estado'], $termino);
+
+        return $query
             ->orderByDesc('id')
             ->limit(5)
             ->get(['id', 'codigo', 'estado'])
@@ -161,10 +185,12 @@ class BusquedaGlobalController extends Controller
     /**
      * @return array<int, array{id: string, titulo: string, subtitulo: string, href: string}>
      */
-    private function proveedores(string $like): array
+    private function proveedores(string $termino): array
     {
-        return Proveedor::query()
-            ->where(fn ($q) => $q->where('razon_social', 'like', $like)->orWhere('ruc', 'like', $like))
+        $query = Proveedor::query();
+        $this->filtrar($query, ['razon_social', 'ruc'], $termino);
+
+        return $query
             ->orderBy('razon_social')
             ->limit(5)
             ->get(['id', 'razon_social', 'ruc'])
@@ -176,5 +202,33 @@ class BusquedaGlobalController extends Controller
             ])
             ->values()
             ->all();
+    }
+
+    /**
+     * Aplica una búsqueda OR sobre varias columnas con normalización de
+     * mayúsculas y acentos compatible con PostgreSQL y SQLite.
+     *
+     * @param  array<int, string>  $columnas
+     */
+    private function filtrar(Builder $query, array $columnas, string $termino): void
+    {
+        $normalizado = '%'.mb_strtolower(Str::ascii($termino)).'%';
+
+        $query->where(function (Builder $sub) use ($columnas, $normalizado): void {
+            foreach ($columnas as $columna) {
+                $sub->orWhereRaw($this->expresionNormalizada($columna).' like ?', [$normalizado]);
+            }
+        });
+    }
+
+    private function expresionNormalizada(string $columna): string
+    {
+        $driver = DB::connection()->getDriverName();
+
+        return match ($driver) {
+            'pgsql' => "translate(lower(coalesce({$columna}, '')), 'áéíóúüñÁÉÍÓÚÜÑ', 'aeiouunAEIOUUN')",
+            'sqlite' => "replace(replace(replace(replace(replace(replace(lower(coalesce({$columna}, '')), 'á', 'a'), 'é', 'e'), 'í', 'i'), 'ó', 'o'), 'ú', 'u'), 'ñ', 'n')",
+            default => "lower(coalesce({$columna}, ''))",
+        };
     }
 }

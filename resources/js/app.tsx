@@ -9,6 +9,7 @@ import type { ReactNode } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { OfflineIndicator } from '@/components/OfflineIndicator';
 import { NotificationProvider } from '@/components/notifications/NotificationProvider';
+import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import type { Auth } from '@/types/auth';
 
 const appName = 'Consorcio Pillco Marca';
@@ -18,10 +19,16 @@ function AppShell({ children }: { children: ReactNode }) {
     const auth = (props as { auth?: Auth | null }).auth;
 
     return (
-        <NotificationProvider>
-            {auth?.user ? <AppLayout>{children}</AppLayout> : children}
-            <OfflineIndicator />
-        </NotificationProvider>
+        <ThemeProvider>
+            <NotificationProvider>
+                {auth?.user ? (
+                    <AppLayout>{children}</AppLayout>
+                ) : (
+                    children
+                )}
+                <OfflineIndicator />
+            </NotificationProvider>
+        </ThemeProvider>
     );
 }
 

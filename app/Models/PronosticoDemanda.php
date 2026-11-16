@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToAlmacenYMaterial;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PronosticoDemanda extends Model
 {
+    use BelongsToAlmacenYMaterial;
+
     protected $table = 'pronosticos_demanda';
 
     protected $fillable = [
@@ -36,15 +38,5 @@ class PronosticoDemanda extends Model
             'baja_confianza' => 'boolean',
             'calculado_en' => 'datetime',
         ];
-    }
-
-    public function almacen(): BelongsTo
-    {
-        return $this->belongsTo(Almacen::class, 'almacen_id');
-    }
-
-    public function material(): BelongsTo
-    {
-        return $this->belongsTo(Material::class, 'material_id');
     }
 }

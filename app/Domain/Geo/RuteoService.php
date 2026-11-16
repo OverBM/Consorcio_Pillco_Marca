@@ -24,7 +24,7 @@ class RuteoService
 
     public function calcular(Coordenada $origen, Coordenada $destino, string $perfil = 'car'): RutaCalculada
     {
-        $clave = 'ruteo:'.sha1(json_encode([
+        $clave = 'ruteo:'.hash('sha256', json_encode([
             'driver' => $this->principal->nombre(),
             'origen' => $origen->toArray(),
             'destino' => $destino->toArray(),

@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToAlmacenYMaterial;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ExcedenteDetectado extends Model
 {
+    use BelongsToAlmacenYMaterial;
     use HasFactory;
 
     protected $table = 'excedentes_detectados';
@@ -30,15 +32,5 @@ class ExcedenteDetectado extends Model
     public function obra(): BelongsTo
     {
         return $this->belongsTo(Obra::class, 'obra_origen_id');
-    }
-
-    public function almacen(): BelongsTo
-    {
-        return $this->belongsTo(Almacen::class, 'almacen_id');
-    }
-
-    public function material(): BelongsTo
-    {
-        return $this->belongsTo(Material::class, 'material_id');
     }
 }

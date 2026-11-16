@@ -625,3 +625,266 @@
         transform: none;
     }
 }
+
+/* ------------------------------------------------------------------ */
+/* Modo oscuro: tokens y superficies                                  */
+/* ------------------------------------------------------------------ */
+:root[data-theme='oscuro'] {
+    color-scheme: dark;
+    --color-canvas: #0b0f17;
+    --color-surface: #111827;
+    --color-soft: #1a2332;
+    --color-line: #2b3648;
+    --color-ink: #e5e7eb;
+    --color-muted: #9ca3af;
+    --color-exito: #4ade80;
+    --color-exito-soft: #14321f;
+    --color-mint: #d1ffca;
+    --color-mint-hover: #b8f5b0;
+    --color-yellow: #facc15;
+    --color-brand-50: #0f2418;
+    --color-brand-100: #143420;
+    --color-brand-200: #1c4b2c;
+    --color-brand-300: #2b6b3d;
+    --color-brand-400: #3f9d57;
+    --color-brand-500: #7ee2a0;
+    --color-brand-600: #a7f3c1;
+    --color-brand-700: #c6f7d8;
+    --color-brand-800: #d9fbe6;
+    --color-brand-900: #ecfdf3;
+    --shadow-card:
+        inset 0 1px 0 rgba(255, 255, 255, 0.04),
+        0 1px 2px rgba(0, 0, 0, 0.4), 0 18px 40px -28px rgba(0, 0, 0, 0.8);
+    --shadow-pop:
+        0 18px 40px -12px rgba(0, 0, 0, 0.7),
+        0 8px 10px -6px rgba(0, 0, 0, 0.5);
+}
+
+@layer components {
+html[data-theme='oscuro'] body {
+    background-color: var(--color-canvas) !important;
+    color: var(--color-ink) !important;
+}
+
+html[data-theme='oscuro'] .bg-canvas {
+    background-color: var(--color-canvas) !important;
+}
+
+html[data-theme='oscuro'] .bg-surface,
+html[data-theme='oscuro'] .bg-white {
+    background-color: var(--color-surface) !important;
+}
+
+html[data-theme='oscuro'] .bg-ink {
+    background-color: #0b1a12 !important;
+}
+
+html[data-theme='oscuro'] .border-ink {
+    border-color: var(--color-line) !important;
+}
+
+html[data-theme='oscuro'] .bg-\[\#fff100\] {
+    background-color: var(--color-yellow) !important;
+}
+
+html[data-theme='oscuro'] .text-black,
+html[data-theme='oscuro'] .text-\[\#000000\] {
+    color: var(--color-ink) !important;
+}
+
+html[data-theme='oscuro'] .border-\[\#c6c6c6\]\/50 {
+    border-color: var(--color-line) !important;
+}
+
+html[data-theme='oscuro'] .bg-soft {
+    background-color: var(--color-soft) !important;
+}
+
+html[data-theme='oscuro'] .border-line {
+    border-color: var(--color-line) !important;
+}
+
+html[data-theme='oscuro'] .text-ink,
+html[data-theme='oscuro'] .text-slate-700,
+html[data-theme='oscuro'] .text-slate-800,
+html[data-theme='oscuro'] .text-slate-900 {
+    color: var(--color-ink) !important;
+}
+
+html[data-theme='oscuro'] .text-muted {
+    color: var(--color-muted) !important;
+}
+
+html[data-theme='oscuro'] .card,
+html[data-theme='oscuro'] .obraflow-card,
+html[data-theme='oscuro'] .panel {
+    background-color: var(--color-surface);
+    border-color: var(--color-line);
+    color: var(--color-ink);
+}
+
+html[data-theme='oscuro'] .card:hover {
+    border-color: var(--color-brand-400);
+}
+
+html[data-theme='oscuro'] .btn-secondary {
+    background-color: var(--color-surface);
+    border-color: var(--color-line);
+    color: var(--color-ink);
+}
+
+html[data-theme='oscuro'] .btn-secondary:hover:not(:disabled) {
+    background-color: var(--color-soft);
+    border-color: var(--color-brand-400);
+    color: var(--color-ink);
+}
+
+html[data-theme='oscuro'] .btn-primary {
+    background-color: #e5e7eb;
+    border-color: #e5e7eb;
+    color: #0b0f17;
+}
+
+html[data-theme='oscuro'] .btn-primary:hover:not(:disabled) {
+    background-color: #f9fafb;
+    border-color: #f9fafb;
+}
+
+html[data-theme='oscuro'] .field,
+html[data-theme='oscuro'] select,
+html[data-theme='oscuro'] input[type='text'],
+html[data-theme='oscuro'] input[type='number'],
+html[data-theme='oscuro'] input[type='search'],
+html[data-theme='oscuro'] input[type='email'],
+html[data-theme='oscuro'] input[type='password'],
+html[data-theme='oscuro'] input[type='date'],
+html[data-theme='oscuro'] textarea {
+    background-color: var(--color-soft);
+    border-color: var(--color-line);
+    color: var(--color-ink);
+}
+
+html[data-theme='oscuro'] .field::placeholder,
+html[data-theme='oscuro'] input::placeholder,
+html[data-theme='oscuro'] textarea::placeholder {
+    color: #6b7280;
+}
+
+html[data-theme='oscuro'] .label {
+    color: var(--color-muted);
+}
+
+html[data-theme='oscuro'] .hint {
+    color: var(--color-muted);
+}
+
+html[data-theme='oscuro'] .bg-brand-50 {
+    background-color: #151c30 !important;
+}
+
+html[data-theme='oscuro'] .bg-brand-100 {
+    background-color: #1c2540 !important;
+}
+
+html[data-theme='oscuro'] .bg-exito-soft {
+    background-color: #14321f !important;
+    color: #86efac !important;
+}
+
+html[data-theme='oscuro'] .bg-atencion-soft {
+    background-color: #3a2a0c !important;
+    color: #fcd34d !important;
+}
+
+html[data-theme='oscuro'] .bg-critico-soft {
+    background-color: #3a1717 !important;
+    color: #fca5a5 !important;
+}
+
+html[data-theme='oscuro'] .bg-sobrante-soft {
+    background-color: #2a1b45 !important;
+    color: #c4b5fd !important;
+}
+
+html[data-theme='oscuro'] .text-slate-600,
+html[data-theme='oscuro'] .text-slate-500 {
+    color: var(--color-muted) !important;
+}
+
+html[data-theme='oscuro'] .divide-line > :not([hidden]) ~ :not([hidden]) {
+    border-color: var(--color-line);
+}
+
+html[data-theme='oscuro'] .data-table-scroll {
+    scrollbar-color: var(--color-line) transparent;
+}
+
+html[data-theme='oscuro'] .data-table-scroll::-webkit-scrollbar-thumb {
+    background-color: var(--color-line);
+}
+
+
+}
+
+/* ------------------------------------------------------------------ */
+/* Transici�n suave al cambiar de tema (claro <-> oscuro)             */
+/* ------------------------------------------------------------------ */
+html.theme-changing,
+html.theme-changing body,
+html.theme-changing body *,
+html.theme-changing body *::before,
+html.theme-changing body *::after {
+    transition:
+        background-color 380ms ease,
+        border-color 380ms ease,
+        color 380ms ease,
+        fill 380ms ease,
+        stroke 380ms ease,
+        box-shadow 380ms ease !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html.theme-changing,
+    html.theme-changing body,
+    html.theme-changing body *,
+    html.theme-changing body *::before,
+    html.theme-changing body *::after {
+        transition: none !important;
+    }
+}
+
+/* Animaci�n del cambio de tema con View Transitions (Chromium). */
+@keyframes theme-view-out {
+    to {
+        opacity: 0.65;
+        filter: saturate(0.75) blur(1px);
+    }
+}
+
+@keyframes theme-view-in {
+    from {
+        opacity: 0.55;
+        filter: saturate(0.8) blur(1px);
+        transform: scale(1.008);
+    }
+    to {
+        opacity: 1;
+        filter: none;
+        transform: scale(1);
+    }
+}
+
+::view-transition-old(root) {
+    animation: theme-view-out 260ms ease both;
+}
+
+::view-transition-new(root) {
+    animation: theme-view-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+        animation: none;
+    }
+}

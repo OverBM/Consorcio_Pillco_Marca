@@ -39,11 +39,19 @@ export type NotificacionFeedItem = {
     referencia_id: number | null;
     leida: boolean;
     fecha: string | null;
+    modulo?: string;
+    etiqueta?: string;
+    icono?: string;
+    tono?: 'danger' | 'warn' | 'info' | 'neutral';
+    para_rol?: boolean;
+    rol_etiqueta?: string;
+    roles_destino?: string[];
 };
 
 export type NotificacionesFeed = {
     items: NotificacionFeedItem[];
     sin_leer: number;
+    por_rol?: number;
 };
 
 export type CatalogoObra = {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, router, useHttp, usePage } from '@inertiajs/react';
 import { refrescarProps } from '../utils/refrescar';
 import {
@@ -10,10 +10,14 @@ import {
     IconMenu,
     IconRefresh,
     IconRepeat,
+    IconSettings,
     IconShoppingCart,
     IconUsers,
 } from '@/components/icons/Icons';
-import type { NotificacionFeedItem } from '@/types/auth';
+import type {
+    NotificacionFeedItem,
+    NotificacionesFeed,
+} from '@/types/auth';
 
 interface HeaderBarProps {
     title: string;
@@ -77,6 +81,27 @@ type IconoNotificacionProps = { size?: number; className?: string };
 function iconoNotificacion(
     item: NotificacionFeedItem,
 ): React.FC<IconoNotificacionProps> {
+    if (item.icono) {
+        switch (item.icono) {
+            case 'box':
+                return IconBox;
+            case 'refresh':
+                return IconRefresh;
+            case 'cart':
+                return IconShoppingCart;
+            case 'building':
+                return IconBuilding;
+            case 'users':
+                return IconUsers;
+            case 'settings':
+                return IconSettings;
+            case 'shield':
+                return IconUsers;
+            case 'bell':
+                return IconBell;
+        }
+    }
+
     switch (item.referencia_tipo) {
         case 'excedente':
             return IconRefresh;
@@ -96,6 +121,22 @@ function iconoNotificacion(
     }
 }
 
+const TONOS_NOTIFICACION: Record<string, string> = {
+    danger: 'border-critico/40 bg-critico-soft text-critico',
+    warn: 'border-atencion/40 bg-atencion-soft text-atencion',
+    info: 'border-brand-200 bg-brand-50 text-brand-800',
+    neutral: 'border-line bg-soft text-muted',
+};
+
+const PUNTO_TONO: Record<string, string> = {
+    danger: 'bg-critico',
+    warn: 'bg-atencion',
+    info: 'bg-brand-500',
+    neutral: 'bg-muted',
+};
+
+type FiltroNotificacion = 'todas' | 'sin-leer' | 'rol';
+
 export const HeaderBar: React.FC<HeaderBarProps> = ({
     title,
     breadcrumb = ['PANEL', 'OPERACIONES', 'VALLE DEL MANTARO'],
@@ -112,14 +153,35 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
     compacto = false,
 }) => {
     const { props } = usePage();
-    const feed = props.notificacionesFeed ?? { items: [], sin_leer: 0 };
+    const feed: NotificacionesFeed = props.notificacionesFeed ?? {
+        items: [],
+        sin_leer: 0,
+    };
     const total = notificationCount ?? feed.sin_leer;
+    const totalRol = feed.por_rol ?? 0;
 
     const [panelAbierto, setPanelAbierto] = useState(false);
     const [menuPerfil, setMenuPerfil] = useState(false);
+    const [filtro, setFiltro] = useState<FiltroNotificacion>('todas');
 
     const marcarTodas = useHttp({});
     const marcarUna = useHttp({});
+
+    const itemsVisibles = useMemo(() => {
+        if (filtro === 'sin-leer') {
+            return feed.items.filter((item) => !item.leida);
+        }
+
+        if (filtro === 'rol') {
+            return feed.items.filter((item) => item.para_rol);
+        }
+
+        return feed.items;
+    }, [feed.items, filtro]);
+
+    const actualizarFeed = (): void => {
+        refrescarProps('notificacionesFeed');
+    };
 
     useEffect(() => {
         if (!panelAbierto) {
@@ -274,40 +336,87 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                                     aria-label="Notificaciones y alertas"
                                     className="rounded-tile border-line bg-surface shadow-pop absolute right-0 z-50 mt-1 w-80 max-w-[calc(100vw-2rem)] overflow-hidden border sm:w-96"
                                 >
-                                    <div className="flex items-center justify-between border-b border-[#e2e2e2] bg-[#fafafa] px-3 py-2">
-                                        <span className="font-mono text-micro tracking-widest text-[#555555] uppercase">
-                                            Notificaciones
-                                        </span>
-                                        <button
-                                            type="button"
-                                            onClick={marcarTodo}
-                                            disabled={
-                                                total === 0 ||
-                                                marcarTodas.processing
-                                            }
-                                            className="text-micro font-semibold text-[#000000] underline disabled:text-[#999999] disabled:no-underline"
-                                        >
-                                            Marcar todas como leídas
-                                        </button>
+                                    <div className="border-line flex items-center justify-between border-b bg-soft px-3 py-2">
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-mono text-micro text-muted tracking-widest uppercase">
+                                                Notificaciones
+                                            </span>
+                                            {totalRol > 0 && (
+                                                <span className="rounded-pill bg-brand-100 text-brand-800 px-1.5 py-0.5 font-mono text-[9px] font-bold">
+                                                    {totalRol} de tu rol
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                type="button"
+                                                onClick={actualizarFeed}
+                                                aria-label="Actualizar notificaciones"
+                                                title="Actualizar"
+                                                className="text-muted hover:text-ink rounded p-1"
+                                            >
+                                                <IconRefresh size={13} />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={marcarTodo}
+                                                disabled={
+                                                    total === 0 ||
+                                                    marcarTodas.processing
+                                                }
+                                                className="text-micro text-ink font-semibold underline disabled:text-muted disabled:no-underline"
+                                            >
+                                                Marcar todas como leídas
+                                            </button>
+                                        </div>
                                     </div>
 
-                                    <ul className="max-h-96 divide-y divide-[#eeeeee] overflow-y-auto">
-                                        {feed.items.length === 0 && (
-                                            <li className="px-3 py-8 text-center text-xs text-[#777777]">
+                                    <div className="border-line flex gap-1 border-b px-2 py-1.5">
+                                        {(
+                                            [
+                                                ['todas', 'Todas'],
+                                                ['sin-leer', 'Sin leer'],
+                                                ['rol', 'Mi rol'],
+                                            ] as const
+                                        ).map(([valor, etiqueta]) => (
+                                            <button
+                                                key={valor}
+                                                type="button"
+                                                onClick={() => setFiltro(valor)}
+                                                aria-pressed={filtro === valor}
+                                                className={`rounded-pill px-2.5 py-1 text-[10px] font-semibold transition-colors ${
+                                                    filtro === valor
+                                                        ? 'bg-ink text-white'
+                                                        : 'text-muted hover:bg-soft'
+                                                }`}
+                                            >
+                                                {etiqueta}
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    <ul className="divide-line max-h-96 divide-y overflow-y-auto">
+                                        {itemsVisibles.length === 0 && (
+                                            <li className="text-muted px-3 py-8 text-center text-xs">
                                                 No tienes notificaciones ni
                                                 alertas pendientes.
                                             </li>
                                         )}
-                                        {feed.items.map((item) => {
+                                        {itemsVisibles.map((item) => {
                                             const destino =
                                                 destinoNotificacion(item);
                                             const Icono =
                                                 iconoNotificacion(item);
-                                            const clase = `flex w-full text-left gap-2.5 px-3 py-2.5 transition-colors ${item.leida ? 'bg-white' : 'bg-[#f7fff5] hover:bg-[#eefbe9]'}`;
+                                            const tono =
+                                                item.tono ??
+                                                (item.origen === 'alerta'
+                                                    ? 'danger'
+                                                    : 'info');
+                                            const clase = `flex w-full text-left gap-2.5 border-l-2 px-3 py-2.5 transition-colors ${item.leida ? 'border-transparent bg-transparent hover:bg-soft' : `hover:bg-soft ${TONOS_NOTIFICACION[tono] ?? TONOS_NOTIFICACION.info}`}`;
                                             const contenido = (
                                                 <>
                                                     <span
-                                                        className={`mt-0.5 shrink-0 ${item.leida ? 'text-[#999999]' : 'text-[#2f9e44]'}`}
+                                                        className={`mt-0.5 shrink-0 ${item.leida ? 'text-muted' : ''}`}
                                                         aria-hidden="true"
                                                     >
                                                         <Icono size={14} />
@@ -315,26 +424,32 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                                                     <span className="min-w-0 flex-1">
                                                         <span className="flex items-start justify-between gap-2">
                                                             <span
-                                                                className={`text-xs font-semibold ${item.leida ? 'text-[#666666]' : 'text-[#000000]'}`}
+                                                                className={`text-xs font-semibold ${item.leida ? 'text-muted' : 'text-ink'}`}
                                                             >
                                                                 {item.titulo}
                                                             </span>
                                                             {!item.leida && (
-                                                                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[#2f9e44]" />
+                                                                <span
+                                                                    className={`mt-1 h-1.5 w-1.5 shrink-0 rounded-full ${PUNTO_TONO[tono] ?? PUNTO_TONO.info}`}
+                                                                />
                                                             )}
                                                         </span>
                                                         {item.cuerpo && (
-                                                            <span className="mt-0.5 line-clamp-2 block text-[11px] leading-relaxed text-[#555555]">
+                                                            <span className="text-muted mt-0.5 line-clamp-2 block text-[11px] leading-relaxed">
                                                                 {item.cuerpo}
                                                             </span>
                                                         )}
-                                                        <span className="mt-1 flex items-center gap-2 font-mono text-[9px] text-[#888888] uppercase">
-                                                            <span>
-                                                                {item.origen ===
-                                                                'alerta'
-                                                                    ? 'Alerta'
-                                                                    : 'Aviso'}
-                                                            </span>
+                                                        <span className="text-muted mt-1 flex flex-wrap items-center gap-1.5 font-mono text-[9px] uppercase">
+                                                            {item.etiqueta && (
+                                                                <span className="rounded bg-soft px-1 py-0.5">
+                                                                    {item.etiqueta}
+                                                                </span>
+                                                            )}
+                                                            {item.para_rol && (
+                                                                <span className="rounded bg-brand-100 text-brand-800 px-1 py-0.5 font-bold">
+                                                                    Tu rol
+                                                                </span>
+                                                            )}
                                                             {item.severidad && (
                                                                 <span>
                                                                     ·{' '}
@@ -352,7 +467,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                                                                 </span>
                                                             )}
                                                             {destino && (
-                                                                <span className="ml-auto text-[#2f9e44]">
+                                                                <span className="text-brand-600 ml-auto">
                                                                     Ver →
                                                                 </span>
                                                             )}

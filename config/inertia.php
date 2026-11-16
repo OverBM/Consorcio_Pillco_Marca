@@ -67,4 +67,37 @@ return [
 
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | DevTools
+    |--------------------------------------------------------------------------
+    | El almacenamiento local de Inertia DevTools puede quedar corrupto en
+    | Windows y bloquear todas las peticiones. Se desactiva por defecto.
+    |
+    */
+
+    'devtools' => [
+
+        'enabled' => env('INERTIA_DEVTOOLS_ENABLED', false),
+
+        'except' => ['telescope*', 'horizon*', '_inertia/devtools*'],
+
+        'storage' => [
+
+            'path' => storage_path('inertia-devtools'),
+
+            'ttl' => 24,
+
+            'prune_interval' => 300,
+
+            'limit' => 100,
+
+        ],
+
+        'middleware' => ['web'],
+
+        'gate' => env('INERTIA_DEVTOOLS_GATE'),
+
+    ],
+
 ];

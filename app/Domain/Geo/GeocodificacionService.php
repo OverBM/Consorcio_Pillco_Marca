@@ -26,7 +26,7 @@ class GeocodificacionService
         }
 
         return Cache::remember(
-            'geocode:'.md5(mb_strtolower($texto)),
+            'geocode:'.hash('sha256', mb_strtolower($texto)),
             (int) config('ruteo.geo_cache_ttl', 2592000),
             fn (): ?array => $this->consultar('/geocode/search', [
                 'text' => $texto,
@@ -52,7 +52,7 @@ class GeocodificacionService
         $limite = max(1, min($limite, 8));
 
         return Cache::remember(
-            'geocode:sug:'.md5(mb_strtolower($texto).':'.$limite),
+            'geocode:sug:'.hash('sha256', mb_strtolower($texto).':'.$limite),
             (int) config('ruteo.geo_cache_ttl', 2592000),
             fn (): array => $this->buscarSugerencias($texto, $limite),
         );
@@ -130,7 +130,7 @@ class GeocodificacionService
     public function reversa(float $lat, float $lng): ?array
     {
         return Cache::remember(
-            'geocode:rev:'.md5("{$lat},{$lng}"),
+            'geocode:rev:'.hash('sha256', "{$lat},{$lng}"),
             (int) config('ruteo.geo_cache_ttl', 2592000),
             fn (): ?array => $this->consultar('/geocode/reverse', [
                 'point.lat' => $lat,

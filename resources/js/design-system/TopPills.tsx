@@ -30,7 +30,17 @@ const ETIQUETAS_CORTAS: Record<string, string> = {
 const GRUPO_ADMINISTRACION = 'Administración';
 
 function Corto(titulo: string): string {
-    return ETIQUETAS_CORTAS[titulo] ?? titulo.replace(/\s*\(.*\)\s*$/, '');
+    const corto = ETIQUETAS_CORTAS[titulo];
+
+    if (corto) {
+        return corto;
+    }
+
+    const indice = titulo.indexOf(' (');
+
+    return indice >= 0 && titulo.endsWith(')')
+        ? titulo.slice(0, indice)
+        : titulo;
 }
 
 /**
@@ -196,13 +206,15 @@ export function ModulePills({
                             ref={activo ? activoRef : undefined}
                             aria-current={activo ? 'page' : undefined}
                             className={`rounded-pill text-body focus-ring relative flex shrink-0 items-center gap-1.5 px-2.5 py-2 font-semibold transition-colors ${
-                                activo ? 'text-white' : 'text-ink hover:bg-soft'
+                                activo
+                                    ? 'text-[#0b1a12]'
+                                    : 'text-ink hover:bg-soft'
                             }`}
                         >
                             {activo && (
                                 <motion.span
                                     layoutId="modulo-activo"
-                                    className="rounded-pill bg-ink absolute inset-0"
+                                    className="rounded-pill bg-mint absolute inset-0 shadow-[0_0_0_1px_rgba(184,245,176,0.9),0_8px_20px_-10px_rgba(126,226,160,0.9)]"
                                     transition={{
                                         type: 'spring',
                                         stiffness: 380,
@@ -222,7 +234,7 @@ export function ModulePills({
                             <span
                                 className={`text-micro relative z-10 grid h-4 min-w-4 place-items-center rounded-full px-1 font-mono font-bold ${
                                     activo
-                                        ? 'bg-white/25 text-white'
+                                        ? 'bg-[#0b1a12]/15 text-[#0b1a12]'
                                         : 'bg-brand-100 text-brand-700'
                                 }`}
                             >
@@ -269,7 +281,7 @@ export function SubmodulePills({
                             aria-current={activo ? 'page' : undefined}
                             className={`rounded-pill text-label focus-ring flex shrink-0 items-center gap-1.5 px-2.5 py-1.5 font-semibold transition-colors ${
                                 activo
-                                    ? 'bg-ink text-white'
+                                    ? 'bg-mint text-[#0b1a12] shadow-sm ring-1 ring-[#b8f5b0]'
                                     : 'text-muted hover:text-ink hover:bg-soft'
                             }`}
                         >

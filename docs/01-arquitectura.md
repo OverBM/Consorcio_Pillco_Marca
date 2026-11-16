@@ -1,62 +1,53 @@
-# 01. Arquitectura del Sistema
+# 01. Arquitectura del Sistema (corregido)
 
-**Consorcio Pillco Marca — Sistema Web Geolocalizado Multi-Almacén y Gestión de Proyectos**
+**Consorcio Pillco Marca — ObraFlow**
+**Última verificación:** 10/11/2026
+**Documento detallado:** [`docs/12-actividad-1-arquitectura-software.md`](12-actividad-1-arquitectura-software.md)
 
 ---
 
-## 1. Topología del Sistema y Despliegue DevOps
+## Corrección del documento anterior
 
-El sistema está estructurado en dos módulos desacoplados bajo el estándar del Laboratorio DevOps:
+La versión previa describía dos módulos desplegados por separado
+(`frontend/web` en el puerto 4200 y `backend/api` en el puerto 3000) con
+TanStack Query y Axios. Esa descripción **no corresponde al sistema ejecutable**:
 
+- `frontend/web` y `backend/api` solo contienen `Dockerfile` y `.env.example`
+  heredados del laboratorio DevOps; no tienen código de la aplicación.
+- El sistema real es un **monolito modular Laravel 13** que sirve la interfaz y
+  la API desde el mismo proceso.
+- El cliente usa **Inertia.js + React 19**, no TanStack Query; las llamadas
+  asíncronas usan `fetch` nativo.
+
+## Arquitectura vigente
+
+```text
+Navegador
+  │  Props Inertia (HTML) + fetch JSON a /api/v1
+  ▼
+Laravel 13.30 (PHP 8.5)
+  ├── Middleware: sesión, RBAC (EnsureModuleAccess), ResolveApiUser
+  ├── Controladores Web (Inertia::render) y API V1 (JSON)
+  ├── Dominio: Inventario, Geo, Métricas, Analítica, Excedentes, Proyectos
+  ├── Eloquent + Query Builder
+  ├── PostgreSQL 18.6 + PostGIS 3.7 (104 tablas)
+  ├── FastAPI :8001 (motor predictivo)
+  └── ORS / OSRM / OpenStreetMap / WhatsApp
 ```
-                                 LABORATORIO DEVOPS
-       ┌──────────────────────────────────────────────────────────────────┐
-       │                                                                  │
-       │   frontend/web (Puerto 4200)          backend/api (Puerto 3000)  │
-       │   ├── React 19 + TypeScript           ├── Laravel 11/13          │
-       │   ├── ObraFlow Design System          ├── PHP 8.4 REST API       │
-       │   ├── TanStack Query / Zustand        ├── Sanctum Bearer Auth    │
-       │   ├── Leaflet + OpenStreetMap         ├── Domain Business Layer  │
-       │   └── Dockerfile (ARG PORT=4200)      └── Dockerfile (PORT=3000) │
-       │                │                                    │            │
-       │                └────────── API REST JSON ───────────┘            │
-       │                                     │                            │
-       │                                     ▼                            │
-       │                         PostgreSQL 16 + PostGIS 3.4              │
-       │                         (83 Tablas, Vistas EVM, Funciones fn_*)  │
-       └──────────────────────────────────────────────────────────────────┘
-```
 
----
+| Elemento | Implementación |
+|---|---|
+| Estilo | Monolito modular con SPA Inertia/React |
+| Frontend | React 19.2, TypeScript 5.7, Tailwind 4.1, Vite 8 |
+| Backend | Laravel 13.30, Inertia Laravel 3.3, PHP 8.5 |
+| Base de datos | PostgreSQL 18.6 + PostGIS 3.7, 104 tablas, 25 migraciones |
+| Autenticación | Sesión web + Bearer `remember_token` para API |
+| Rutas | 179 rutas, 122 bajo `/api/v1` |
+| Stock | `StockService` con `DB::transaction` + `lockForUpdate` |
+| Auditoría | Trigger `trg_kardex_inmutable` sobre `kardex` |
+| Analítica | FastAPI/uvicorn en `127.0.0.1:8001` con `X-Internal-Token` |
+| Geolocalización | PostGIS + OpenRouteService + OSRM (respaldo) + OSM |
 
-## 2. Reglas Arquitectónicas de Backend (Laravel)
-
-1. **Controladores Delgados**:
-    - `FormRequest` para validación estricta.
-    - Policies/Gates para autorización por rol y asignación de obra.
-    - Invocación a servicios en `app/Domain/`.
-    - Respuesta exclusivamente formateada con `JsonResource`.
-2. **Capa de Dominio (`app/Domain/`)**:
-    - `Domain/Inventario/StockService`: Único punto de mutación de stock (`lockForUpdate` + `DB::transaction`).
-    - `Domain/Inventario/KardexService`: Único punto de inserción en `kardex`.
-    - `Domain/Geo/GeoService`: Cálculos de geodistancia, geocercas con `ST_DWithin` y GeoJSON.
-    - `Domain/Excedentes/RankingReceptoresService`: Ponderación AHP auditable con pesos de `parametros_sistema`.
-    - `Domain/Proyecto/EvmService`: Métricas de Valor Ganado (PV, EV, AC, SPI, CPI, EAC, VAC).
-3. **Inmutabilidad y Auditoría**:
-    - Trigger PL/pgSQL `fn_kardex_inmutable()` que rechaza `UPDATE` y `DELETE` en la tabla `kardex`.
-    - Tabla `auditorias` con registro de usuario, IP, entidad, antes/después y hash encadenado opcional.
-
----
-
-## 3. Reglas Arquitectónicas de Frontend (React + ObraFlow)
-
-1. **Tokens de Diseño ObraFlow**:
-    - Colores: `--color-black: #000000`, `--color-mint: #d1ffca`, `--color-yellow: #fff100`, `--color-canvas: #e5e5e5`, `--color-slate: #444444`.
-    - Tipografías: `Barlow Condensed` para encabezados display industriales mayúsculos, `Inter` para cuerpo e `IBM Plex Mono` para datos técnicos y coordenadas.
-2. **Navegación Dinámica por Roles**:
-    - Menú lateral modular filtrado por permisos de usuario.
-    - Prohibición estricta de mostrar códigos o números de proceso en la UI.
-    - Título oficial en pestaña y encabezado: `"Consorcio Pillco Marca"`.
-3. **Capa de Comunicación**:
-    - Cliente Axios/Fetch configurado hacia `/api/v1` con interceptores de token Bearer y cierre de sesión automático ante error 401.
-    - Adaptador Mock disponible como alternativa para demostración sin servidor.
+Para el detalle de capas, módulos, diagramas Mermaid y justificación de APIs,
+consultar `docs/12-actividad-1-arquitectura-software.md`. Para el stack y el
+entorno de despliegue, `docs/13-actividad-2-arquitectura-tecnologica.md`.

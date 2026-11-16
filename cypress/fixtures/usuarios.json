@@ -1,0 +1,16 @@
+{
+    "admin": {
+        "email": "admin@pillcomarca.pe",
+        "password": "12345678",
+        "nombre": "Administrador Consorcio"
+    },
+    "residente": {
+        "email": "residente.chupaca@pillcomarca.pe",
+        "password": "password123",
+        "nombre": "Ing. Carlos Mendoza (Residente)"
+    },
+    "invalido": {
+        "email": "admin@pillcomarca.pe",
+        "password": "clave-incorrecta"
+    }
+}

@@ -12,6 +12,7 @@ use App\Http\Controllers\Web\PersonalSstViewController;
 use App\Http\Controllers\Web\PmiViewController;
 use App\Http\Controllers\Web\ProyectoPublicoViewController;
 use App\Http\Controllers\Web\RegistroController;
+use App\Http\Controllers\Web\ReportesViewController;
 use App\Http\Controllers\Web\SolicitudesAccesoController;
 use Illuminate\Support\Facades\Route;
 
@@ -49,6 +50,7 @@ Route::middleware(['auth'])->group(function () {
     // Panel Principal (visible para todos los roles autenticados)
     Route::middleware('modulo:panel')->group(function () {
         Route::get('/panel', [DashboardViewController::class, 'panel'])->name('panel');
+        Route::get('/reportes', [ReportesViewController::class, 'index'])->name('reportes');
     });
 
     // Programa (PMU)

@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 
 import { KpiTile } from './KpiTile';
+import { IconArrowUpRight } from '../components/icons';
 
 export interface AccesoRapido {
     href: string;
@@ -53,15 +54,24 @@ export function AccesosRapidos({ accesos }: { accesos: AccesoRapido[] }) {
     return (
         <nav
             aria-label="Accesos rápidos"
-            className="flex gap-2 overflow-x-auto pb-1"
+            className="grid h-full flex-1 auto-rows-fr grid-cols-1 gap-2 sm:grid-cols-2"
         >
-            {accesos.map((acceso) => (
+            {accesos.map((acceso, indice) => (
                 <Link
                     key={acceso.href}
                     href={acceso.href}
-                    className="rounded-pill border-line bg-surface text-ink shadow-card hover:bg-soft shrink-0 border px-3.5 py-2 text-xs font-semibold"
+                    className="border-line bg-surface text-ink hover:border-brand-300 hover:bg-brand-50 group flex min-h-12 items-center justify-between gap-3 rounded-xl border px-3.5 py-3 text-xs font-semibold transition-colors"
                 >
-                    {acceso.label}
+                    <span className="flex min-w-0 items-center gap-2.5">
+                        <span className="bg-brand-100 text-brand-700 grid h-6 w-6 shrink-0 place-items-center rounded-md font-mono text-[10px] font-bold">
+                            {String(indice + 1).padStart(2, '0')}
+                        </span>
+                        <span className="truncate">{acceso.label}</span>
+                    </span>
+                    <IconArrowUpRight
+                        size={14}
+                        className="text-muted group-hover:text-brand-600 shrink-0 transition-colors"
+                    />
                 </Link>
             ))}
         </nav>

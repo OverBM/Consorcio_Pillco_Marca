@@ -43,6 +43,17 @@ describe('design-system/GlobalSearch', () => {
         expect(screen.getByLabelText('Término de búsqueda')).toBeTruthy();
     });
 
+    it('usa una capa superior al encabezado fijo para superponerse al contenido', () => {
+        render(<GlobalSearch abierto onCerrar={() => {}} />);
+
+        const overlay = screen.getByTestId('buscador-global-overlay');
+
+        expect(overlay.className).toContain('fixed');
+        expect(overlay.className).toContain('inset-0');
+        expect(overlay.className).toContain('z-[2600]');
+        expect(overlay.className).not.toContain('z-[60]');
+    });
+
     it('consulta y muestra resultados agrupados', async () => {
         const fetchMock = vi.fn().mockResolvedValue(
             respuestaCon([

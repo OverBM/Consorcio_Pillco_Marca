@@ -75,6 +75,25 @@ test('expone compras cuando el rol tiene el permiso', function () {
     expect($tipos)->toContain('ordenes_compra');
 });
 
+test('encuentra módulos por su nombre exacto sin distinguir acentos', function () {
+    $this->seed();
+
+    $respuesta = $this->actingAsConRol(usuarioBusqueda(), 'administrador_sistema')
+        ->getJson('/api/v1/buscar?q=mermas')
+        ->assertOk();
+
+    $modulos = collect($respuesta->json('grupos'))
+        ->firstWhere('tipo', 'modulos');
+
+    expect($modulos)->not->toBeNull()
+        ->and(collect($modulos['items'])->pluck('href'))->toContain('/mermas');
+
+    $this->actingAsConRol(usuarioBusqueda('busqueda.acentos@pillcomarca.pe'), 'administrador_sistema')
+        ->getJson('/api/v1/buscar?q=analitica')
+        ->assertOk()
+        ->assertJsonFragment(['href' => '/analitica']);
+});
+
 test('escapa comodines en el término', function () {
     $this->seed();
 

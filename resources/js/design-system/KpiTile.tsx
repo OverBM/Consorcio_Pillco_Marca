@@ -54,6 +54,7 @@ function Sparkline({ serie }: { serie: number[] }) {
             preserveAspectRatio="none"
             aria-hidden="true"
             className="h-10 w-full"
+            shapeRendering="geometricPrecision"
         >
             <polyline
                 points={puntos}
