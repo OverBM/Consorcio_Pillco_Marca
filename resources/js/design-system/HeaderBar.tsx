@@ -135,7 +135,7 @@ const PUNTO_TONO: Record<string, string> = {
     neutral: 'bg-muted',
 };
 
-type FiltroNotificacion = 'todas' | 'sin-leer' | 'rol';
+type FiltroNotificacion = 'todas' | 'sin-leer';
 
 export const HeaderBar: React.FC<HeaderBarProps> = ({
     title,
@@ -158,7 +158,6 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
         sin_leer: 0,
     };
     const total = notificationCount ?? feed.sin_leer;
-    const totalRol = feed.por_rol ?? 0;
 
     const [panelAbierto, setPanelAbierto] = useState(false);
     const [menuPerfil, setMenuPerfil] = useState(false);
@@ -170,10 +169,6 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
     const itemsVisibles = useMemo(() => {
         if (filtro === 'sin-leer') {
             return feed.items.filter((item) => !item.leida);
-        }
-
-        if (filtro === 'rol') {
-            return feed.items.filter((item) => item.para_rol);
         }
 
         return feed.items;
@@ -312,11 +307,19 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                             aria-haspopup="true"
                             aria-expanded={panelAbierto}
                             aria-controls="panel-notificaciones"
-                            className="focus-ring relative flex cursor-pointer items-center justify-center rounded-pill border border-line bg-surface p-2 text-muted transition-colors hover:bg-soft"
+                            className="focus-ring relative flex cursor-pointer items-center justify-center rounded-pill border border-line bg-surface p-2 text-muted transition-colors hover:bg-soft hover:text-ink"
                         >
-                            <IconBell size={16} />
+                            <span
+                                className={
+                                    total > 0
+                                        ? 'cpm-bell-con-pendientes block'
+                                        : 'block'
+                                }
+                            >
+                                <IconBell size={16} />
+                            </span>
                             {total > 0 && (
-                                <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full border border-black bg-[#fff100] px-1 font-mono text-[9px] font-bold text-[#000000]">
+                                <span className="cpm-badge absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full border border-black bg-[#fff100] px-1 font-mono text-[9px] font-bold text-[#000000]">
                                     {total > 99 ? '99+' : total}
                                 </span>
                             )}
@@ -334,18 +337,13 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                                     id="panel-notificaciones"
                                     role="dialog"
                                     aria-label="Notificaciones y alertas"
-                                    className="rounded-tile border-line bg-surface shadow-pop absolute right-0 z-50 mt-1 w-80 max-w-[calc(100vw-2rem)] overflow-hidden border sm:w-96"
+                                    className="cpm-menu-drop rounded-tile border-line bg-surface shadow-pop absolute right-0 z-50 mt-1 w-80 max-w-[calc(100vw-2rem)] overflow-hidden border sm:w-96"
                                 >
                                     <div className="border-line flex items-center justify-between border-b bg-soft px-3 py-2">
                                         <div className="flex items-center gap-2">
                                             <span className="font-mono text-micro text-muted tracking-widest uppercase">
                                                 Notificaciones
                                             </span>
-                                            {totalRol > 0 && (
-                                                <span className="rounded-pill bg-brand-100 text-brand-800 px-1.5 py-0.5 font-mono text-[9px] font-bold">
-                                                    {totalRol} de tu rol
-                                                </span>
-                                            )}
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <button
@@ -376,7 +374,6 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                                             [
                                                 ['todas', 'Todas'],
                                                 ['sin-leer', 'Sin leer'],
-                                                ['rol', 'Mi rol'],
                                             ] as const
                                         ).map(([valor, etiqueta]) => (
                                             <button
@@ -443,11 +440,6 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                                                             {item.etiqueta && (
                                                                 <span className="rounded bg-soft px-1 py-0.5">
                                                                     {item.etiqueta}
-                                                                </span>
-                                                            )}
-                                                            {item.para_rol && (
-                                                                <span className="rounded bg-brand-100 text-brand-800 px-1 py-0.5 font-bold">
-                                                                    Tu rol
                                                                 </span>
                                                             )}
                                                             {item.severidad && (
@@ -524,7 +516,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                             aria-label={`Cuenta de ${userName}`}
                             className="border-line bg-surface hover:bg-soft rounded-pill flex items-center gap-2 border px-2.5 py-1.5 transition-colors"
                         >
-                            <span className="bg-ink grid h-7 w-7 place-items-center rounded-full font-mono text-xs font-bold text-white">
+                            <span className="cpm-avatar bg-ink grid h-7 w-7 place-items-center rounded-full font-mono text-xs font-bold text-white">
                                 {userInitials}
                             </span>
                             <span className="text-ink hidden text-xs font-medium sm:inline">
@@ -540,7 +532,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                                     className="fixed inset-0 z-40 cursor-default bg-transparent"
                                     onClick={() => setMenuPerfil(false)}
                                 />
-                                <div className="rounded-tile border-line bg-surface shadow-pop absolute right-0 z-50 mt-1 w-56 border p-1.5">
+                                <div className="cpm-menu-drop rounded-tile border-line bg-surface shadow-pop absolute right-0 z-50 mt-1 w-56 border p-1.5">
                                     <div className="px-2 py-1.5">
                                         <p className="text-ink truncate text-xs font-semibold">
                                             {userName}
@@ -554,7 +546,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                                     <Link
                                         href="/perfil"
                                         onClick={() => setMenuPerfil(false)}
-                                        className="text-ink hover:bg-soft block rounded-lg px-2 py-2 text-xs font-medium"
+                                        className="text-ink hover:bg-soft block rounded-lg px-2 py-2 text-xs font-medium transition-colors"
                                     >
                                         Ver mi perfil
                                     </Link>
@@ -579,7 +571,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                             onClick={onLogout}
                             aria-label="Cerrar sesión"
                             title="Cerrar sesión"
-                            className="focus-ring flex items-center justify-center rounded-pill border border-line bg-surface p-2 text-muted transition-colors hover:bg-soft hover:text-ink"
+                            className="cpm-logout focus-ring flex items-center justify-center rounded-pill border border-line bg-surface p-2 text-muted transition-colors hover:bg-soft hover:text-critico"
                         >
                             <IconLogout size={16} />
                         </button>

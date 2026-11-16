@@ -126,7 +126,10 @@ export default function PerfilPage({ perfil }: PerfilPageProps) {
 
             <div className="grid gap-6 lg:grid-cols-3">
                 <div className="space-y-6 lg:col-span-1">
-                    <Card title="Identidad (solo lectura)">
+                    <Card
+                        title="Identidad (solo lectura)"
+                        className="cpm-profile-card"
+                    >
                         <dl className="space-y-3 text-xs">
                             <div>
                                 <dt className="text-muted font-mono text-[10px] uppercase">
@@ -154,6 +157,7 @@ export default function PerfilPage({ perfil }: PerfilPageProps) {
                                             <Badge
                                                 key={rol.codigo}
                                                 tone="violet"
+                                                className="cpm-profile-item cursor-default"
                                             >
                                                 {rol.nombre}
                                             </Badge>
@@ -168,7 +172,10 @@ export default function PerfilPage({ perfil }: PerfilPageProps) {
                         </dl>
                     </Card>
 
-                    <Card title="Obras y almacenes asignados">
+                    <Card
+                        title="Obras y almacenes asignados"
+                        className="cpm-profile-card"
+                    >
                         <div className="space-y-3 text-xs">
                             <div>
                                 <span className="text-muted mb-1.5 block font-mono text-[10px] uppercase">
@@ -179,7 +186,7 @@ export default function PerfilPage({ perfil }: PerfilPageProps) {
                                         {perfil.obras.map((obra) => (
                                             <li
                                                 key={obra.id}
-                                                className="flex items-center gap-2"
+                                                className="cpm-profile-item flex items-center gap-2 rounded px-1.5 py-0.5"
                                             >
                                                 <span className="text-muted font-mono text-[10px]">
                                                     {obra.codigo}
@@ -205,7 +212,7 @@ export default function PerfilPage({ perfil }: PerfilPageProps) {
                                         {perfil.almacenes.map((almacen) => (
                                             <li
                                                 key={almacen.id}
-                                                className="flex items-center gap-2"
+                                                className="cpm-profile-item flex items-center gap-2 rounded px-1.5 py-0.5"
                                             >
                                                 <span className="text-muted font-mono text-[10px]">
                                                     {almacen.codigo}
@@ -231,7 +238,7 @@ export default function PerfilPage({ perfil }: PerfilPageProps) {
                         title="Datos de contacto"
                         subtitle="Puedes editar tu nombre y teléfono"
                         onSubmit={guardarDatos}
-                        className="text-xs"
+                        className="cpm-profile-card text-xs"
                     >
                         <FormSection title="Contacto" columns={1}>
                             <Field label="Nombre y Apellidos" required>
@@ -271,7 +278,7 @@ export default function PerfilPage({ perfil }: PerfilPageProps) {
                         title="Cambiar contraseña"
                         subtitle="Verifica tu contraseña actual"
                         onSubmit={cambiarClave}
-                        className="text-xs"
+                        className="cpm-profile-card text-xs"
                     >
                         <FormSection title="Seguridad" columns={1}>
                             <Field label="Contraseña actual" required>

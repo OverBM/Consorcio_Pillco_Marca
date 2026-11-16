@@ -17,6 +17,8 @@ final class NotificacionesFeed
 {
     public const LIMITE = 20;
 
+    private const CANDIDATAS = 100;
+
     /** Mapa tipo/referencia → módulo funcional. */
     private const MODULOS = [
         'stock' => 'logistica',
@@ -78,7 +80,7 @@ final class NotificacionesFeed
     ];
 
     /**
-     * @return array{items: list<array<string, mixed>>, sin_leer: int, por_rol: int}
+     * @return array{items: list<array<string, mixed>>, sin_leer: int}
      */
     public static function paraUsuario(Usuario $usuario): array
     {
@@ -103,7 +105,7 @@ final class NotificacionesFeed
         $notificaciones = Notificacion::query()
             ->where('usuario_id', $usuario->id)
             ->latest()
-            ->limit(self::LIMITE)
+            ->limit(self::CANDIDATAS)
             ->get()
             ->map(function (Notificacion $notificacion) use ($permisos, $rolesCodigo, $rolEtiqueta): array {
                 $contexto = self::contexto($notificacion->tipo, $notificacion->referencia_tipo);
@@ -126,7 +128,7 @@ final class NotificacionesFeed
         $alertas = Alerta::query()
             ->where('estado', 'abierta')
             ->latest()
-            ->limit(self::LIMITE)
+            ->limit(self::CANDIDATAS)
             ->get()
             ->map(function (Alerta $alerta) use ($leidas, $permisos, $rolesCodigo, $rolEtiqueta): array {
                 $contexto = self::contexto($alerta->tipo, $alerta->referencia_tipo);
@@ -150,15 +152,15 @@ final class NotificacionesFeed
 
         $items = $notificaciones
             ->concat($alertas)
+            ->filter(fn (array $item) => $item['para_rol'])
             ->sortByDesc('fecha')
-            ->sortByDesc('para_rol')
+            ->take(self::LIMITE)
             ->values()
             ->all();
 
         return [
             'items' => $items,
             'sin_leer' => count(array_filter($items, fn (array $item) => ! $item['leida'])),
-            'por_rol' => count(array_filter($items, fn (array $item) => $item['para_rol'])),
         ];
     }
 

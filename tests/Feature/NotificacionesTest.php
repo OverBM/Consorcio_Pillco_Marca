@@ -8,8 +8,8 @@ use Inertia\Testing\AssertableInertia as Assert;
 
 uses(RefreshDatabase::class);
 
-test('el feed fusiona notificaciones y alertas con el contador de pendientes', function () {
-    $usuario = $this->usuarioConRol('obrero_obra');
+test('el feed fusiona notificaciones y alertas del rol con el contador de pendientes', function () {
+    $usuario = $this->usuarioConRol('almacenero_obra');
 
     Notificacion::create([
         'usuario_id' => $usuario->id,
@@ -65,16 +65,49 @@ test('el feed fusiona notificaciones y alertas con el contador de pendientes', f
     $this->getJson('/api/v1/notificaciones')
         ->assertOk()
         ->assertJsonPath('success', true)
-        ->assertJsonCount(6, 'data.items')
-        ->assertJsonPath('data.sin_leer', 4);
+        ->assertJsonCount(5, 'data.items')
+        ->assertJsonPath('data.sin_leer', 3);
 
     $this->get('/panel')
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->where('notificacionesFeed.sin_leer', 4)
-            ->has('notificacionesFeed.items', 6)
+            ->where('notificacionesFeed.sin_leer', 3)
+            ->has('notificacionesFeed.items', 5)
             ->etc()
         );
+});
+
+test('el feed solo incluye notificaciones y alertas que corresponden al rol', function () {
+    $usuario = $this->usuarioConRol('obrero_obra');
+
+    Notificacion::create([
+        'usuario_id' => $usuario->id,
+        'tipo' => 'requerimiento_registrado',
+        'titulo' => 'Nuevo requerimiento',
+        'cuerpo' => 'Pendiente de evaluación',
+    ]);
+
+    Alerta::create([
+        'tipo' => 'stock_bajo_minimo',
+        'severidad' => 'alta',
+        'mensaje' => 'Stock por debajo del mínimo',
+        'estado' => 'abierta',
+    ]);
+
+    Alerta::create([
+        'tipo' => 'incidente_sst',
+        'severidad' => 'alta',
+        'mensaje' => 'Incidente en frente de obra',
+        'estado' => 'abierta',
+    ]);
+
+    $this->actingAs($usuario);
+
+    $this->getJson('/api/v1/notificaciones')
+        ->assertOk()
+        ->assertJsonCount(1, 'data.items')
+        ->assertJsonPath('data.items.0.tipo', 'incidente_sst')
+        ->assertJsonPath('data.sin_leer', 1);
 });
 
 test('marcar una notificación como leída actualiza el contador', function () {
@@ -111,7 +144,7 @@ test('marcar una notificación como leída actualiza el contador', function () {
 });
 
 test('las alertas abiertas se marcan como leídas por usuario', function () {
-    $usuario = $this->usuarioConRol('obrero_obra');
+    $usuario = $this->usuarioConRol('almacenero_obra');
 
     $alerta = Alerta::create([
         'tipo' => 'stock_bajo_minimo',

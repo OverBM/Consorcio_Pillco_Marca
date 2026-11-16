@@ -116,16 +116,20 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                         <Link
                             href="/panel"
                             aria-label="Ir al panel general"
-                            className="border-line bg-surface shadow-card rounded-pill flex items-center gap-2 border px-2.5 py-1.5"
+                            className="cpm-logo border-line bg-surface shadow-card rounded-pill group flex items-center gap-2 border px-2.5 py-1.5 transition-shadow hover:shadow-pop"
                         >
-                            <span className="bg-ink text-ink grid h-9 w-9 place-items-center rounded-full text-white">
+                            <span className="bg-ink text-ink relative grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full text-white">
                                 <IconBrandMark size={20} />
+                                <span
+                                    className="cpm-logo-shine"
+                                    aria-hidden="true"
+                                />
                             </span>
                             <span className="hidden leading-tight sm:block">
-                                <span className="font-display text-ink block text-xs font-bold uppercase">
+                                <span className="font-display text-ink block text-xs font-bold tracking-wide uppercase">
                                     Consorcio Pillco Marca
                                 </span>
-                                <span className="text-muted block text-[10px]">
+                                <span className="text-muted block text-[10px] tracking-wide">
                                     Valle del Mantaro
                                 </span>
                             </span>
@@ -155,14 +159,28 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                                             onClick={() =>
                                                 setObraMenuOpen(!obraMenuOpen)
                                             }
-                                            className="rounded-pill border-line bg-surface text-ink hover:bg-soft flex max-w-[45vw] items-center gap-1.5 border px-3 py-2 font-mono text-[11px] font-semibold lg:max-w-none"
+                                            aria-haspopup="true"
+                                            aria-expanded={obraMenuOpen}
+                                            className="rounded-pill border-line bg-surface text-ink hover:bg-soft flex max-w-[45vw] items-center gap-1.5 border px-3 py-2 font-mono text-[11px] font-semibold transition-colors lg:max-w-none"
                                         >
-                                            <span className="bg-exito h-2 w-2 shrink-0 rounded-full" />
+                                            <span
+                                                className={`h-2 w-2 shrink-0 rounded-full text-exito ${
+                                                    obraActiva
+                                                        ? 'cpm-indicator-ping bg-exito'
+                                                        : 'bg-muted'
+                                                }`}
+                                            />
                                             <span className="truncate">
                                                 {obraActiva?.nombre ??
                                                     'Todas las obras'}
                                             </span>
-                                            <span className="text-[10px]">
+                                            <span
+                                                className={`text-[10px] transition-transform duration-200 ${
+                                                    obraMenuOpen
+                                                        ? 'rotate-180'
+                                                        : ''
+                                                }`}
+                                            >
                                                 ▼
                                             </span>
                                         </button>
@@ -176,7 +194,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                                                         setObraMenuOpen(false)
                                                     }
                                                 />
-                                                <div className="rounded-tile border-line bg-surface shadow-pop absolute right-0 z-50 mt-1 w-64 space-y-1 border p-1.5">
+                                                <div className="cpm-menu-drop rounded-tile border-line bg-surface shadow-pop absolute right-0 z-50 mt-1 w-64 space-y-1 border p-1.5">
                                                     <div className="text-muted text-micro px-2 py-1 font-mono uppercase">
                                                         Seleccionar Frente /
                                                         Obra

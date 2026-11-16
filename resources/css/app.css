@@ -127,6 +127,23 @@
     .num {
         font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
     }
+
+    /* El preflight deja los svg como bloque: sin esto el icono cae sobre el texto. */
+    :is(button, a, label, span, th, td) > svg {
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+    /*
+     * Cuando un boton envuelve icono + texto en un unico hijo (por ejemplo
+     * SubmitButton), ese hijo es un item flex y el svg queda apilado sobre el
+     * texto. Convertirlo en flex con items-center y gap los alinea en linea.
+     */
+    :is(button, a) > span:has(> svg) {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
 }
 
 /* ------------------------------------------------------------------ */
@@ -608,6 +625,320 @@
 .cpm-donut {
     transform-origin: center;
     animation: cpm-donut-in 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ------------------------------------------------------------------ */
+/* Mapas: pulsos, rutas en tránsito y marcadores de Leaflet           */
+/* ------------------------------------------------------------------ */
+@keyframes cpm-pulse-ring {
+    0% {
+        transform: scale(0.6);
+        opacity: 0.9;
+    }
+    100% {
+        transform: scale(2.4);
+        opacity: 0;
+    }
+}
+
+.cpm-pulse,
+.cpm-ring {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: cpm-pulse-ring 2s ease-out infinite;
+}
+
+.cpm-ring {
+    animation-duration: 1.8s;
+}
+
+@keyframes cpm-route-flow {
+    to {
+        stroke-dashoffset: -28;
+    }
+}
+
+.cpm-route-anim {
+    stroke-dasharray: 10 8;
+    animation: cpm-route-flow 1s linear infinite;
+}
+
+.cpm-truck-marker > div {
+    animation: cpm-fade-in 500ms ease-out both;
+}
+
+.cpm-truck-marker > div > div {
+    transition: transform 200ms ease;
+}
+
+.cpm-truck-marker:hover > div > div {
+    transform: translateY(-2px);
+}
+
+.cpm-custom-pin > div {
+    animation: cpm-fade-in 400ms ease-out both;
+}
+
+.cpm-custom-pin:hover > div > div:first-child {
+    transform: translateY(-2px);
+}
+
+@keyframes cpm-posicion-halo {
+    0% {
+        box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.45);
+    }
+    100% {
+        box-shadow: 0 0 0 12px rgba(79, 70, 229, 0);
+    }
+}
+
+.cpm-posicion-marker > div {
+    animation: cpm-posicion-halo 1.8s ease-out infinite;
+}
+
+@keyframes cpm-tooltip-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 0.9;
+    }
+}
+
+.cpm-leaflet-tooltip {
+    animation: cpm-tooltip-in 180ms ease-out both;
+}
+
+/* ------------------------------------------------------------------ */
+/* Microinteracciones del shell: campana, logo, selector de obra      */
+/* ------------------------------------------------------------------ */
+@keyframes cpm-bell-ring {
+    0%,
+    88%,
+    100% {
+        transform: rotate(0deg);
+    }
+    90% {
+        transform: rotate(-12deg);
+    }
+    94% {
+        transform: rotate(10deg);
+    }
+    98% {
+        transform: rotate(-5deg);
+    }
+}
+
+/* La campana se balancea solo cuando hay pendientes. */
+.cpm-bell-con-pendientes {
+    transform-origin: top center;
+    animation: cpm-bell-ring 2.4s ease-in-out infinite;
+}
+
+.cpm-bell-con-pendientes:hover {
+    animation-play-state: paused;
+}
+
+@keyframes cpm-badge-pop {
+    0% {
+        transform: scale(0.4);
+        opacity: 0;
+    }
+    60% {
+        transform: scale(1.15);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.cpm-badge {
+    transform-origin: center;
+    animation: cpm-badge-pop 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes cpm-logo-shine {
+    from {
+        transform: translateX(-120%) skewX(-18deg);
+        opacity: 0;
+    }
+    40% {
+        opacity: 0.55;
+    }
+    to {
+        transform: translateX(220%) skewX(-18deg);
+        opacity: 0;
+    }
+}
+
+/* Barrido de brillo sobre el emblema al pasar el cursor por el logo. */
+.cpm-logo-shine {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    border-radius: 9999px;
+    pointer-events: none;
+}
+
+.cpm-logo-shine::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    width: 45%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.75),
+        transparent
+    );
+    transform: translateX(-120%) skewX(-18deg);
+}
+
+.cpm-logo:hover .cpm-logo-shine::after,
+.cpm-logo:focus-visible .cpm-logo-shine::after {
+    animation: cpm-logo-shine 780ms ease-out;
+}
+
+@keyframes cpm-menu-drop {
+    from {
+        opacity: 0;
+        transform: translateY(-6px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Panel desplegable de la campana y del selector de obra. */
+.cpm-menu-drop {
+    transform-origin: top right;
+    animation: cpm-menu-drop 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes cpm-indicator-ping {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 currentColor;
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 6px transparent;
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 transparent;
+    }
+}
+
+/* Punto indicador de la obra activa. */
+.cpm-indicator-ping {
+    animation: cpm-indicator-ping 2.2s ease-out infinite;
+}
+
+/* Punto indicador de la obra activa. */
+.cpm-indicator-ping {
+    animation: cpm-indicator-ping 2.2s ease-out infinite;
+}
+
+@keyframes cpm-logout-swing {
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+    30% {
+        transform: translateX(-3px) rotate(-6deg);
+    }
+    65% {
+        transform: translateX(3px) rotate(6deg);
+    }
+}
+
+.cpm-logout:hover svg {
+    animation: cpm-logout-swing 420ms ease-in-out;
+}
+
+@keyframes cpm-avatar-pop {
+    0% {
+        transform: scale(0.85);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.cpm-avatar {
+    animation: cpm-avatar-pop 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes cpm-profile-enter {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Tarjetas del panel de perfil. */
+.cpm-profile-card {
+    animation: cpm-profile-enter 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Escalonado de las tarjetas del panel de perfil. */
+.cpm-profile-card:nth-child(1) {
+    animation-delay: 40ms;
+}
+
+.cpm-profile-card:nth-child(2) {
+    animation-delay: 120ms;
+}
+
+.cpm-profile-card:nth-child(3) {
+    animation-delay: 200ms;
+}
+
+/* Elementos de lista (roles, obras, almacenes) con realce al pasar el cursor. */
+.cpm-profile-item {
+    transition:
+        background-color 160ms ease,
+        transform 160ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.cpm-profile-item:hover {
+    background-color: var(--color-soft);
+    transform: translateX(2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cpm-pulse,
+    .cpm-ring,
+    .cpm-route-anim,
+    .cpm-truck-marker > div,
+    .cpm-custom-pin > div,
+    .cpm-posicion-marker > div,
+    .cpm-leaflet-tooltip,
+    .cpm-bell-con-pendientes,
+    .cpm-badge,
+    .cpm-logo-shine::after,
+    .cpm-menu-drop,
+    .cpm-indicator-ping,
+    .cpm-logout:hover svg,
+    .cpm-avatar,
+    .cpm-profile-card {
+        animation: none;
+    }
+
+    .cpm-profile-item {
+        transition: none;
+        transform: none;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {

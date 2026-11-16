@@ -59,10 +59,10 @@ const ACCIONES_CREACION: AccionRapida[] = [
 ];
 
 const claseBoton =
-    'flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white/80 transition-colors hover:bg-white/15 hover:text-white focus-ring disabled:cursor-not-allowed disabled:opacity-40';
+    'flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white/80 transition-colors hover:bg-white/15 hover:text-white focus-ring disabled:cursor-not-allowed disabled:opacity-40 active:scale-95';
 
 const claseMenu =
-    'absolute bottom-full left-1/2 z-50 mb-3 w-64 -translate-x-1/2 rounded-tile border border-line bg-surface p-1.5 text-ink shadow-pop';
+    'cpm-menu-drop absolute bottom-full left-1/2 z-50 mb-3 w-64 -translate-x-1/2 rounded-tile border border-line bg-surface p-1.5 text-ink shadow-pop';
 
 export function AppRail({
     permisos = [],

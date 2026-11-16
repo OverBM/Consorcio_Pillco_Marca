@@ -51,7 +51,6 @@ export type NotificacionFeedItem = {
 export type NotificacionesFeed = {
     items: NotificacionFeedItem[];
     sin_leer: number;
-    por_rol?: number;
 };
 
 export type CatalogoObra = {
