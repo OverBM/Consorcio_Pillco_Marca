@@ -79,9 +79,11 @@ function resumirCambio(
         .slice(0, 3)
         .map(([clave, valor]) => {
             const texto =
-                valor !== null && typeof valor === 'object'
-                    ? JSON.stringify(valor)
-                    : String(valor ?? '—');
+                valor === null || valor === undefined
+                    ? '—'
+                    : typeof valor === 'string'
+                      ? valor
+                      : (JSON.stringify(valor) ?? '—');
 
             return `${clave.replace(/_/g, ' ')}: ${texto}`;
         })

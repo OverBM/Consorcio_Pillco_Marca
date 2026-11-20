@@ -67,10 +67,7 @@ function Donut({
 
     return (
         <div className="relative grid place-items-center">
-            <svg
-                viewBox="0 0 42 42"
-                className="cpm-donut h-36 w-36 -rotate-90"
-            >
+            <svg viewBox="0 0 42 42" className="cpm-donut h-36 w-36 -rotate-90">
                 <circle
                     cx="21"
                     cy="21"
@@ -194,9 +191,8 @@ export function AnaliticaResumen({
                       : severidad === 'media'
                         ? 'Medias'
                         : 'Bajas',
-            valor: alertasDb.filter(
-                (alerta) => alerta.severidad === severidad,
-            ).length,
+            valor: alertasDb.filter((alerta) => alerta.severidad === severidad)
+                .length,
             clase:
                 severidad === 'critica'
                     ? 'text-critico'
@@ -218,10 +214,7 @@ export function AnaliticaResumen({
 
     const porAlmacen = Object.values(
         parametrosDb.reduce<
-            Record<
-                number,
-                { label: string; valor: number; detalle: number }
-            >
+            Record<number, { label: string; valor: number; detalle: number }>
         >((acumulado, parametro) => {
             const clave = parametro.almacen_id;
             const actual = acumulado[clave] ?? {
@@ -246,9 +239,8 @@ export function AnaliticaResumen({
 
     const clases = ['A', 'B', 'C'].map((clase) => ({
         label: `Clase ${clase}`,
-        valor: parametrosDb.filter(
-            (parametro) => parametro.clase_abc === clase,
-        ).length,
+        valor: parametrosDb.filter((parametro) => parametro.clase_abc === clase)
+            .length,
         clase:
             clase === 'A'
                 ? 'bg-exito'
@@ -350,10 +342,7 @@ export function AnaliticaResumen({
                             segmentos={clases.map((clase) => ({
                                 label: clase.label,
                                 valor: clase.valor,
-                                clase: clase.clase.replace(
-                                    'bg-',
-                                    'text-',
-                                ),
+                                clase: clase.clase.replace('bg-', 'text-'),
                             }))}
                             total={resumen.parametros_vigentes}
                         />
@@ -396,44 +385,42 @@ export function AnaliticaResumen({
                     ) : (
                         <>
                             <div className="mt-3 flex h-36 items-end gap-2">
-                            {ejecuciones.map((ejecucion) => (
-                                <div
-                                    key={ejecucion.id}
-                                    className="flex h-full flex-1 flex-col justify-end"
-                                    title={`${formatFechaHora(ejecucion.inicio)} · ${((ejecucion.duracion_ms ?? 0) / 1000).toFixed(1)} s`}
-                                >
+                                {ejecuciones.map((ejecucion) => (
                                     <div
-                                        className={`cpm-fade-in w-full rounded-t ${
-                                            ejecucion.estado === 'completada'
-                                                ? 'bg-brand-500'
-                                                : 'bg-critico'
-                                        }`}
-                                        style={{
-                                            height: `${Math.max(
-                                                4,
-                                                ((ejecucion.duracion_ms ?? 0) /
-                                                    maxDuracion) *
-                                                    100,
-                                            )}%`,
-                                        }}
-                                    />
-                                    <span className="text-muted mt-1 text-center text-[9px]">
-                                        {new Date(
-                                            ejecucion.inicio,
-                                        ).toLocaleDateString('es-PE', {
-                                            day: '2-digit',
-                                        })}
-                                    </span>
-                                </div>
-                            ))}
+                                        key={ejecucion.id}
+                                        className="flex h-full flex-1 flex-col justify-end"
+                                        title={`${formatFechaHora(ejecucion.inicio)} · ${((ejecucion.duracion_ms ?? 0) / 1000).toFixed(1)} s`}
+                                    >
+                                        <div
+                                            className={`cpm-fade-in w-full rounded-t ${
+                                                ejecucion.estado ===
+                                                'completada'
+                                                    ? 'bg-brand-500'
+                                                    : 'bg-critico'
+                                            }`}
+                                            style={{
+                                                height: `${Math.max(
+                                                    4,
+                                                    ((ejecucion.duracion_ms ??
+                                                        0) /
+                                                        maxDuracion) *
+                                                        100,
+                                                )}%`,
+                                            }}
+                                        />
+                                        <span className="text-muted mt-1 text-center text-[9px]">
+                                            {new Date(
+                                                ejecucion.inicio,
+                                            ).toLocaleDateString('es-PE', {
+                                                day: '2-digit',
+                                            })}
+                                        </span>
+                                    </div>
+                                ))}
                             </div>
                             <p className="text-muted border-line text-micro mt-2 border-t pt-2 font-mono">
-                                <span className="font-semibold">
-                                    Periodo:
-                                </span>{' '}
-                                {formatFechaHora(
-                                    ejecuciones[0]?.inicio ?? '',
-                                )}{' '}
+                                <span className="font-semibold">Periodo:</span>{' '}
+                                {formatFechaHora(ejecuciones[0]?.inicio ?? '')}{' '}
                                 —{' '}
                                 {formatFechaHora(
                                     ejecuciones[ejecuciones.length - 1]

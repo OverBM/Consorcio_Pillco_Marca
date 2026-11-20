@@ -50,7 +50,7 @@ class RedistribucionAnaliticaService
             foreach ($grupo as $parametro) {
                 $posicion = $stock->get($parametro->almacen_id.':'.$materialId);
                 $cantidad = (float) ($posicion?->cantidad ?? 0);
-                $rop = (float) ($parametro->punto_reorden ?? 0);
+                $rop = (float) ($parametro->punto_reorden_calculado ?? 0);
 
                 if ($rop <= 0) {
                     continue;
@@ -101,11 +101,11 @@ class RedistribucionAnaliticaService
                         'origen_id' => $origen->id,
                         'origen' => $origen->nombre,
                         'origen_stock' => round($sobrante['cantidad'], 3),
-                        'origen_rop' => round((float) ($sobrante['parametro']->punto_reorden ?? 0), 3),
+                        'origen_rop' => round((float) ($sobrante['parametro']->punto_reorden_calculado ?? 0), 3),
                         'destino_id' => $destino->id,
                         'destino' => $destino->nombre,
                         'destino_stock' => round($deficit['cantidad'], 3),
-                        'destino_rop' => round((float) ($deficit['parametro']->punto_reorden ?? 0), 3),
+                        'destino_rop' => round((float) ($deficit['parametro']->punto_reorden_calculado ?? 0), 3),
                         'cantidad' => $cantidad,
                         'prioridad' => $deficit['faltante'] >= $sobrante['exceso'] ? 'alta' : 'media',
                         'distancia_km' => null,

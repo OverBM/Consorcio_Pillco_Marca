@@ -163,7 +163,7 @@ test('las alertas abiertas se marcan como leídas por usuario', function () {
         ->assertOk()
         ->assertJsonPath('data.sin_leer', 0);
 
-    $this->assertDatabaseHas('alerta_leida', [
+    $this->assertDatabaseHas('notificaciones', [
         'alerta_id' => $alerta->id,
         'usuario_id' => $usuario->id,
     ]);

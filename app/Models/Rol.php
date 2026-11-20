@@ -4,10 +4,22 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Facades\Cache;
 
 class Rol extends Model
 {
     protected $table = 'roles';
+
+    protected static function booted(): void
+    {
+        static::saved(fn () => self::invalidarUsuarios());
+        static::deleted(fn () => self::invalidarUsuarios());
+    }
+
+    public static function invalidarUsuarios(): void
+    {
+        Cache::forever('usuarios_payload_version', ((int) Cache::get('usuarios_payload_version', 1)) + 1);
+    }
 
     protected $fillable = [
         'codigo',

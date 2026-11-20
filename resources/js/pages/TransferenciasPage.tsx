@@ -77,6 +77,7 @@ const ESTADO_META: Record<
     string,
     { tone: 'ok' | 'warn' | 'violet' | 'danger' | 'neutral'; label: string }
 > = {
+    sugerida: { tone: 'neutral', label: 'Sugerida' },
     solicitada: { tone: 'warn', label: 'Solicitada' },
     aprobada: { tone: 'violet', label: 'Aprobada' },
     en_transito: { tone: 'violet', label: 'En tránsito' },
@@ -130,9 +131,7 @@ function etiquetaMotivo(motivo: string): string {
 
     return (
         etiquetas[motivo] ??
-        motivo
-            .replace(/_/g, ' ')
-            .replace(/^\w/, (letra) => letra.toUpperCase())
+        motivo.replace(/_/g, ' ').replace(/^\w/, (letra) => letra.toUpperCase())
     );
 }
 

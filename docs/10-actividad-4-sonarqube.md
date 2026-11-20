@@ -13,26 +13,26 @@
 
 ### Registro y parámetros
 
-| Parámetro | Valor |
-|---|---|
-| Host | `https://sonarcloud.io` |
-| Organización | `consorcio-pillco-marca` |
-| Project key | `consorcio-pillco-marca_version-2` |
-| Nombre | Consorcio Pillco Marca v2 |
-| Versión analizada | `3.2.0` |
-| Fuentes | `app`, `resources/js` (componentes, páginas, hooks, servicios, utilidades) |
-| Pruebas | `tests`, `resources/js/tests` |
-| Exclusiones | `vendor`, `node_modules`, `public/build`, `bootstrap/ssr`, `storage`, `coverage`, `cypress/screenshots`, `cypress/videos`, código generado por Wayfinder |
-| Codificación | UTF-8 |
-| Token | Variable `SONAR_TOKEN` (nunca versionada) |
+| Parámetro         | Valor                                                                                                                                                    |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Host              | `https://sonarcloud.io`                                                                                                                                  |
+| Organización      | `consorcio-pillco-marca`                                                                                                                                 |
+| Project key       | `consorcio-pillco-marca_version-2`                                                                                                                       |
+| Nombre            | Consorcio Pillco Marca v2                                                                                                                                |
+| Versión analizada | `3.2.0`                                                                                                                                                  |
+| Fuentes           | `app`, `resources/js` (componentes, páginas, hooks, servicios, utilidades)                                                                               |
+| Pruebas           | `tests`, `resources/js/tests`                                                                                                                            |
+| Exclusiones       | `vendor`, `node_modules`, `public/build`, `bootstrap/ssr`, `storage`, `coverage`, `cypress/screenshots`, `cypress/videos`, código generado por Wayfinder |
+| Codificación      | UTF-8                                                                                                                                                    |
+| Token             | Variable `SONAR_TOKEN` (nunca versionada)                                                                                                                |
 
 ### Reportes enlazados
 
-| Lenguaje | Reporte | Generación |
-|---|---|---|
-| PHP | `coverage.xml` | Pest + Xdebug 3.5.3 (`--coverage-clover`) |
-| PHP | `phpunit-report.xml` | Pest (`--log-junit`) |
-| JavaScript | `coverage/lcov.info` | Vitest + V8 (`npm run test:coverage`) |
+| Lenguaje   | Reporte              | Generación                                |
+| ---------- | -------------------- | ----------------------------------------- |
+| PHP        | `coverage.xml`       | Pest + Xdebug 3.5.3 (`--coverage-clover`) |
+| PHP        | `phpunit-report.xml` | Pest (`--log-junit`)                      |
+| JavaScript | `coverage/lcov.info` | Vitest + V8 (`npm run test:coverage`)     |
 
 ### Comando de ejecución
 
@@ -60,33 +60,33 @@ disponibles en el panel.
 
 ### Métricas finales
 
-| Métrica | Resultado | Interpretación |
-|---|---|---|
-| **Quality Gate** | **OK / APROBADO** | Todas las condiciones en verde; cobertura global 81.2 % y cobertura del código nuevo 93.2 % |
-| **Bugs** | **0** | Sin defectos de fiabilidad; Reliability Rating = A |
-| **Vulnerabilities** | **0** | Se corrigieron las 4 vulnerabilidades iniciales de hashing débil; Security Rating = A |
-| **Code Smells** | **0** | Sin problemas de mantenibilidad; deuda técnica = 0 |
-| **Coverage** | **81.2 %** | Cobertura global de líneas; 93.2 % en código nuevo |
-| **Duplicated Lines** | **0.8 % (391 líneas)** | Por debajo del umbral de 3 %; 29 bloques duplicados |
-| Security Hotspots | 0 | Sin hotspots pendientes |
-| Líneas de código (NCLOC) | 42 583 | Tamaño del código analizado |
-| Complejidad cognitiva | 2 394 | Se concentra en paneles y mapas extensos |
-| Deuda técnica (`sqale_index`) | 0 min | Sin esfuerzo pendiente de remediación |
+| Métrica                       | Resultado              | Interpretación                                                                              |
+| ----------------------------- | ---------------------- | ------------------------------------------------------------------------------------------- |
+| **Quality Gate**              | **OK / APROBADO**      | Todas las condiciones en verde; cobertura global 81.2 % y cobertura del código nuevo 93.2 % |
+| **Bugs**                      | **0**                  | Sin defectos de fiabilidad; Reliability Rating = A                                          |
+| **Vulnerabilities**           | **0**                  | Se corrigieron las 4 vulnerabilidades iniciales de hashing débil; Security Rating = A       |
+| **Code Smells**               | **0**                  | Sin problemas de mantenibilidad; deuda técnica = 0                                          |
+| **Coverage**                  | **81.2 %**             | Cobertura global de líneas; 93.2 % en código nuevo                                          |
+| **Duplicated Lines**          | **0.8 % (391 líneas)** | Por debajo del umbral de 3 %; 29 bloques duplicados                                         |
+| Security Hotspots             | 0                      | Sin hotspots pendientes                                                                     |
+| Líneas de código (NCLOC)      | 42 583                 | Tamaño del código analizado                                                                 |
+| Complejidad cognitiva         | 2 394                  | Se concentra en paneles y mapas extensos                                                    |
+| Deuda técnica (`sqale_index`) | 0 min                  | Sin esfuerzo pendiente de remediación                                                       |
 
 ![Dashboard de SonarCloud con Quality Gate y cobertura](evidencias/sonar-dashboard.png)
 
 ### Comparación de la evolución
 
-| Métrica | Primer análisis | Análisis previo | Análisis final |
-|---|---|---|---|
-| Vulnerabilities | 4 | 0 | **0** |
-| Code Smells | 2 | 0 | **0** |
-| Security Rating | D (4) | A (1) | **A (1)** |
-| Deuda técnica | 40 min | 0 min | **0 min** |
-| Coverage | 25.3 % | 72.0 % | **81.2 %** |
-| Duplicated Lines | — | 510 | **391** |
-| Duplicated Density | — | 1.0 % | **0.8 %** |
-| Quality Gate | ERROR | OK | **OK** |
+| Métrica            | Primer análisis | Análisis previo | Análisis final |
+| ------------------ | --------------- | --------------- | -------------- |
+| Vulnerabilities    | 4               | 0               | **0**          |
+| Code Smells        | 2               | 0               | **0**          |
+| Security Rating    | D (4)           | A (1)           | **A (1)**      |
+| Deuda técnica      | 40 min          | 0 min           | **0 min**      |
+| Coverage           | 25.3 %          | 72.0 %          | **81.2 %**     |
+| Duplicated Lines   | —               | 510             | **391**        |
+| Duplicated Density | —               | 1.0 %           | **0.8 %**      |
+| Quality Gate       | ERROR           | OK              | **OK**         |
 
 ### Mejoras aplicadas en este ciclo
 
@@ -179,13 +179,13 @@ impacto funcional. Análisis final: **0 vulnerabilidades**.
 
 ## Evidencias de la Actividad 4
 
-| Evidencia | Ubicación |
-|---|---|
-| Configuración del proyecto | `sonar-project.properties` |
-| Salida del escáner | `sonar-scan-output-8.txt` |
-| Captura del dashboard | `docs/evidencias/sonar-dashboard.png` |
-| Métricas exportadas | `docs/evidencias/sonarcloud-metricas.json` |
-| Panel y Quality Gate | https://sonarcloud.io/dashboard?id=consorcio-pillco-marca_version-2 |
-| Cobertura PHP | `coverage.xml` |
-| Cobertura JS | `coverage/lcov.info` |
-| Reporte de pruebas | `phpunit-report.xml` (242 pruebas, 0 fallos) |
+| Evidencia                  | Ubicación                                                           |
+| -------------------------- | ------------------------------------------------------------------- |
+| Configuración del proyecto | `sonar-project.properties`                                          |
+| Salida del escáner         | `sonar-scan-output-8.txt`                                           |
+| Captura del dashboard      | `docs/evidencias/sonar-dashboard.png`                               |
+| Métricas exportadas        | `docs/evidencias/sonarcloud-metricas.json`                          |
+| Panel y Quality Gate       | https://sonarcloud.io/dashboard?id=consorcio-pillco-marca_version-2 |
+| Cobertura PHP              | `coverage.xml`                                                      |
+| Cobertura JS               | `coverage/lcov.info`                                                |
+| Reporte de pruebas         | `phpunit-report.xml` (242 pruebas, 0 fallos)                        |

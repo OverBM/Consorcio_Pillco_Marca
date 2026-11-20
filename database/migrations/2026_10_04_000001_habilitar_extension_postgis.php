@@ -8,7 +8,10 @@ return new class extends Migration
     public function up(): void
     {
         if (DB::getDriverName() === 'pgsql') {
-            DB::statement('CREATE EXTENSION IF NOT EXISTS postgis');
+            $existe = DB::selectOne("SELECT 1 FROM pg_extension WHERE extname = 'postgis'");
+            if ($existe === null) {
+                DB::statement('CREATE EXTENSION IF NOT EXISTS postgis');
+            }
         }
     }
 

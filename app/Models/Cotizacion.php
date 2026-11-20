@@ -14,6 +14,7 @@ class Cotizacion extends Model
     protected $table = 'cotizaciones';
 
     protected $fillable = [
+        'solicitud_id',
         'requerimiento_id',
         'proveedor_id',
         'total',
@@ -28,9 +29,24 @@ class Cotizacion extends Model
         'plazo_entrega_dias' => 'integer',
     ];
 
+    public function setRequerimientoIdAttribute(mixed $value): void
+    {
+        $this->attributes['solicitud_id'] = $value;
+    }
+
+    public function getRequerimientoIdAttribute(): ?int
+    {
+        return isset($this->attributes['solicitud_id']) ? (int) $this->attributes['solicitud_id'] : null;
+    }
+
     public function requerimiento(): BelongsTo
     {
-        return $this->belongsTo(Requerimiento::class, 'requerimiento_id');
+        return $this->belongsTo(Requerimiento::class, 'solicitud_id');
+    }
+
+    public function solicitud(): BelongsTo
+    {
+        return $this->belongsTo(Solicitud::class, 'solicitud_id');
     }
 
     public function proveedor(): BelongsTo

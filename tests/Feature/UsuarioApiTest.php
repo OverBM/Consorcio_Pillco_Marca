@@ -116,8 +116,11 @@ test('el endpoint de usuarios actualiza el estado y rol de un usuario', function
 
     $this->assertDatabaseHas('usuarios', [
         'id' => $usuario->id,
-        'name' => 'Usuario Actualizado',
         'activo' => false,
+    ]);
+
+    $this->assertDatabaseHas('personas', [
+        'nombres' => 'Usuario Actualizado',
     ]);
 });
 

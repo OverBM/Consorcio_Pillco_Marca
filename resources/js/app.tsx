@@ -21,11 +21,7 @@ function AppShell({ children }: { children: ReactNode }) {
     return (
         <ThemeProvider>
             <NotificationProvider>
-                {auth?.user ? (
-                    <AppLayout>{children}</AppLayout>
-                ) : (
-                    children
-                )}
+                {auth?.user ? <AppLayout>{children}</AppLayout> : children}
                 <OfflineIndicator />
             </NotificationProvider>
         </ThemeProvider>

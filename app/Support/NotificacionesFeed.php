@@ -104,6 +104,7 @@ final class NotificacionesFeed
 
         $notificaciones = Notificacion::query()
             ->where('usuario_id', $usuario->id)
+            ->where('tipo', '!=', 'alerta_leida')
             ->latest()
             ->limit(self::CANDIDATAS)
             ->get()
@@ -127,6 +128,7 @@ final class NotificacionesFeed
 
         $alertas = Alerta::query()
             ->where('estado', 'abierta')
+            ->where('tipo', '!=', 'alerta_leida')
             ->latest()
             ->limit(self::CANDIDATAS)
             ->get()

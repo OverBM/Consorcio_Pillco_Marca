@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Models\ObservacionEvidencia;
+use App\Models\Documento;
 use App\Models\ObservacionTecnica;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -55,7 +55,9 @@ class CalidadController extends Controller
             'evidencia_ruta' => 'nullable|string',
         ]);
 
-        $observacion = DB::transaction(function () use ($validated) {
+        $usuarioId = $request->user()?->id ?? 1;
+
+        $observacion = DB::transaction(function () use ($validated, $usuarioId) {
             $obs = ObservacionTecnica::create([
                 'obra_id' => $validated['obra_id'],
                 'numero_acta' => $validated['numero_acta'] ?? null,
@@ -67,11 +69,16 @@ class CalidadController extends Controller
             ]);
 
             if (! empty($validated['evidencia_ruta'])) {
-                ObservacionEvidencia::create([
-                    'observacion_id' => $obs->id,
-                    'etapa' => 'notificacion',
+                Documento::create([
+                    'obra_id' => $obs->obra_id,
+                    'tipo' => 'evidencia',
+                    'titulo' => 'Evidencia de observación '.($obs->numero_acta ?? $obs->id),
                     'ruta' => $validated['evidencia_ruta'],
-                    'created_at' => now(),
+                    'version' => 1,
+                    'documentable_type' => ObservacionTecnica::class,
+                    'documentable_id' => $obs->id,
+                    'etapa' => 'notificacion',
+                    'subido_por' => $usuarioId,
                 ]);
             }
 
@@ -96,19 +103,25 @@ class CalidadController extends Controller
         ]);
 
         $observacion = ObservacionTecnica::findOrFail($id);
+        $usuarioId = $request->user()?->id ?? 1;
 
-        DB::transaction(function () use ($observacion, $validated) {
+        DB::transaction(function () use ($observacion, $validated, $usuarioId) {
             $observacion->update([
                 'estado' => 'levantada',
                 'planos_asbuilt_actualizados' => $validated['planos_asbuilt_actualizados'] ?? false,
             ]);
 
             if (! empty($validated['evidencia_subsanacion_ruta'])) {
-                ObservacionEvidencia::create([
-                    'observacion_id' => $observacion->id,
-                    'etapa' => 'subsanacion',
+                Documento::create([
+                    'obra_id' => $observacion->obra_id,
+                    'tipo' => 'evidencia',
+                    'titulo' => 'Subsanación de observación '.($observacion->numero_acta ?? $observacion->id),
                     'ruta' => $validated['evidencia_subsanacion_ruta'],
-                    'created_at' => now(),
+                    'version' => 1,
+                    'documentable_type' => ObservacionTecnica::class,
+                    'documentable_id' => $observacion->id,
+                    'etapa' => 'subsanacion',
+                    'subido_por' => $usuarioId,
                 ]);
             }
         });

@@ -15,7 +15,11 @@ import {
 import { AnaliticaResumen } from '../design-system/AnaliticaResumen';
 import { useNotifications } from '../components/notifications/NotificationProvider';
 import { refrescarProps } from '../utils/refrescar';
-import { formatCantidad, formatFecha } from '../utils/format';
+import {
+    formatCantidad,
+    formatFecha,
+    formatFechaHoraExacta,
+} from '../utils/format';
 
 type Pestana =
     | 'resumen'
@@ -390,14 +394,14 @@ export default function AnaliticaPage({
         },
         {
             key: 'rop',
-            header: 'ROP',
+            header: 'ROP (calculado)',
             align: 'right',
             mono: true,
             cell: (fila) => formatearNumero(fila.punto_reorden),
         },
         {
             key: 'ss',
-            header: 'Stock seguridad',
+            header: 'Stock seg. (calculado)',
             align: 'right',
             mono: true,
             cell: (fila) => formatearNumero(fila.stock_seguridad),
@@ -546,7 +550,7 @@ export default function AnaliticaPage({
         {
             key: 'inicio',
             header: 'Inicio',
-            cell: (fila) => formatFecha(fila.inicio),
+            cell: (fila) => formatFechaHoraExacta(fila.inicio),
         },
         {
             key: 'estado',
@@ -631,7 +635,9 @@ export default function AnaliticaPage({
                         </p>
                     </div>
                     <div className="text-right">
-                        <Badge tone={tonoCuota}>{cuota.porcentaje}% usado</Badge>
+                        <Badge tone={tonoCuota}>
+                            {cuota.porcentaje}% usado
+                        </Badge>
                         <p className="text-muted mt-1 text-[10px]">
                             Actualizado{' '}
                             {new Date(cuota.actualizado_en).toLocaleTimeString(

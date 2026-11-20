@@ -3,12 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AlertaLeida extends Model
 {
-    protected $table = 'alerta_leida';
-
-    public $timestamps = false;
+    protected $table = 'notificaciones';
 
     protected $fillable = [
         'alerta_id',
@@ -16,10 +15,27 @@ class AlertaLeida extends Model
         'leida_en',
     ];
 
-    protected function casts(): array
+    protected $casts = [
+        'leida_en' => 'datetime',
+    ];
+
+    protected static function booted(): void
     {
-        return [
-            'leida_en' => 'datetime',
-        ];
+        static::creating(function (self $registro): void {
+            $registro->attributes['tipo'] ??= 'alerta';
+            $registro->attributes['titulo'] ??= 'Alerta';
+            $registro->attributes['cuerpo'] ??= null;
+            $registro->attributes['leida_en'] ??= now();
+        });
+    }
+
+    public function alerta(): BelongsTo
+    {
+        return $this->belongsTo(Alerta::class, 'alerta_id');
+    }
+
+    public function usuario(): BelongsTo
+    {
+        return $this->belongsTo(Usuario::class, 'usuario_id');
     }
 }

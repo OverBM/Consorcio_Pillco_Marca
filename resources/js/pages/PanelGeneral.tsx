@@ -443,8 +443,7 @@ export default function PanelGeneral() {
                     etiqueta: evento.etiqueta,
                 }))}
                 cargando={
-                    props.rutas === undefined ||
-                    props.indicadores === undefined
+                    props.rutas === undefined || props.indicadores === undefined
                 }
                 analitica={props.analiticaHero}
             />
@@ -1122,9 +1121,7 @@ export default function PanelGeneral() {
                             data="metricasInventario"
                             fallback={<Skeleton className="h-56 w-full" />}
                         >
-                            <TendenciasChart
-                                serie={metricas?.serie30d ?? []}
-                            />
+                            <TendenciasChart serie={metricas?.serie30d ?? []} />
                         </Deferred>
                     </div>
                 </Card>

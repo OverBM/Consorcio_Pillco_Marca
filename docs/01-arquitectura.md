@@ -35,18 +35,18 @@ Laravel 13.30 (PHP 8.5)
   └── ORS / OSRM / OpenStreetMap / WhatsApp
 ```
 
-| Elemento | Implementación |
-|---|---|
-| Estilo | Monolito modular con SPA Inertia/React |
-| Frontend | React 19.2, TypeScript 5.7, Tailwind 4.1, Vite 8 |
-| Backend | Laravel 13.30, Inertia Laravel 3.3, PHP 8.5 |
-| Base de datos | PostgreSQL 18.6 + PostGIS 3.7, 104 tablas, 25 migraciones |
-| Autenticación | Sesión web + Bearer `remember_token` para API |
-| Rutas | 179 rutas, 122 bajo `/api/v1` |
-| Stock | `StockService` con `DB::transaction` + `lockForUpdate` |
-| Auditoría | Trigger `trg_kardex_inmutable` sobre `kardex` |
-| Analítica | FastAPI/uvicorn en `127.0.0.1:8001` con `X-Internal-Token` |
-| Geolocalización | PostGIS + OpenRouteService + OSRM (respaldo) + OSM |
+| Elemento        | Implementación                                             |
+| --------------- | ---------------------------------------------------------- |
+| Estilo          | Monolito modular con SPA Inertia/React                     |
+| Frontend        | React 19.2, TypeScript 5.7, Tailwind 4.1, Vite 8           |
+| Backend         | Laravel 13.30, Inertia Laravel 3.3, PHP 8.5                |
+| Base de datos   | PostgreSQL 18.6 + PostGIS 3.7, 104 tablas, 25 migraciones  |
+| Autenticación   | Sesión web + Bearer `remember_token` para API              |
+| Rutas           | 179 rutas, 122 bajo `/api/v1`                              |
+| Stock           | `StockService` con `DB::transaction` + `lockForUpdate`     |
+| Auditoría       | Trigger `trg_kardex_inmutable` sobre `kardex`              |
+| Analítica       | FastAPI/uvicorn en `127.0.0.1:8001` con `X-Internal-Token` |
+| Geolocalización | PostGIS + OpenRouteService + OSRM (respaldo) + OSM         |
 
 Para el detalle de capas, módulos, diagramas Mermaid y justificación de APIs,
 consultar `docs/12-actividad-1-arquitectura-software.md`. Para el stack y el

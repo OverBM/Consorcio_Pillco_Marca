@@ -120,9 +120,7 @@ describe('CierreObraPage', () => {
     });
 
     it('finaliza y liquida la obra', async () => {
-        const confirmar = vi
-            .spyOn(window, 'confirm')
-            .mockReturnValue(true);
+        const confirmar = vi.spyOn(window, 'confirm').mockReturnValue(true);
 
         renderPagina(CierreObraPage, { obrasDb: obras });
 
@@ -130,7 +128,9 @@ describe('CierreObraPage', () => {
             name: /Finalizar y Liquidar/,
         });
 
-        await waitFor(() => expect((boton as HTMLButtonElement).disabled).toBe(false));
+        await waitFor(() =>
+            expect((boton as HTMLButtonElement).disabled).toBe(false),
+        );
 
         fireEvent.click(boton);
 

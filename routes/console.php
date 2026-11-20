@@ -19,3 +19,7 @@ Schedule::command('tracking:evaluar-alertas')
 Schedule::command('tracking:purgar')
     ->dailyAt('03:00')
     ->withoutOverlapping(30);
+
+Schedule::command('panel:precalentar')
+    ->everyMinute()
+    ->withoutOverlapping(5);

@@ -7,9 +7,7 @@ describe('design-system/AnaliticaChart', () => {
     it('muestra el estado vacío cuando no hay suficientes puntos', () => {
         render(<AnaliticaChart serie={[]} />);
 
-        expect(
-            screen.getByText(/Sin datos suficientes/i),
-        ).toBeTruthy();
+        expect(screen.getByText(/Sin datos suficientes/i)).toBeTruthy();
     });
 
     it('renderiza el gráfico con demanda real y pronóstico', () => {

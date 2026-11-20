@@ -5,12 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class DespachoPosicion extends Model
+class TransferenciaPosicion extends Model
 {
-    protected $table = 'despacho_posiciones';
+    protected $table = 'transferencia_posiciones';
 
     protected $fillable = [
-        'despacho_id',
+        'transferencia_id',
         'latitud',
         'longitud',
         'precision_m',
@@ -35,8 +35,8 @@ class DespachoPosicion extends Model
         ];
     }
 
-    public function despacho(): BelongsTo
+    public function transferencia(): BelongsTo
     {
-        return $this->belongsTo(Despacho::class, 'despacho_id');
+        return $this->belongsTo(Transferencia::class, 'transferencia_id');
     }
 }

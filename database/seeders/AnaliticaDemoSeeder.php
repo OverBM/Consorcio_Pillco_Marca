@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Despacho;
+use App\Models\Transferencia;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -156,18 +156,18 @@ class AnaliticaDemoSeeder extends Seeder
 
     private function sembrarPosiciones(): void
     {
-        $despachos = Despacho::query()
-            ->with(['transferencia.almacenOrigen', 'transferencia.almacenDestino'])
-            ->whereHas('transferencia', fn ($query) => $query->where('estado', 'en_transito'))
+        $transferencias = Transferencia::query()
+            ->with(['almacenOrigen', 'almacenDestino'])
+            ->where('estado', 'en_transito')
             ->get();
 
-        foreach ($despachos as $despacho) {
-            if ($despacho->posiciones()->exists()) {
+        foreach ($transferencias as $transferencia) {
+            if ($transferencia->posiciones()->exists()) {
                 continue;
             }
 
-            $origen = $despacho->transferencia?->almacenOrigen;
-            $destino = $despacho->transferencia?->almacenDestino;
+            $origen = $transferencia->almacenOrigen;
+            $destino = $transferencia->almacenDestino;
 
             if ($origen?->latitud === null || $origen?->longitud === null
                 || $destino?->latitud === null || $destino?->longitud === null) {
@@ -180,8 +180,8 @@ class AnaliticaDemoSeeder extends Seeder
                 $lng = (float) $origen->longitud + ((float) $destino->longitud - (float) $origen->longitud) * $avance;
                 $capturada = now()->subMinutes((9 - $paso) * 6);
 
-                $id = DB::table('despacho_posiciones')->insertGetId([
-                    'despacho_id' => $despacho->id,
+                $id = DB::table('transferencia_posiciones')->insertGetId([
+                    'transferencia_id' => $transferencia->id,
                     'latitud' => round($lat, 7),
                     'longitud' => round($lng, 7),
                     'precision_m' => 8,
@@ -197,7 +197,7 @@ class AnaliticaDemoSeeder extends Seeder
 
                 if (DB::getDriverName() === 'pgsql') {
                     DB::update(
-                        'UPDATE despacho_posiciones SET ubicacion = ST_SetSRID(ST_MakePoint(?, ?), 4326) WHERE id = ?',
+                        'UPDATE transferencia_posiciones SET ubicacion = ST_SetSRID(ST_MakePoint(?, ?), 4326) WHERE id = ?',
                         [round($lng, 7), round($lat, 7), $id],
                     );
                 }

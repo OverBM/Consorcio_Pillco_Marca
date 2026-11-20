@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Documento extends Model
@@ -20,8 +21,16 @@ class Documento extends Model
         'ruta',
         'hash_sha256',
         'version',
+        'documentable_type',
+        'documentable_id',
+        'etapa',
         'subido_por',
     ];
+
+    public function documentable(): MorphTo
+    {
+        return $this->morphTo();
+    }
 
     public function obra(): BelongsTo
     {

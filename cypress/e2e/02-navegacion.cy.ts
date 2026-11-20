@@ -62,7 +62,11 @@ describe('E2E-02 Navegación y búsqueda global', () => {
         cy.visit('/panel');
         cy.get('button[aria-label="Cambiar a modo oscuro"]').click();
         cy.get('html').should('have.attr', 'data-theme', 'oscuro');
-        cy.get('body').should('have.css', 'background-color', 'rgb(11, 15, 23)');
+        cy.get('body').should(
+            'have.css',
+            'background-color',
+            'rgb(11, 15, 23)',
+        );
         cy.screenshot('E2E-02.3-modo-oscuro');
         cy.screenshot('panel-modo-oscuro', { capture: 'fullPage' });
         cy.reload();

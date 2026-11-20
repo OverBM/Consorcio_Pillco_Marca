@@ -17,18 +17,18 @@ avance de obra para que esas decisiones se tomen con datos consolidados.
 
 ### Indicadores implementados
 
-| Indicador | Fórmula / fuente | Uso para el negocio |
-|---|---|---|
-| **Valor del inventario** | `Σ(cantidad × costo_referencial)` en `stock_almacen` | Dimensionar el capital inmovilizado |
-| **Stock crítico** | SKUs con `(cantidad − cantidad_reservada) < stock_minimo` | Priorizar reposición y conteos |
-| **Mermas del período** | `Σ mermas.cantidad` y valorización con costo referencial | Medir pérdidas y enfocar auditorías |
-| **Cumplimiento de transferencias** | completadas / total del período | Evaluar el flujo entre almacenes |
-| **Rotación estimada** | salidas / existencias, normalizada a 30 días | Detectar materiales de baja rotación |
-| **Compras del período** | `Σ ordenes_compra.total` | Controlar el abastecimiento |
-| **Avance de obras** | promedio de `obras.avance_fisico_pct` | Relacionar recursos con ejecución |
-| **Movimientos por día** | kardex de ingresos y salidas | Ver estacionalidad y picos |
-| **Valor por categoría** | stock valorizado agrupado por categoría | Enfocar decisiones por rubro |
-| **Materiales con mayor movimiento** | Top 10 por movimientos absolutos | Detectar materiales críticos |
+| Indicador                           | Fórmula / fuente                                          | Uso para el negocio                  |
+| ----------------------------------- | --------------------------------------------------------- | ------------------------------------ |
+| **Valor del inventario**            | `Σ(cantidad × costo_referencial)` en `stock_almacen`      | Dimensionar el capital inmovilizado  |
+| **Stock crítico**                   | SKUs con `(cantidad − cantidad_reservada) < stock_minimo` | Priorizar reposición y conteos       |
+| **Mermas del período**              | `Σ mermas.cantidad` y valorización con costo referencial  | Medir pérdidas y enfocar auditorías  |
+| **Cumplimiento de transferencias**  | completadas / total del período                           | Evaluar el flujo entre almacenes     |
+| **Rotación estimada**               | salidas / existencias, normalizada a 30 días              | Detectar materiales de baja rotación |
+| **Compras del período**             | `Σ ordenes_compra.total`                                  | Controlar el abastecimiento          |
+| **Avance de obras**                 | promedio de `obras.avance_fisico_pct`                     | Relacionar recursos con ejecución    |
+| **Movimientos por día**             | kardex de ingresos y salidas                              | Ver estacionalidad y picos           |
+| **Valor por categoría**             | stock valorizado agrupado por categoría                   | Enfocar decisiones por rubro         |
+| **Materiales con mayor movimiento** | Top 10 por movimientos absolutos                          | Detectar materiales críticos         |
 
 Los diez indicadores se calculan en el backend; la vista muestra cuatro KPI
 principales, una serie diaria, la distribución por categoría y el ranking de
@@ -40,14 +40,14 @@ materiales.
 
 ### Arquitectura del módulo
 
-| Capa | Archivo | Responsabilidad |
-|---|---|---|
-| Ruta | `routes/web.php` → `/reportes` | Acceso protegido por autenticación y permiso `panel.ver` |
-| Controlador | `app/Http/Controllers/Web/ReportesViewController.php` | Valida filtros y entrega props Inertia |
-| Dominio | `app/Domain/Metricas/ReportesService.php` | Calcula indicadores, series y rankings desde PostgreSQL |
-| Consultas compartidas | `app/Domain/Metricas/ConsultasInventario.php` | Joins y filtros comunes con el Panel General |
-| Vista | `resources/js/pages/ReportesPage.tsx` | KPI, gráficos, tabla, filtros y exportación |
-| Navegación | `resources/js/navigation.config.ts` | Entrada “Reportes e Indicadores” |
+| Capa                  | Archivo                                               | Responsabilidad                                          |
+| --------------------- | ----------------------------------------------------- | -------------------------------------------------------- |
+| Ruta                  | `routes/web.php` → `/reportes`                        | Acceso protegido por autenticación y permiso `panel.ver` |
+| Controlador           | `app/Http/Controllers/Web/ReportesViewController.php` | Valida filtros y entrega props Inertia                   |
+| Dominio               | `app/Domain/Metricas/ReportesService.php`             | Calcula indicadores, series y rankings desde PostgreSQL  |
+| Consultas compartidas | `app/Domain/Metricas/ConsultasInventario.php`         | Joins y filtros comunes con el Panel General             |
+| Vista                 | `resources/js/pages/ReportesPage.tsx`                 | KPI, gráficos, tabla, filtros y exportación              |
+| Navegación            | `resources/js/navigation.config.ts`                   | Entrada “Reportes e Indicadores”                         |
 
 ### Requisitos mínimos del módulo
 
@@ -62,33 +62,33 @@ materiales.
 
 ### Evidencia de datos reales (consultas ejecutadas el 10/11/2026)
 
-| Consulta | Resultado |
-|---|---|
-| `select count(*), sum(cantidad * costo_referencial) from stock_almacen ...` | **12 SKUs**, **S/ 89 962.50** |
-| `select count(*) from stock_almacen where (cantidad - cantidad_reservada) < stock_minimo` | **1 SKU crítico** |
-| `select count(*), sum(cantidad) from mermas` | **2 registros**, **4.5 unidades** |
-| `select sum(mermas.cantidad * materiales.costo_referencial) ...` | **S/ 195.00** |
-| `select estado, count(*) from transferencias group by estado` | **1 completada**, **1 en tránsito** → cumplimiento **50 %** |
-| `select count(*), sum(total) from ordenes_compra` | **2 órdenes**, **S/ 35 750.00** |
-| `select count(*), avg(avance_fisico_pct) from obras ...` | **2 obras activas**, avance **55.3 %** |
+| Consulta                                                                                  | Resultado                                                   |
+| ----------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `select count(*), sum(cantidad * costo_referencial) from stock_almacen ...`               | **12 SKUs**, **S/ 89 962.50**                               |
+| `select count(*) from stock_almacen where (cantidad - cantidad_reservada) < stock_minimo` | **1 SKU crítico**                                           |
+| `select count(*), sum(cantidad) from mermas`                                              | **2 registros**, **4.5 unidades**                           |
+| `select sum(mermas.cantidad * materiales.costo_referencial) ...`                          | **S/ 195.00**                                               |
+| `select estado, count(*) from transferencias group by estado`                             | **1 completada**, **1 en tránsito** → cumplimiento **50 %** |
+| `select count(*), sum(total) from ordenes_compra`                                         | **2 órdenes**, **S/ 35 750.00**                             |
+| `select count(*), avg(avance_fisico_pct) from obras ...`                                  | **2 obras activas**, avance **55.3 %**                      |
 
 **Distribución por categoría**
 
-| Categoría | Valor |
-|---|---|
-| Agregados | S/ 39 000.00 |
-| Acero y fierro | S/ 36 000.00 |
-| Cementos y aglomerantes | S/ 9 262.50 |
-| EPP | S/ 5 700.00 |
+| Categoría               | Valor        |
+| ----------------------- | ------------ |
+| Agregados               | S/ 39 000.00 |
+| Acero y fierro          | S/ 36 000.00 |
+| Cementos y aglomerantes | S/ 9 262.50  |
+| EPP                     | S/ 5 700.00  |
 
 **Materiales con mayor movimiento**
 
-| Material | Movimientos absolutos |
-|---|---|
-| Cemento Andino Tipo V | 6 263.53 |
-| Fierro Corrugado 1/2" Grado 60 | 2 974.77 |
-| Arena Gruesa de Río | 2 511.58 |
-| Casco de Seguridad Dieléctrico | 604.43 |
+| Material                       | Movimientos absolutos |
+| ------------------------------ | --------------------- |
+| Cemento Andino Tipo V          | 6 263.53              |
+| Fierro Corrugado 1/2" Grado 60 | 2 974.77              |
+| Arena Gruesa de Río            | 2 511.58              |
+| Casco de Seguridad Dieléctrico | 604.43                |
 
 Al cambiar el filtro de obra o almacén, estos valores cambian; por ejemplo, el
 stock crítico y las mermas se reducen al seleccionar un almacén sin movimientos.
@@ -170,15 +170,15 @@ una mejora porcentual que los datos aún no demuestran.
 
 ## Evidencias del módulo
 
-| Evidencia | Ubicación |
-|---|---|
-| Captura del módulo y KPI | `docs/evidencias/reportes-actual.png` |
-| Captura de tema oscuro | `docs/evidencias/modo-oscuro-actual.png` |
-| Código de la vista | `resources/js/pages/ReportesPage.tsx` |
-| Código del dominio | `app/Domain/Metricas/ReportesService.php` |
-| Consultas compartidas | `app/Domain/Metricas/ConsultasInventario.php` |
-| Controlador | `app/Http/Controllers/Web/ReportesViewController.php` |
-| Pruebas backend | `tests/Feature/ReportesTest.php` |
-| Prueba E2E | `cypress/e2e/05-reportes.cy.ts` |
-| Exportación real | `cypress/downloads/reporte-materiales-2026-10-11-2026-11-09.csv` |
-| Datos reales | Consultas SQL de la sección 5.2 ejecutadas sobre `consorcio_pillcomarca` |
+| Evidencia                | Ubicación                                                                |
+| ------------------------ | ------------------------------------------------------------------------ |
+| Captura del módulo y KPI | `docs/evidencias/reportes-actual.png`                                    |
+| Captura de tema oscuro   | `docs/evidencias/modo-oscuro-actual.png`                                 |
+| Código de la vista       | `resources/js/pages/ReportesPage.tsx`                                    |
+| Código del dominio       | `app/Domain/Metricas/ReportesService.php`                                |
+| Consultas compartidas    | `app/Domain/Metricas/ConsultasInventario.php`                            |
+| Controlador              | `app/Http/Controllers/Web/ReportesViewController.php`                    |
+| Pruebas backend          | `tests/Feature/ReportesTest.php`                                         |
+| Prueba E2E               | `cypress/e2e/05-reportes.cy.ts`                                          |
+| Exportación real         | `cypress/downloads/reporte-materiales-2026-10-11-2026-11-09.csv`         |
+| Datos reales             | Consultas SQL de la sección 5.2 ejecutadas sobre `consorcio_pillcomarca` |

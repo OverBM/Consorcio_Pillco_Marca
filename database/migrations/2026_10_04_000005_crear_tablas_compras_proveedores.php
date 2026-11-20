@@ -17,45 +17,62 @@ return new class extends Migration
             $table->string('telefono', 30)->nullable();
             $table->string('email', 160)->nullable();
             $table->string('direccion', 240)->nullable();
+            $table->string('tipo', 20)->default('material');
+            $table->string('autorizacion', 80)->nullable();
+            $table->date('vigente_hasta')->nullable();
             $table->decimal('calificacion', 3, 2)->nullable();
             $table->boolean('activo')->default(true);
             $table->timestampsTz();
             $table->softDeletesTz();
         });
 
-        Schema::create('requerimientos', function (Blueprint $table) {
+        Schema::create('solicitudes', function (Blueprint $table) {
             $table->id();
             $table->string('codigo', 30)->unique();
+            $table->string('tipo', 10);
             $table->foreignId('obra_id')->constrained('obras');
             $table->foreignId('almacen_id')->constrained('almacenes');
-            $table->foreignId('partida_id')->nullable()->constrained('partidas');
-            $table->unsignedBigInteger('observacion_tecnica_id')->nullable();
             $table->foreignId('solicitante_id')->constrained('usuarios');
-            $table->string('prioridad', 10)->default('normal');
-            $table->string('estado', 15)->default('borrador');
+            $table->foreignId('partida_id')->nullable()->constrained('partidas');
+            $table->foreignId('frente_id')->nullable()->constrained('frentes_trabajo');
+            $table->unsignedBigInteger('observacion_tecnica_id')->nullable();
+            $table->string('prioridad', 10)->nullable();
+            $table->boolean('urgente')->default(false);
             $table->text('justificacion')->nullable();
             $table->date('fecha_requerida')->nullable();
+            $table->string('estado', 20);
+            $table->timestampTz('atendida_en')->nullable();
             $table->foreignId('aprobado_por')->nullable()->constrained('usuarios');
             $table->timestampTz('aprobado_en')->nullable();
             $table->text('motivo_rechazo')->nullable();
             $table->timestampsTz();
             $table->softDeletesTz();
 
-            $table->index(['obra_id', 'estado'], 'idx_req_obra_estado');
+            $table->index(['tipo', 'estado'], 'idx_solicitudes_tipo_estado');
+            $table->index(['obra_id', 'estado'], 'idx_solicitudes_obra_estado');
         });
 
-        Schema::create('requerimiento_detalles', function (Blueprint $table) {
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE solicitudes ADD COLUMN ubicacion_solicitud geography(Point,4326)');
+            DB::statement('CREATE INDEX idx_solicitudes_ubicacion ON solicitudes USING GIST (ubicacion_solicitud)');
+        } else {
+            Schema::table('solicitudes', function (Blueprint $table) {
+                $table->text('ubicacion_solicitud')->nullable();
+            });
+        }
+
+        Schema::create('solicitud_detalles', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('requerimiento_id')->constrained('requerimientos')->cascadeOnDelete();
+            $table->foreignId('solicitud_id')->constrained('solicitudes')->cascadeOnDelete();
             $table->foreignId('material_id')->constrained('materiales');
             $table->decimal('cantidad', 14, 3);
             $table->decimal('cantidad_atendida', 14, 3)->default(0);
-            $table->unique(['requerimiento_id', 'material_id']);
+            $table->unique(['solicitud_id', 'material_id']);
         });
 
         Schema::create('cotizaciones', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('requerimiento_id')->constrained('requerimientos');
+            $table->foreignId('solicitud_id')->constrained('solicitudes');
             $table->foreignId('proveedor_id')->constrained('proveedores');
             $table->decimal('total', 14, 2)->default(0);
             $table->smallInteger('plazo_entrega_dias')->nullable();
@@ -76,7 +93,7 @@ return new class extends Migration
         Schema::create('ordenes_compra', function (Blueprint $table) {
             $table->id();
             $table->string('codigo', 30)->unique();
-            $table->foreignId('requerimiento_id')->nullable()->constrained('requerimientos');
+            $table->foreignId('solicitud_id')->nullable()->constrained('solicitudes');
             $table->foreignId('cotizacion_id')->nullable()->constrained('cotizaciones');
             $table->foreignId('proveedor_id')->constrained('proveedores');
             $table->foreignId('obra_id')->constrained('obras');
@@ -207,8 +224,8 @@ return new class extends Migration
         Schema::dropIfExists('ordenes_compra');
         Schema::dropIfExists('cotizacion_detalles');
         Schema::dropIfExists('cotizaciones');
-        Schema::dropIfExists('requerimiento_detalles');
-        Schema::dropIfExists('requerimientos');
+        Schema::dropIfExists('solicitud_detalles');
+        Schema::dropIfExists('solicitudes');
         Schema::dropIfExists('proveedores');
     }
 };

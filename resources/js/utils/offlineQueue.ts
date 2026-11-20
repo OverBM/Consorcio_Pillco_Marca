@@ -109,8 +109,8 @@ async function registrarBackgroundSync(): Promise<void> {
     }
 
     try {
-        const registro =
-            (await navigator.serviceWorker.ready) as RegistroConSync;
+        const registro = (await navigator.serviceWorker
+            .ready) as RegistroConSync;
         await registro.sync?.register('obraflow-sync');
     } catch {
         // La cola ya quedó guardada; se sincronizará al volver la conexión.
@@ -124,7 +124,8 @@ export async function listarEventos(): Promise<EventoOffline[]> {
         const transaccion = db.transaction(ALMACEN, 'readonly');
         const solicitud = transaccion.objectStore(ALMACEN).getAll();
 
-        solicitud.onsuccess = () => resolve(solicitud.result as EventoOffline[]);
+        solicitud.onsuccess = () =>
+            resolve(solicitud.result as EventoOffline[]);
         solicitud.onerror = () =>
             reject(solicitud.error ?? new Error('No se pudo leer la cola.'));
     });

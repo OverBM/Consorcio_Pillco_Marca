@@ -34,8 +34,25 @@ class PersistenciaAnaliticaService
                 }
             }
 
+            $filasPronostico = [];
+
             foreach ($resultado['pronosticos'] ?? [] as $pronostico) {
-                $pronosticos += $this->guardarPronostico($pronostico, $calculadoEn);
+                foreach ($this->filasPronostico($pronostico, $calculadoEn) as $fila) {
+                    $filasPronostico[] = $fila;
+                }
+            }
+
+            $pronosticos = count($filasPronostico);
+
+            foreach (array_chunk($filasPronostico, 500) as $lote) {
+                PronosticoDemanda::upsert(
+                    $lote,
+                    ['almacen_id', 'material_id', 'fecha', 'modelo_version'],
+                    [
+                        'cantidad', 'limite_inferior', 'limite_superior', 'mape', 'rmse',
+                        'metodo_usado', 'baja_confianza', 'calculado_en', 'updated_at',
+                    ],
+                );
             }
 
             foreach ($resultado['alertas'] ?? [] as $alerta) {
@@ -68,8 +85,8 @@ class PersistenciaAnaliticaService
     {
         $datos = [
             'eoq' => $fila['eoq'] ?? null,
-            'stock_seguridad' => $fila['stock_seguridad'] ?? null,
-            'punto_reorden' => $fila['punto_reorden'] ?? null,
+            'stock_seguridad_calculado' => $fila['stock_seguridad'] ?? null,
+            'punto_reorden_calculado' => $fila['punto_reorden'] ?? null,
             'costo_total_relevante' => $fila['costo_total_relevante'] ?? null,
             'demanda_media_diaria' => $fila['demanda_media_diaria'] ?? 0,
             'demanda_anual' => $fila['demanda_anual'] ?? 0,
@@ -119,7 +136,7 @@ class PersistenciaAnaliticaService
      */
     private function mismosValores(ParametroInventario $vigente, array $datos): bool
     {
-        foreach (['eoq', 'stock_seguridad', 'punto_reorden', 'estado', 'modelo_version'] as $campo) {
+        foreach (['eoq', 'stock_seguridad_calculado', 'punto_reorden_calculado', 'estado', 'modelo_version'] as $campo) {
             $anterior = $vigente->getAttribute($campo);
             $nuevo = $datos[$campo];
 
@@ -141,18 +158,22 @@ class PersistenciaAnaliticaService
 
     /**
      * @param  array<string, mixed>  $pronostico
+     * @return array<int, array<string, mixed>>
      */
-    private function guardarPronostico(array $pronostico, CarbonInterface $calculadoEn): int
+    private function filasPronostico(array $pronostico, CarbonInterface $calculadoEn): array
     {
         $fechas = $pronostico['fechas'] ?? [];
         $valores = $pronostico['valores'] ?? [];
         $inferiores = $pronostico['limite_inferior'] ?? [];
         $superiores = $pronostico['limite_superior'] ?? [];
-        $guardados = 0;
+        $filas = [];
 
         foreach ($fechas as $indice => $fecha) {
-            $fechaDate = Carbon::parse($fecha)->toDateString();
-            $datos = [
+            $filas[] = [
+                'almacen_id' => $pronostico['almacen_id'],
+                'material_id' => $pronostico['material_id'],
+                'fecha' => Carbon::parse($fecha)->toDateString(),
+                'modelo_version' => $pronostico['modelo_version'] ?? 'deterministic-1.0',
                 'cantidad' => $valores[$indice] ?? 0,
                 'limite_inferior' => $inferiores[$indice] ?? 0,
                 'limite_superior' => $superiores[$indice] ?? 0,
@@ -161,31 +182,12 @@ class PersistenciaAnaliticaService
                 'metodo_usado' => $pronostico['metodo_usado'] ?? 'media_movil',
                 'baja_confianza' => (bool) ($pronostico['baja_confianza'] ?? false),
                 'calculado_en' => $calculadoEn,
+                'created_at' => $calculadoEn,
+                'updated_at' => $calculadoEn,
             ];
-
-            $existente = PronosticoDemanda::query()
-                ->where('almacen_id', $pronostico['almacen_id'])
-                ->where('material_id', $pronostico['material_id'])
-                ->where('modelo_version', $pronostico['modelo_version'] ?? 'deterministic-1.0')
-                ->whereDate('fecha', $fechaDate)
-                ->first();
-
-            if ($existente !== null) {
-                $existente->update($datos);
-            } else {
-                PronosticoDemanda::create([
-                    ...$datos,
-                    'almacen_id' => $pronostico['almacen_id'],
-                    'material_id' => $pronostico['material_id'],
-                    'fecha' => $fechaDate,
-                    'modelo_version' => $pronostico['modelo_version'] ?? 'deterministic-1.0',
-                ]);
-            }
-
-            $guardados++;
         }
 
-        return $guardados;
+        return $filas;
     }
 
     /**

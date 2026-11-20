@@ -16,7 +16,7 @@ class EjemploValleMantaroSeeder extends Seeder
             'nombre' => 'Programa de Infraestructura Educativa y Vial Valle del Mantaro',
             'descripcion' => 'Obras por contrata para la Municipalidad Distrital de Pillco Marca y Región Junín',
             'entidad_contratante' => 'Municipalidad Distrital de Pillco Marca',
-            'estado' => 'activo',
+            'estado' => 'activa',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -40,7 +40,7 @@ class EjemploValleMantaroSeeder extends Seeder
             DB::statement("
                 INSERT INTO obras (programa_id, codigo, nombre, direccion, distrito, estado, fase_ciclo, avance_fisico_pct, presupuesto_base, ubicacion, created_at, updated_at)
                 VALUES (
-                    {$programaId}, 'OBR-03', 'Complejo Recreacional y Deportivo Chilca', 'Jr. Real 450', 'Chilca', 'cerrada', 'cierre', 100.00, 1200000.00,
+                    {$programaId}, 'OBR-03', 'Complejo Recreacional y Deportivo Chilca', 'Jr. Real 450', 'Chilca', 'liquidada', 'cierre', 100.00, 1200000.00,
                     ST_SetSRID(ST_MakePoint(-75.2050, -12.0880), 4326)::geography, now(), now()
                 )
             ");
@@ -80,7 +80,7 @@ class EjemploValleMantaroSeeder extends Seeder
                     'nombre' => 'Complejo Recreacional y Deportivo Chilca',
                     'direccion' => 'Jr. Real 450',
                     'distrito' => 'Chilca',
-                    'estado' => 'cerrada',
+                    'estado' => 'liquidada',
                     'fase_ciclo' => 'cierre',
                     'avance_fisico_pct' => 100.00,
                     'presupuesto_base' => 1200000.00,
@@ -328,14 +328,6 @@ class EjemploValleMantaroSeeder extends Seeder
         $partidaTierras = $partidaIds[$obra2Id]['P-01'];
         $partidaPavimento = $partidaIds[$obra2Id]['P-02'];
 
-        DB::table('partida_materiales')->insert([
-            ['partida_id' => $partidaConcreto, 'material_id' => $matCementoAndino, 'cantidad_por_unidad' => 9.50000],
-            ['partida_id' => $partidaConcreto, 'material_id' => $matArenaGruesa, 'cantidad_por_unidad' => 0.55000],
-            ['partida_id' => $partidaAcero, 'material_id' => $matFierroMedia, 'cantidad_por_unidad' => 1.00000],
-            ['partida_id' => $partidaMuros, 'material_id' => $matCementoAndino, 'cantidad_por_unidad' => 0.45000],
-            ['partida_id' => $partidaTierras, 'material_id' => $matCascoSeguridad, 'cantidad_por_unidad' => 0.00100],
-        ]);
-
         // 11. Proveedores
         $prov1Id = DB::table('proveedores')->insertGetId([
             'ruc' => '20123456789', 'razon_social' => 'Ferretería y Materiales del Centro S.A.C.',
@@ -357,45 +349,45 @@ class EjemploValleMantaroSeeder extends Seeder
         ]);
 
         // 12. Requerimientos y sus cotizaciones / órdenes de compra
-        $req1Id = DB::table('requerimientos')->insertGetId([
-            'codigo' => 'REQ-2026-001', 'obra_id' => $obra1Id, 'almacen_id' => $alm1Id,
+        $req1Id = DB::table('solicitudes')->insertGetId([
+            'codigo' => 'REQ-2026-001', 'tipo' => 'compra', 'obra_id' => $obra1Id, 'almacen_id' => $alm1Id,
             'partida_id' => $partidaConcreto, 'solicitante_id' => $residenteId,
             'prioridad' => 'alta', 'estado' => 'aprobado',
             'justificacion' => 'Vaciado de losa del pabellón secundario.',
             'fecha_requerida' => '2026-09-15', 'aprobado_por' => $gerenteId, 'aprobado_en' => now()->subDays(12),
             'created_at' => now()->subDays(14), 'updated_at' => now()->subDays(12),
         ]);
-        DB::table('requerimiento_detalles')->insert([
-            ['requerimiento_id' => $req1Id, 'material_id' => $matCementoAndino, 'cantidad' => 400.000, 'cantidad_atendida' => 400.000],
-            ['requerimiento_id' => $req1Id, 'material_id' => $matArenaGruesa, 'cantidad' => 25.000, 'cantidad_atendida' => 25.000],
+        DB::table('solicitud_detalles')->insert([
+            ['solicitud_id' => $req1Id, 'material_id' => $matCementoAndino, 'cantidad' => 400.000, 'cantidad_atendida' => 400.000],
+            ['solicitud_id' => $req1Id, 'material_id' => $matArenaGruesa, 'cantidad' => 25.000, 'cantidad_atendida' => 25.000],
         ]);
 
-        $req2Id = DB::table('requerimientos')->insertGetId([
-            'codigo' => 'REQ-2026-002', 'obra_id' => $obra1Id, 'almacen_id' => $alm1Id,
+        $req2Id = DB::table('solicitudes')->insertGetId([
+            'codigo' => 'REQ-2026-002', 'tipo' => 'compra', 'obra_id' => $obra1Id, 'almacen_id' => $alm1Id,
             'partida_id' => $partidaAcero, 'solicitante_id' => $residenteId,
             'prioridad' => 'normal', 'estado' => 'borrador',
             'justificacion' => 'Reposición de acero para columnas.',
             'fecha_requerida' => '2026-10-05',
             'created_at' => now()->subDays(3), 'updated_at' => now()->subDays(3),
         ]);
-        DB::table('requerimiento_detalles')->insert([
-            ['requerimiento_id' => $req2Id, 'material_id' => $matFierroMedia, 'cantidad' => 600.000, 'cantidad_atendida' => 0.000],
+        DB::table('solicitud_detalles')->insert([
+            ['solicitud_id' => $req2Id, 'material_id' => $matFierroMedia, 'cantidad' => 600.000, 'cantidad_atendida' => 0.000],
         ]);
 
-        $req3Id = DB::table('requerimientos')->insertGetId([
-            'codigo' => 'REQ-2026-003', 'obra_id' => $obra2Id, 'almacen_id' => $alm2Id,
+        $req3Id = DB::table('solicitudes')->insertGetId([
+            'codigo' => 'REQ-2026-003', 'tipo' => 'compra', 'obra_id' => $obra2Id, 'almacen_id' => $alm2Id,
             'partida_id' => $partidaPavimento, 'solicitante_id' => $residenteId,
             'prioridad' => 'urgente', 'estado' => 'aprobado',
             'justificacion' => 'Paralización de pavimentación por quiebre de stock.',
             'fecha_requerida' => '2026-09-25', 'aprobado_por' => $gerenteId, 'aprobado_en' => now()->subDays(2),
             'created_at' => now()->subDays(5), 'updated_at' => now()->subDays(2),
         ]);
-        DB::table('requerimiento_detalles')->insert([
-            ['requerimiento_id' => $req3Id, 'material_id' => $matCementoAndino, 'cantidad' => 650.000, 'cantidad_atendida' => 0.000],
+        DB::table('solicitud_detalles')->insert([
+            ['solicitud_id' => $req3Id, 'material_id' => $matCementoAndino, 'cantidad' => 650.000, 'cantidad_atendida' => 0.000],
         ]);
 
         $cot1Id = DB::table('cotizaciones')->insertGetId([
-            'requerimiento_id' => $req1Id, 'proveedor_id' => $prov1Id, 'total' => 14625.00,
+            'solicitud_id' => $req1Id, 'proveedor_id' => $prov1Id, 'total' => 14625.00,
             'plazo_entrega_dias' => 7, 'condiciones' => 'Pago a 30 días, entrega en almacén.',
             'estado' => 'seleccionada', 'motivo_seleccion' => 'Mejor relación precio-plazo.',
             'created_at' => now()->subDays(11), 'updated_at' => now()->subDays(10),
@@ -405,7 +397,7 @@ class EjemploValleMantaroSeeder extends Seeder
             ['cotizacion_id' => $cot1Id, 'material_id' => $matArenaGruesa, 'cantidad' => 25.000, 'precio_unitario' => 65.0000],
         ]);
         $cot2Id = DB::table('cotizaciones')->insertGetId([
-            'requerimiento_id' => $req1Id, 'proveedor_id' => $prov3Id, 'total' => 15200.00,
+            'solicitud_id' => $req1Id, 'proveedor_id' => $prov3Id, 'total' => 15200.00,
             'plazo_entrega_dias' => 10, 'condiciones' => 'Pago al contado.',
             'estado' => 'recibida', 'created_at' => now()->subDays(11), 'updated_at' => now()->subDays(11),
         ]);
@@ -415,9 +407,9 @@ class EjemploValleMantaroSeeder extends Seeder
         ]);
 
         $oc1Id = DB::table('ordenes_compra')->insertGetId([
-            'codigo' => 'OC-2026-001', 'requerimiento_id' => $req1Id, 'cotizacion_id' => $cot1Id,
+            'codigo' => 'OC-2026-001', 'solicitud_id' => $req1Id, 'cotizacion_id' => $cot1Id,
             'proveedor_id' => $prov1Id, 'obra_id' => $obra1Id, 'almacen_destino_id' => $alm1Id,
-            'urgente' => false, 'estado' => 'recibida', 'total' => 14625.00, 'emitida_por' => $logisticaId,
+            'urgente' => false, 'estado' => 'recepcionada_total', 'total' => 14625.00, 'emitida_por' => $logisticaId,
             'fecha_entrega_prometida' => '2026-09-12',
             'created_at' => now()->subDays(10), 'updated_at' => now()->subDays(4),
         ]);
@@ -429,7 +421,7 @@ class EjemploValleMantaroSeeder extends Seeder
         ]);
 
         $oc2Id = DB::table('ordenes_compra')->insertGetId([
-            'codigo' => 'OC-2026-002', 'requerimiento_id' => $req3Id, 'cotizacion_id' => null,
+            'codigo' => 'OC-2026-002', 'solicitud_id' => $req3Id, 'cotizacion_id' => null,
             'proveedor_id' => $prov1Id, 'obra_id' => $obra2Id, 'almacen_destino_id' => $alm2Id,
             'urgente' => true, 'estado' => 'en_transporte', 'total' => 21125.00, 'emitida_por' => $logisticaId,
             'fecha_entrega_prometida' => '2026-10-02',
@@ -483,36 +475,24 @@ class EjemploValleMantaroSeeder extends Seeder
         ]);
 
         // 15. Solicitudes de material geolocalizadas
-        $sol1Id = DB::table('solicitudes_material')->insertGetId([
-            'codigo' => 'SOL-2026-001', 'obra_id' => $obra1Id, 'almacen_id' => $alm1Id,
+        $sol1Id = DB::table('solicitudes')->insertGetId([
+            'codigo' => 'SOL-2026-001', 'tipo' => 'almacen', 'obra_id' => $obra1Id, 'almacen_id' => $alm1Id,
             'solicitante_id' => $residenteId, 'frente_id' => $frente1Id, 'partida_id' => $partidaConcreto,
             'urgente' => false, 'estado' => 'registrada',
             'created_at' => now()->subDays(2), 'updated_at' => now()->subDays(2),
         ]);
-        DB::table('solicitud_material_detalles')->insert([
+        DB::table('solicitud_detalles')->insert([
             ['solicitud_id' => $sol1Id, 'material_id' => $matCementoAndino, 'cantidad' => 60.000, 'cantidad_atendida' => 0.000],
         ]);
 
-        $sol2Id = DB::table('solicitudes_material')->insertGetId([
-            'codigo' => 'SOL-2026-002', 'obra_id' => $obra2Id, 'almacen_id' => $alm2Id,
+        $sol2Id = DB::table('solicitudes')->insertGetId([
+            'codigo' => 'SOL-2026-002', 'tipo' => 'almacen', 'obra_id' => $obra2Id, 'almacen_id' => $alm2Id,
             'solicitante_id' => $residenteId, 'frente_id' => $frente3Id, 'partida_id' => $partidaPavimento,
             'urgente' => true, 'estado' => 'registrada',
             'created_at' => now()->subDay(), 'updated_at' => now()->subDay(),
         ]);
-        DB::table('solicitud_material_detalles')->insert([
+        DB::table('solicitud_detalles')->insert([
             ['solicitud_id' => $sol2Id, 'material_id' => $matCementoAndino, 'cantidad' => 80.000, 'cantidad_atendida' => 0.000],
-        ]);
-
-        // 16. Búsqueda multialmacén y sus resultados
-        $busquedaId = DB::table('busquedas_multialmacen')->insertGetId([
-            'solicitud_id' => $sol2Id, 'material_id' => $matCementoAndino, 'almacen_solicitante_id' => $alm2Id,
-            'cantidad_requerida' => 80.000, 'radio_m' => 50000,
-            'pesos' => json_encode(['distancia' => 0.5, 'stock' => 0.3, 'criticidad' => 0.2]),
-            'ejecutada_por' => $logisticaId, 'created_at' => now()->subDay(),
-        ]);
-        DB::table('busqueda_resultados')->insert([
-            ['busqueda_id' => $busquedaId, 'almacen_candidato_id' => $alm3Id, 'cantidad_disponible' => 150.000, 'distancia_m' => 4210.5, 'eta_min' => 35.0, 'puntaje' => 0.9120, 'posicion' => 1, 'elegido' => true],
-            ['busqueda_id' => $busquedaId, 'almacen_candidato_id' => $alm1Id, 'cantidad_disponible' => 120.000, 'distancia_m' => 6380.2, 'eta_min' => 52.0, 'puntaje' => 0.7740, 'posicion' => 2, 'elegido' => false],
         ]);
 
         // 17. Transferencias, despachos y confirmaciones
@@ -527,10 +507,10 @@ class EjemploValleMantaroSeeder extends Seeder
         DB::table('transferencia_detalles')->insert([
             ['transferencia_id' => $transf1Id, 'material_id' => $matCementoAndino, 'lote_id' => $lote1Id, 'cantidad_solicitada' => 80.000, 'cantidad_despachada' => 80.000, 'cantidad_recibida' => null],
         ]);
-        DB::table('despachos')->insert([
-            'transferencia_id' => $transf1Id, 'despachado_por' => $almaceneroId,
-            'despachado_en' => now()->subHours(28), 'observaciones' => 'Despacho con guía interna.',
-            'created_at' => now()->subHours(28), 'updated_at' => now()->subHours(28),
+        DB::table('transferencias')->where('id', $transf1Id)->update([
+            'despachado_por' => $almaceneroId,
+            'despachado_en' => now()->subHours(28),
+            'observaciones_despacho' => 'Despacho con guía interna.',
         ]);
 
         $transf2Id = DB::table('transferencias')->insertGetId([
@@ -544,16 +524,13 @@ class EjemploValleMantaroSeeder extends Seeder
         DB::table('transferencia_detalles')->insert([
             ['transferencia_id' => $transf2Id, 'material_id' => $matCementoAndino, 'lote_id' => null, 'cantidad_solicitada' => 40.000, 'cantidad_despachada' => 40.000, 'cantidad_recibida' => 37.000],
         ]);
-        DB::table('despachos')->insert([
-            'transferencia_id' => $transf2Id, 'despachado_por' => $almaceneroId,
-            'despachado_en' => now()->subDays(7), 'observaciones' => null,
-            'created_at' => now()->subDays(7), 'updated_at' => now()->subDays(7),
-        ]);
-        DB::table('confirmaciones_recepcion_destino')->insert([
-            'transferencia_id' => $transf2Id, 'almacenero_id' => $almaceneroId,
-            'recibida_en' => now()->subDays(6), 'hay_diferencias' => true,
-            'observaciones' => 'Faltaron 3 bolsas respecto a lo despachado.',
-            'created_at' => now()->subDays(6), 'updated_at' => now()->subDays(6),
+        DB::table('transferencias')->where('id', $transf2Id)->update([
+            'despachado_por' => $almaceneroId,
+            'despachado_en' => now()->subDays(7),
+            'recibido_por' => $almaceneroId,
+            'recibida_en' => now()->subDays(6),
+            'hay_diferencias' => true,
+            'observaciones_recepcion' => 'Faltaron 3 bolsas respecto a lo despachado.',
         ]);
 
         // 18. Mermas
@@ -651,16 +628,6 @@ class EjemploValleMantaroSeeder extends Seeder
             ['obra_id' => $obra1Id, 'tipo' => 'costo', 'descripcion' => 'Adicional de obra por mejoramiento de terreno.', 'impacto_plazo_dias' => 5, 'impacto_costo' => 68000.00, 'estado' => 'aprobada', 'solicitada_por' => $residenteId, 'decidida_por' => $gerenteId, 'decidida_en' => now()->subDays(7), 'created_at' => now(), 'updated_at' => now()],
         ]);
 
-        $interesado1Id = DB::table('interesados')->insertGetId([
-            'obra_id' => $obra1Id, 'nombre' => 'Municipalidad Distrital de Pillco Marca', 'tipo' => 'externo',
-            'influencia' => 5, 'interes' => 5, 'contacto' => 'mesa.partes@pillcomarca.gob.pe',
-            'created_at' => now(), 'updated_at' => now(),
-        ]);
-        DB::table('interesados')->insert([
-            ['obra_id' => null, 'nombre' => 'Junta Vecinal Los Andes', 'tipo' => 'externo', 'influencia' => 3, 'interes' => 4, 'contacto' => null, 'created_at' => now(), 'updated_at' => now()],
-            ['obra_id' => $obra1Id, 'nombre' => 'Supervisión de Obra', 'tipo' => 'externo', 'influencia' => 4, 'interes' => 5, 'contacto' => null, 'created_at' => now(), 'updated_at' => now()],
-        ]);
-
         $doc1Id = DB::table('documentos')->insertGetId([
             'obra_id' => $obra1Id, 'tipo' => 'informe', 'titulo' => 'Informe mensual de avance - Agosto 2026',
             'ruta' => 'documentos/obr01/informe-agosto-2026.pdf', 'hash_sha256' => str_repeat('a', 64),
@@ -671,45 +638,42 @@ class EjemploValleMantaroSeeder extends Seeder
             ['obra_id' => $obra1Id, 'tipo' => 'acta', 'titulo' => 'Acta de reunión de coordinación', 'ruta' => 'documentos/obr01/acta-15.pdf', 'hash_sha256' => str_repeat('c', 64), 'version' => 1, 'subido_por' => $gerenteId, 'created_at' => now(), 'updated_at' => now()],
         ]);
 
-        DB::table('comunicaciones')->insert([
-            ['obra_id' => $obra1Id, 'interesado_id' => $interesado1Id, 'tipo' => 'carta', 'sentido' => 'enviada', 'asunto' => 'Solicitud de conformidad de adicional de obra.', 'fecha' => '2026-09-02', 'estado' => 'atendida', 'documento_id' => $doc1Id, 'created_at' => now(), 'updated_at' => now()],
-            ['obra_id' => $obra2Id, 'interesado_id' => $interesado1Id, 'tipo' => 'informe', 'sentido' => 'enviada', 'asunto' => 'Reporte de avance semanal.', 'fecha' => '2026-09-08', 'estado' => 'pendiente', 'documento_id' => null, 'created_at' => now(), 'updated_at' => now()],
-        ]);
-
-        // 24. Cierre de obra (Chilca)
-        DB::table('cierres_obra')->insert([
-            'obra_id' => $obra3Id, 'fecha_ejecucion_100' => '2026-05-20', 'informe_final_id' => null,
-            'fecha_recepcion_obra' => null, 'acta_recepcion_id' => null, 'estado' => 'en_proceso',
-            'excedentes_evaluados' => true, 'created_at' => now(), 'updated_at' => now(),
-        ]);
-
-        DB::table('lecciones_aprendidas')->insert([
-            ['obra_id' => $obra3Id, 'area_conocimiento' => 'costo', 'descripcion' => 'Se generó excedente de cemento al cierre.', 'recomendacion' => 'Proyectar consumos con mayor precisión y redistribuir excedentes antes del cierre.', 'registrada_por' => $residenteId, 'created_at' => now(), 'updated_at' => now()],
-            ['obra_id' => $obra1Id, 'area_conocimiento' => 'riesgos', 'descripcion' => 'El acero sufrió retrasos por abastecimiento.', 'recomendacion' => 'Contratos marco con proveedores locales.', 'registrada_por' => $logisticaId, 'created_at' => now(), 'updated_at' => now()],
-        ]);
-
-        DB::table('equipos')->insert([
-            ['obra_id' => $obra1Id, 'codigo' => 'EQ-001', 'nombre' => 'Mezcladora de concreto 1 saco', 'tipo' => 'maquinaria', 'estado' => 'operativo', 'created_at' => now(), 'updated_at' => now()],
-            ['obra_id' => $obra2Id, 'codigo' => 'EQ-002', 'nombre' => 'Retroexcavadora CAT 420', 'tipo' => 'maquinaria', 'estado' => 'operativo', 'created_at' => now(), 'updated_at' => now()],
-            ['obra_id' => null, 'codigo' => 'EQ-003', 'nombre' => 'Vibrador de concreto', 'tipo' => 'herramienta', 'estado' => 'mantenimiento', 'created_at' => now(), 'updated_at' => now()],
+        DB::table('obras')->where('id', $obra3Id)->update([
+            'cerrado_por' => $gerenteId,
+            'cerrado_en' => now()->subDays(20),
+            'observaciones_cierre' => 'Cierre con excedente de cemento redistribuido.',
         ]);
 
         // 25. Personal, asistencia y SST
-        $trab1Id = DB::table('trabajadores')->insertGetId([
-            'usuario_id' => null, 'obra_id' => $obra1Id, 'dni' => '70123456', 'nombres' => 'Juan Pérez Ramos',
-            'cargo' => 'Operario de construcción civil', 'frente_id' => $frente1Id, 'activo' => true,
-            'created_at' => now(), 'updated_at' => now(),
-        ]);
-        $trab2Id = DB::table('trabajadores')->insertGetId([
-            'usuario_id' => null, 'obra_id' => $obra1Id, 'dni' => '71234567', 'nombres' => 'María Huamán Loayza',
-            'cargo' => 'Peón', 'frente_id' => $frente2Id, 'activo' => true,
-            'created_at' => now(), 'updated_at' => now(),
-        ]);
-        $trab3Id = DB::table('trabajadores')->insertGetId([
-            'usuario_id' => null, 'obra_id' => $obra2Id, 'dni' => '72345678', 'nombres' => 'Luis Ccori Atencio',
-            'cargo' => 'Maestro de obra', 'frente_id' => $frente3Id, 'activo' => true,
-            'created_at' => now(), 'updated_at' => now(),
-        ]);
+        $ids = [];
+        foreach ([
+            ['dni' => '70123456', 'nombres' => 'Juan Pérez Ramos', 'obra_id' => $obra1Id, 'cargo' => 'Operario de construcción civil', 'frente_id' => $frente1Id],
+            ['dni' => '71234567', 'nombres' => 'María Huamán Loayza', 'obra_id' => $obra1Id, 'cargo' => 'Peón', 'frente_id' => $frente2Id],
+            ['dni' => '72345678', 'nombres' => 'Luis Ccori Atencio', 'obra_id' => $obra2Id, 'cargo' => 'Maestro de obra', 'frente_id' => $frente3Id],
+        ] as $indice => $datos) {
+            DB::table('personas')->updateOrInsert(
+                ['dni' => $datos['dni']],
+                ['nombres' => $datos['nombres'], 'telefono' => null, 'created_at' => now(), 'updated_at' => now()]
+            );
+
+            $persona = DB::table('personas')->where('dni', $datos['dni'])->first();
+
+            DB::table('trabajadores')->updateOrInsert(
+                ['persona_id' => $persona->id],
+                [
+                    'obra_id' => $datos['obra_id'],
+                    'cargo' => $datos['cargo'],
+                    'frente_id' => $datos['frente_id'],
+                    'activo' => true,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
+
+            $ids[$indice] = DB::table('trabajadores')->where('persona_id', $persona->id)->value('id');
+        }
+
+        [$trab1Id, $trab2Id, $trab3Id] = $ids;
 
         DB::table('marcaciones')->insert([
             ['trabajador_id' => $trab1Id, 'obra_id' => $obra1Id, 'tipo' => 'entrada', 'marcado_en' => now()->subDay()->setTime(7, 5), 'distancia_a_obra_m' => 12.5, 'dentro_geocerca' => true, 'created_at' => now()->subDay()->setTime(7, 5)],
@@ -738,32 +702,12 @@ class EjemploValleMantaroSeeder extends Seeder
             'vigencia_meses' => 12, 'programada_por' => $gerenteId, 'estado' => 'ejecutada',
             'created_at' => now(), 'updated_at' => now(),
         ]);
-        DB::table('capacitacion_participantes')->insert([
-            ['capacitacion_id' => $capacitacion1Id, 'usuario_id' => null, 'trabajador_id' => $trab1Id, 'nota' => 16.0, 'intento' => 1, 'aprobado' => true],
-            ['capacitacion_id' => $capacitacion1Id, 'usuario_id' => null, 'trabajador_id' => $trab2Id, 'nota' => 15.5, 'intento' => 1, 'aprobado' => true],
-        ]);
-        DB::table('certificaciones_usuario')->insert([
-            'usuario_id' => $almaceneroId, 'capacitacion_id' => $capacitacion1Id, 'tipo' => 'sistema_almacen',
-            'vigente_desde' => now()->subDays(15)->toDateString(), 'vigente_hasta' => now()->addMonths(12)->toDateString(),
-            'created_at' => now(), 'updated_at' => now(),
-        ]);
-
         $incidente1Id = DB::table('incidentes')->insertGetId([
             'codigo' => 'INC-2026-001', 'obra_id' => $obra1Id, 'trabajador_id' => $trab1Id,
             'reportado_por' => $residenteId, 'tipo' => 'casi_accidente', 'gravedad' => 'leve',
             'ocurrido_en' => now()->subDays(9), 'descripcion' => 'Desprendimiento menor de material sin daños personales.',
             'requiere_traslado' => false, 'estado' => 'investigado', 'causas' => 'Falta de señalización temporal.',
             'validado_por' => $gerenteId, 'created_at' => now(), 'updated_at' => now(),
-        ]);
-        DB::table('acciones_correctivas')->insert([
-            ['origen_tipo' => 'incidente', 'origen_id' => $incidente1Id, 'descripcion' => 'Colocar señalización y mallas de protección.', 'tipo' => 'correctiva', 'responsable_id' => $residenteId, 'fecha_limite' => now()->addDays(5)->toDateString(), 'estado' => 'en_proceso', 'created_at' => now(), 'updated_at' => now()],
-            ['origen_tipo' => 'hallazgo', 'origen_id' => $inventarioId, 'descripcion' => 'Reforzar control de stock de cemento.', 'tipo' => 'preventiva', 'responsable_id' => $almaceneroId, 'fecha_limite' => now()->addDays(10)->toDateString(), 'estado' => 'pendiente', 'created_at' => now(), 'updated_at' => now()],
-        ]);
-
-        $eppSol1Id = DB::table('epp_solicitudes')->insertGetId([
-            'trabajador_id' => $trab1Id, 'almacen_id' => $alm1Id, 'material_id' => $matCascoSeguridad,
-            'cantidad' => 2.00, 'autorizada_por' => $almaceneroId, 'estado' => 'atendida',
-            'created_at' => now(), 'updated_at' => now(),
         ]);
         DB::table('epp_asignaciones')->insert([
             ['trabajador_id' => $trab1Id, 'material_id' => $matCascoSeguridad, 'almacen_id' => $alm1Id, 'numero_serie' => 'CASCO-0001', 'entregado_por' => $almaceneroId, 'entregado_en' => now()->subDays(20), 'estado' => 'vigente'],
@@ -777,24 +721,15 @@ class EjemploValleMantaroSeeder extends Seeder
             'responsable_id' => $residenteId, 'estado' => 'notificada', 'planos_asbuilt_actualizados' => false,
             'created_at' => now(), 'updated_at' => now(),
         ]);
-        DB::table('observacion_evidencias')->insert([
-            ['observacion_id' => $obs1Id, 'etapa' => 'inicial', 'ruta' => 'evidencias/obr01/obs-ot-004-inicial.jpg', 'created_at' => now()->subDays(4)],
+        DB::table('documentos')->insert([
+            'obra_id' => $obra1Id, 'tipo' => 'evidencia', 'titulo' => 'Evidencia inicial OT-2026-004',
+            'ruta' => 'evidencias/obr01/obs-ot-004-inicial.jpg', 'hash_sha256' => null, 'version' => 1,
+            'documentable_type' => 'App\\Models\\ObservacionTecnica', 'documentable_id' => $obs1Id,
+            'etapa' => 'inicial', 'subido_por' => $residenteId,
+            'created_at' => now()->subDays(4), 'updated_at' => now()->subDays(4),
         ]);
 
         // 27. Ambiental y residuos
-        $pmItem1Id = DB::table('plan_manejo_items')->insertGetId([
-            'obra_id' => $obra1Id, 'descripcion' => 'Control de material particulado en accesos mediante riego.',
-            'frecuencia' => 'diaria', 'created_at' => now(), 'updated_at' => now(),
-        ]);
-        $pmItem2Id = DB::table('plan_manejo_items')->insertGetId([
-            'obra_id' => $obra1Id, 'descripcion' => 'Manejo y segregación de residuos de construcción.',
-            'frecuencia' => 'semanal', 'created_at' => now(), 'updated_at' => now(),
-        ]);
-        DB::table('plan_manejo_verificaciones')->insert([
-            ['item_id' => $pmItem1Id, 'verificado_por' => $residenteId, 'cumple' => true, 'observacion' => 'Riego ejecutado.', 'verificado_en' => now()->subDays(3)],
-            ['item_id' => $pmItem2Id, 'verificado_por' => $residenteId, 'cumple' => false, 'observacion' => 'Puntos de acopio incompletos.', 'verificado_en' => now()->subDays(2)],
-        ]);
-
         $indPolvo = DB::table('indicadores_ambientales')->where('codigo', 'polvo')->value('id');
         $indRuido = DB::table('indicadores_ambientales')->where('codigo', 'ruido')->value('id');
         DB::table('mediciones_ambientales')->insert([
@@ -802,14 +737,23 @@ class EjemploValleMantaroSeeder extends Seeder
             ['obra_id' => $obra1Id, 'indicador_id' => $indRuido, 'valor' => 86.000, 'fuera_de_limite' => true, 'medida_correctiva' => 'Restringir horario de equipos de mayor ruido.', 'medida_aplicada_por' => $residenteId, 'medido_por' => $residenteId, 'medido_en' => now()->subDay(), 'created_at' => now(), 'updated_at' => now()],
         ]);
 
-        $eors1Id = DB::table('empresas_eors')->insertGetId([
-            'ruc' => '20556677889', 'razon_social' => 'EORS Junín Ambiental S.A.C.',
-            'autorizacion' => 'AUT-2026-3344', 'vigente_hasta' => now()->addYear()->toDateString(),
-            'created_at' => now(), 'updated_at' => now(),
-        ]);
+        DB::table('proveedores')->updateOrInsert(
+            ['ruc' => '20556677889'],
+            [
+                'razon_social' => 'EORS Junín Ambiental S.A.C.',
+                'tipo' => 'eors',
+                'autorizacion' => 'AUT-2026-3344',
+                'vigente_hasta' => now()->addYear()->toDateString(),
+                'activo' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
+        $eors1Id = DB::table('proveedores')->where('ruc', '20556677889')->value('id');
+
         DB::table('residuos')->insert([
-            ['obra_id' => $obra1Id, 'almacen_id' => $alm1Id, 'clase' => 'no_peligroso', 'descripcion' => 'Retazos de madera y escombros.', 'material_id' => null, 'volumen' => 12.500, 'unidad' => 'm3', 'registrado_por' => $residenteId, 'destino' => 'reaprovechamiento', 'transferencia_id' => null, 'eors_id' => null, 'manifiesto_id' => null, 'estado' => 'reaprovechado', 'created_at' => now(), 'updated_at' => now()],
-            ['obra_id' => $obra1Id, 'almacen_id' => $alm1Id, 'clase' => 'no_peligroso', 'descripcion' => 'Residuos comunes de construcción.', 'material_id' => null, 'volumen' => 8.000, 'unidad' => 'm3', 'registrado_por' => $residenteId, 'destino' => 'eors', 'transferencia_id' => null, 'eors_id' => $eors1Id, 'manifiesto_id' => null, 'estado' => 'entregado', 'created_at' => now(), 'updated_at' => now()],
+            ['obra_id' => $obra1Id, 'almacen_id' => $alm1Id, 'clase' => 'no_peligroso', 'descripcion' => 'Retazos de madera y escombros.', 'material_id' => null, 'volumen' => 12.500, 'unidad' => 'm3', 'registrado_por' => $residenteId, 'destino' => 'reaprovechamiento', 'transferencia_id' => null, 'proveedor_id' => null, 'manifiesto_id' => null, 'estado' => 'reaprovechado', 'created_at' => now(), 'updated_at' => now()],
+            ['obra_id' => $obra1Id, 'almacen_id' => $alm1Id, 'clase' => 'no_peligroso', 'descripcion' => 'Residuos comunes de construcción.', 'material_id' => null, 'volumen' => 8.000, 'unidad' => 'm3', 'registrado_por' => $residenteId, 'destino' => 'eors', 'transferencia_id' => null, 'proveedor_id' => $eors1Id, 'manifiesto_id' => null, 'estado' => 'entregado', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         // 28. Notificaciones

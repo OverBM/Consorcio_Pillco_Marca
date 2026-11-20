@@ -31,14 +31,21 @@ return new class extends Migration
             $table->primary(['rol_id', 'permiso_id']);
         });
 
+        Schema::create('personas', function (Blueprint $table) {
+            $table->id();
+            $table->string('dni', 12)->nullable()->unique();
+            $table->string('nombres', 150);
+            $table->string('telefono', 30)->nullable();
+            $table->timestampsTz();
+            $table->softDeletesTz();
+        });
+
         Schema::create('usuarios', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 150);
+            $table->foreignId('persona_id')->unique()->constrained('personas')->restrictOnDelete();
             $table->string('email', 160)->unique();
             $table->timestampTz('email_verified_at')->nullable();
             $table->string('password', 255);
-            $table->string('dni', 12)->nullable()->unique();
-            $table->string('telefono', 30)->nullable();
             $table->boolean('activo')->default(true);
             $table->smallInteger('intentos_fallidos')->default(0);
             $table->timestampTz('bloqueado_hasta')->nullable();
@@ -105,6 +112,7 @@ return new class extends Migration
         Schema::dropIfExists('parametros_sistema');
         Schema::dropIfExists('usuario_rol');
         Schema::dropIfExists('usuarios');
+        Schema::dropIfExists('personas');
         Schema::dropIfExists('permiso_rol');
         Schema::dropIfExists('permisos');
         Schema::dropIfExists('roles');

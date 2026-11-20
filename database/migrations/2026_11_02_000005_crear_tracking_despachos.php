@@ -9,9 +9,9 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('despacho_posiciones', function (Blueprint $table) {
+        Schema::create('transferencia_posiciones', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('despacho_id')->constrained('despachos')->cascadeOnDelete();
+            $table->foreignId('transferencia_id')->constrained('transferencias')->cascadeOnDelete();
             $table->decimal('latitud', 10, 7);
             $table->decimal('longitud', 10, 7);
             $table->decimal('precision_m', 8, 2)->nullable();
@@ -23,30 +23,13 @@ return new class extends Migration
             $table->timestampTz('recibida_en');
             $table->timestampsTz();
 
-            $table->index(['despacho_id', 'capturada_en'], 'idx_posiciones_despacho_fecha');
+            $table->index(['transferencia_id', 'capturada_en'], 'idx_posiciones_transferencia_fecha');
         });
 
         if (DB::getDriverName() === 'pgsql') {
-            DB::statement('ALTER TABLE despacho_posiciones ADD COLUMN ubicacion geography(Point,4326)');
-            DB::statement('CREATE INDEX idx_posiciones_ubicacion ON despacho_posiciones USING GIST (ubicacion)');
+            DB::statement('ALTER TABLE transferencia_posiciones ADD COLUMN ubicacion geography(Point,4326)');
+            DB::statement('CREATE INDEX idx_posiciones_ubicacion ON transferencia_posiciones USING GIST (ubicacion)');
         }
-
-        Schema::create('alertas_geoespaciales', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('despacho_id')->constrained('despachos')->cascadeOnDelete();
-            $table->string('tipo', 40);
-            $table->string('severidad', 15);
-            $table->decimal('distancia_m', 12, 1)->nullable();
-            $table->decimal('tiempo_min', 8, 1)->nullable();
-            $table->text('detalle');
-            $table->string('clave_idempotente', 120)->unique();
-            $table->string('estado', 15)->default('vigente');
-            $table->foreignId('reconocida_por')->nullable()->constrained('usuarios');
-            $table->timestampTz('reconocida_en')->nullable();
-            $table->timestampsTz();
-
-            $table->index(['estado', 'severidad'], 'idx_alertas_geo_estado');
-        });
     }
 
     public function down(): void
@@ -55,7 +38,6 @@ return new class extends Migration
             DB::statement('DROP INDEX IF EXISTS idx_posiciones_ubicacion');
         }
 
-        Schema::dropIfExists('alertas_geoespaciales');
-        Schema::dropIfExists('despacho_posiciones');
+        Schema::dropIfExists('transferencia_posiciones');
     }
 };

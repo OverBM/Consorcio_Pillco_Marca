@@ -14,10 +14,7 @@ import {
     IconShoppingCart,
     IconUsers,
 } from '@/components/icons/Icons';
-import type {
-    NotificacionFeedItem,
-    NotificacionesFeed,
-} from '@/types/auth';
+import type { NotificacionFeedItem, NotificacionesFeed } from '@/types/auth';
 
 interface HeaderBarProps {
     title: string;
@@ -245,7 +242,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
         >
             {/* Breadcrumb Monospaciado */}
             {!compacto && (
-                <div className="text-muted mb-1 flex flex-wrap items-center gap-1.5 font-mono text-micro tracking-wider uppercase">
+                <div className="text-muted text-micro mb-1 flex flex-wrap items-center gap-1.5 font-mono tracking-wider uppercase">
                     {breadcrumb.map((crumb, idx) => (
                         <React.Fragment key={idx}>
                             <span>{crumb}</span>
@@ -307,7 +304,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                             aria-haspopup="true"
                             aria-expanded={panelAbierto}
                             aria-controls="panel-notificaciones"
-                            className="focus-ring relative flex cursor-pointer items-center justify-center rounded-pill border border-line bg-surface p-2 text-muted transition-colors hover:bg-soft hover:text-ink"
+                            className="focus-ring rounded-pill border-line bg-surface text-muted hover:bg-soft hover:text-ink relative flex cursor-pointer items-center justify-center border p-2 transition-colors"
                         >
                             <span
                                 className={
@@ -339,9 +336,9 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                                     aria-label="Notificaciones y alertas"
                                     className="cpm-menu-drop rounded-tile border-line bg-surface shadow-pop absolute right-0 z-50 mt-1 w-80 max-w-[calc(100vw-2rem)] overflow-hidden border sm:w-96"
                                 >
-                                    <div className="border-line flex items-center justify-between border-b bg-soft px-3 py-2">
+                                    <div className="border-line bg-soft flex items-center justify-between border-b px-3 py-2">
                                         <div className="flex items-center gap-2">
-                                            <span className="font-mono text-micro text-muted tracking-widest uppercase">
+                                            <span className="text-micro text-muted font-mono tracking-widest uppercase">
                                                 Notificaciones
                                             </span>
                                         </div>
@@ -362,7 +359,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                                                     total === 0 ||
                                                     marcarTodas.processing
                                                 }
-                                                className="text-micro text-ink font-semibold underline disabled:text-muted disabled:no-underline"
+                                                className="text-micro text-ink disabled:text-muted font-semibold underline disabled:no-underline"
                                             >
                                                 Marcar todas como leídas
                                             </button>
@@ -438,8 +435,10 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                                                         )}
                                                         <span className="text-muted mt-1 flex flex-wrap items-center gap-1.5 font-mono text-[9px] uppercase">
                                                             {item.etiqueta && (
-                                                                <span className="rounded bg-soft px-1 py-0.5">
-                                                                    {item.etiqueta}
+                                                                <span className="bg-soft rounded px-1 py-0.5">
+                                                                    {
+                                                                        item.etiqueta
+                                                                    }
                                                                 </span>
                                                             )}
                                                             {item.severidad && (
@@ -538,7 +537,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                                             {userName}
                                         </p>
                                         {rolNombre && (
-                                            <p className="text-muted mt-0.5 text-micro">
+                                            <p className="text-muted text-micro mt-0.5">
                                                 {rolNombre}
                                             </p>
                                         )}
@@ -571,7 +570,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                             onClick={onLogout}
                             aria-label="Cerrar sesión"
                             title="Cerrar sesión"
-                            className="cpm-logout focus-ring flex items-center justify-center rounded-pill border border-line bg-surface p-2 text-muted transition-colors hover:bg-soft hover:text-critico"
+                            className="cpm-logout focus-ring rounded-pill border-line bg-surface text-muted hover:bg-soft hover:text-critico flex items-center justify-center border p-2 transition-colors"
                         >
                             <IconLogout size={16} />
                         </button>

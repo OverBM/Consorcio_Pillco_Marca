@@ -128,7 +128,8 @@ export function GlobalSearch({ abierto, onCerrar }: GlobalSearchProps) {
                 <div className="max-h-[60vh] overflow-y-auto p-2">
                     {estado === 'idle' && (
                         <p className="text-muted px-3 py-6 text-center text-xs">
-                            Escribe al menos 2 caracteres para buscar módulos y registros
+                            Escribe al menos 2 caracteres para buscar módulos y
+                            registros
                         </p>
                     )}
 

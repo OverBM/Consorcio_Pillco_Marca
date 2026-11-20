@@ -225,8 +225,9 @@ class AlmacenNucleoApiTest extends TestCase
             ->assertStatus(422)
             ->assertJsonPath('message', fn (string $mensaje) => str_contains($mensaje, 'No existe stock registrado'));
 
-        $this->assertDatabaseHas('solicitudes_material', [
+        $this->assertDatabaseHas('solicitudes', [
             'id' => $solicitudId,
+            'tipo' => 'almacen',
             'estado' => 'registrada',
         ]);
     }

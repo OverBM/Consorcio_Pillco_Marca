@@ -17,9 +17,11 @@ describe('E2E-04 Registro, edición y eliminación de excedentes', () => {
 
         cy.contains('Excedente registrado').should('be.visible');
         cy.screenshot('E2E-04-excedente-creado');
-        cy.get('tbody tr').last().within(() => {
-            cy.contains('Editar').click();
-        });
+        cy.get('tbody tr')
+            .last()
+            .within(() => {
+                cy.contains('Editar').click();
+            });
 
         cy.contains('Modificar Excedente Detectado').should('be.visible');
         cy.contains('label', 'Cantidad').find('input').clear().type('13.5');
@@ -27,9 +29,11 @@ describe('E2E-04 Registro, edición y eliminación de excedentes', () => {
         cy.contains('Excedente actualizado').should('be.visible');
         cy.screenshot('E2E-04-excedente-editado');
 
-        cy.get('tbody tr').last().within(() => {
-            cy.contains('Eliminar').click({ force: true });
-        });
+        cy.get('tbody tr')
+            .last()
+            .within(() => {
+                cy.contains('Eliminar').click({ force: true });
+            });
         cy.contains('Eliminar Excedente').should('be.visible');
         cy.get('.panel').contains('button', 'Eliminar').click();
         cy.contains('Excedente eliminado').should('be.visible');

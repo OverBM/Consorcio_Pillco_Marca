@@ -150,7 +150,9 @@ describe('pages/AnaliticaPage', () => {
             screen.getByPlaceholderText('Buscar material o almacén…'),
             { target: { value: 'cemento' } },
         );
-        expect(screen.getAllByText('Cemento Portland').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('Cemento Portland').length).toBeGreaterThan(
+            0,
+        );
 
         fireEvent.click(screen.getByRole('button', { name: 'Pronóstico' }));
         expect(screen.getByText('Demanda y pronóstico')).toBeTruthy();

@@ -24,16 +24,8 @@ return new class extends Migration
         });
 
         if (DB::getDriverName() === 'pgsql') {
-            DB::statement('ALTER TABLE requerimientos ADD CONSTRAINT fk_req_obs FOREIGN KEY (observacion_tecnica_id) REFERENCES observaciones_tecnicas(id)');
+            DB::statement('ALTER TABLE solicitudes ADD CONSTRAINT fk_sol_obs FOREIGN KEY (observacion_tecnica_id) REFERENCES observaciones_tecnicas(id)');
         }
-
-        Schema::create('observacion_evidencias', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('observacion_id')->constrained('observaciones_tecnicas')->cascadeOnDelete();
-            $table->string('etapa', 12);
-            $table->string('ruta', 255);
-            $table->timestampTz('created_at')->useCurrent();
-        });
 
         Schema::create('indicadores_ambientales', function (Blueprint $table) {
             $table->id();
@@ -41,23 +33,6 @@ return new class extends Migration
             $table->string('nombre', 80);
             $table->string('unidad', 20);
             $table->decimal('limite_maximo', 12, 3);
-        });
-
-        Schema::create('plan_manejo_items', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('obra_id')->constrained('obras')->cascadeOnDelete();
-            $table->string('descripcion', 240);
-            $table->string('frecuencia', 20)->default('semanal');
-            $table->timestampsTz();
-        });
-
-        Schema::create('plan_manejo_verificaciones', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('item_id')->constrained('plan_manejo_items')->cascadeOnDelete();
-            $table->foreignId('verificado_por')->constrained('usuarios');
-            $table->boolean('cumple');
-            $table->text('observacion')->nullable();
-            $table->timestampTz('verificado_en')->useCurrent();
         });
 
         Schema::create('mediciones_ambientales', function (Blueprint $table) {
@@ -73,15 +48,6 @@ return new class extends Migration
             $table->timestampsTz();
         });
 
-        Schema::create('empresas_eors', function (Blueprint $table) {
-            $table->id();
-            $table->string('ruc', 11)->unique();
-            $table->string('razon_social', 200);
-            $table->string('autorizacion', 80)->nullable();
-            $table->date('vigente_hasta')->nullable();
-            $table->timestampsTz();
-        });
-
         Schema::create('residuos', function (Blueprint $table) {
             $table->id();
             $table->foreignId('obra_id')->constrained('obras');
@@ -94,7 +60,7 @@ return new class extends Migration
             $table->foreignId('registrado_por')->constrained('usuarios');
             $table->string('destino', 15)->nullable();
             $table->foreignId('transferencia_id')->nullable()->constrained('transferencias');
-            $table->foreignId('eors_id')->nullable()->constrained('empresas_eors');
+            $table->foreignId('proveedor_id')->nullable()->constrained('proveedores');
             $table->foreignId('manifiesto_id')->nullable()->constrained('documentos');
             $table->string('estado', 12)->default('registrado');
             $table->timestampsTz();
@@ -104,14 +70,10 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('residuos');
-        Schema::dropIfExists('empresas_eors');
         Schema::dropIfExists('mediciones_ambientales');
-        Schema::dropIfExists('plan_manejo_verificaciones');
-        Schema::dropIfExists('plan_manejo_items');
         Schema::dropIfExists('indicadores_ambientales');
-        Schema::dropIfExists('observacion_evidencias');
         if (DB::getDriverName() === 'pgsql') {
-            DB::statement('ALTER TABLE requerimientos DROP CONSTRAINT IF EXISTS fk_req_obs');
+            DB::statement('ALTER TABLE solicitudes DROP CONSTRAINT IF EXISTS fk_sol_obs');
         }
         Schema::dropIfExists('observaciones_tecnicas');
     }

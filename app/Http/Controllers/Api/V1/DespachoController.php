@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Domain\Inventario\StockService;
 use App\Http\Controllers\Controller;
-use App\Models\Despacho;
 use App\Models\Transferencia;
 use App\Models\TransferenciaDetalle;
 use Illuminate\Http\JsonResponse;
@@ -18,26 +17,43 @@ class DespachoController extends Controller
     ) {}
 
     /**
-     * Listar despachos físicos con su transferencia, almacenes y detalle.
+     * Listar despachos físicos (transferencias con despacho registrado).
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Despacho::with([
-            'transferencia.almacenOrigen.obra',
-            'transferencia.almacenDestino.obra',
-            'transferencia.detalles.material',
+        $query = Transferencia::with([
+            'almacenOrigen.obra',
+            'almacenDestino.obra',
+            'detalles.material',
             'despachador',
-        ])->orderBy('id', 'desc');
+        ])
+            ->whereNotNull('despachado_por')
+            ->orderBy('id', 'desc');
 
         if ($request->filled('transferencia_id')) {
-            $query->where('transferencia_id', $request->input('transferencia_id'));
+            $query->where('id', $request->input('transferencia_id'));
         }
 
         $despachos = $query->paginate($request->integer('per_page', 20));
 
         return response()->json([
             'success' => true,
-            'data' => $despachos->items(),
+            'data' => collect($despachos->items())->map(fn (Transferencia $transferencia): array => [
+                'id' => $transferencia->id,
+                'transferencia_id' => $transferencia->id,
+                'despachado_por' => $transferencia->despachado_por,
+                'despachado_en' => $transferencia->despachado_en,
+                'observaciones' => $transferencia->observaciones_despacho,
+                'despachador' => $transferencia->despachador,
+                'transferencia' => [
+                    'id' => $transferencia->id,
+                    'codigo' => $transferencia->codigo,
+                    'estado' => $transferencia->estado,
+                    'almacen_origen' => $transferencia->almacenOrigen,
+                    'almacen_destino' => $transferencia->almacenDestino,
+                    'detalles' => $transferencia->detalles,
+                ],
+            ])->all(),
             'meta' => [
                 'current_page' => $despachos->currentPage(),
                 'last_page' => $despachos->lastPage(),
@@ -62,19 +78,18 @@ class DespachoController extends Controller
         $transferencia = Transferencia::with('detalles')->findOrFail($validated['transferencia_id']);
         $usuarioId = $request->user()?->id ?? 1;
 
-        $despacho = DB::transaction(function () use ($transferencia, $validated, $usuarioId) {
-            $despacho = Despacho::create([
-                'transferencia_id' => $transferencia->id,
+        $transferencia = DB::transaction(function () use ($transferencia, $validated, $usuarioId) {
+            $transferencia->update([
                 'despachado_por' => $usuarioId,
                 'despachado_en' => now(),
-                'observaciones' => $validated['observaciones'] ?? null,
+                'observaciones_despacho' => $validated['observaciones'] ?? null,
+                'estado' => 'en_transito',
             ]);
 
             foreach ($validated['detalles'] as $itemDetalle) {
                 $det = TransferenciaDetalle::findOrFail($itemDetalle['id']);
                 $det->update(['cantidad_despachada' => $itemDetalle['cantidad_despachada']]);
 
-                // Egresar stock de origen liberando la reserva previa y registrando en Kardex
                 $this->stockService->egresarStock(
                     almacenId: $transferencia->almacen_origen_id,
                     materialId: $det->material_id,
@@ -88,15 +103,20 @@ class DespachoController extends Controller
                 );
             }
 
-            $transferencia->update(['estado' => 'en_transito']);
-
-            return $despacho;
+            return $transferencia->fresh(['detalles']);
         });
 
         return response()->json([
             'success' => true,
             'message' => 'Despacho registrado y mercadería en tránsito.',
-            'data' => $despacho->load('transferencia.detalles'),
+            'data' => [
+                'id' => $transferencia->id,
+                'transferencia_id' => $transferencia->id,
+                'despachado_por' => $transferencia->despachado_por,
+                'despachado_en' => $transferencia->despachado_en,
+                'observaciones' => $transferencia->observaciones_despacho,
+                'transferencia' => $transferencia,
+            ],
         ], 201);
     }
 }

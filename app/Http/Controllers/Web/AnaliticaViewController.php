@@ -12,6 +12,7 @@ use App\Models\EjecucionAnalitica;
 use App\Models\Material;
 use App\Models\ParametroInventario;
 use App\Models\PronosticoDemanda;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -39,7 +40,7 @@ class AnaliticaViewController extends Controller
             ->with(['almacen:id,nombre', 'material:id,codigo,nombre'])
             ->where('estado', 'vigente')
             ->orderByRaw("CASE severidad WHEN 'critica' THEN 1 WHEN 'alta' THEN 2 WHEN 'media' THEN 3 ELSE 4 END")
-            ->orderBy('fecha_estimada')
+            ->ordenarPorFechaEstimada()
             ->limit(200)
             ->get();
 
@@ -86,7 +87,7 @@ class AnaliticaViewController extends Controller
             'quiebres_7d' => $alertas
                 ->where('tipo', 'quiebre_proyectado')
                 ->filter(fn (AlertaAbastecimiento $alerta) => $alerta->fecha_estimada !== null
-                    && $alerta->fecha_estimada->lte(now()->addDays(7)))
+                    && Carbon::parse($alerta->fecha_estimada)->lte(now()->addDays(7)))
                 ->count(),
             'eoq_promedio_a' => $parametros
                 ->where('clase_abc', 'A')

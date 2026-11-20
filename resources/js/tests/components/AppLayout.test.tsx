@@ -39,9 +39,7 @@ describe('components/layout/AppLayout', () => {
         expect(screen.getByText('Contenido de la página')).toBeTruthy();
         expect(screen.getAllByText('Consorcio Pillco Marca')[0]).toBeTruthy();
         expect(screen.getAllByText('Panel General')[0]).toBeTruthy();
-        expect(
-            screen.getByText(/Mejoramiento Vía Huancayo/),
-        ).toBeTruthy();
+        expect(screen.getByText(/Mejoramiento Vía Huancayo/)).toBeTruthy();
     });
 
     it('resuelve el título desde la ruta actual', () => {
@@ -108,7 +106,11 @@ describe('components/layout/AppLayout', () => {
         setPageProps(props({ catalogos }), '/panel');
         renderLayout();
 
-        fireEvent.click(screen.getByText(/Mejoramiento Vía Huancayo|Sin asignar/).closest('button') as Element);
+        fireEvent.click(
+            screen
+                .getByText(/Mejoramiento Vía Huancayo|Sin asignar/)
+                .closest('button') as Element,
+        );
         expect(screen.getByText('Seleccionar Frente / Obra')).toBeTruthy();
 
         fireEvent.click(screen.getByText('Obra Frente 2'));

@@ -48,7 +48,7 @@ class OrdenCompraController extends Controller
     {
         $validated = $request->validate([
             'cotizacion_id' => 'nullable|exists:cotizaciones,id',
-            'requerimiento_id' => 'nullable|exists:requerimientos,id',
+            'requerimiento_id' => 'nullable|exists:solicitudes,id',
             'proveedor_id' => 'required|exists:proveedores,id',
             'obra_id' => 'required|exists:obras,id',
             'almacen_destino_id' => 'required|exists:almacenes,id',
@@ -73,7 +73,7 @@ class OrdenCompraController extends Controller
 
             $oc = OrdenCompra::create([
                 'codigo' => $codigo,
-                'requerimiento_id' => $validated['requerimiento_id'] ?? null,
+                'solicitud_id' => $validated['requerimiento_id'] ?? null,
                 'cotizacion_id' => $validated['cotizacion_id'] ?? null,
                 'proveedor_id' => $validated['proveedor_id'],
                 'obra_id' => $validated['obra_id'],

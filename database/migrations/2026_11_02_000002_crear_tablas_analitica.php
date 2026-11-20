@@ -14,8 +14,8 @@ return new class extends Migration
             $table->foreignId('almacen_id')->constrained('almacenes')->cascadeOnDelete();
             $table->foreignId('material_id')->constrained('materiales')->cascadeOnDelete();
             $table->decimal('eoq', 14, 3)->nullable();
-            $table->decimal('stock_seguridad', 14, 3)->nullable();
-            $table->decimal('punto_reorden', 14, 3)->nullable();
+            $table->decimal('stock_seguridad_calculado', 14, 3)->nullable();
+            $table->decimal('punto_reorden_calculado', 14, 3)->nullable();
             $table->decimal('costo_total_relevante', 14, 3)->nullable();
             $table->decimal('demanda_media_diaria', 14, 4)->default(0);
             $table->decimal('demanda_anual', 14, 4)->default(0);
@@ -59,25 +59,6 @@ return new class extends Migration
             );
         });
 
-        Schema::create('alertas_abastecimiento', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('almacen_id')->constrained('almacenes')->cascadeOnDelete();
-            $table->foreignId('material_id')->constrained('materiales')->cascadeOnDelete();
-            $table->string('tipo', 40);
-            $table->string('severidad', 15);
-            $table->date('fecha_estimada')->nullable();
-            $table->decimal('cantidad_sugerida', 14, 3)->nullable();
-            $table->text('detalle');
-            $table->string('clave_idempotente', 120)->unique();
-            $table->string('estado', 15)->default('vigente');
-            $table->foreignId('reconocida_por')->nullable()->constrained('usuarios');
-            $table->timestampTz('reconocida_en')->nullable();
-            $table->timestampsTz();
-
-            $table->index(['estado', 'severidad'], 'idx_alertas_abast_estado');
-            $table->index(['almacen_id', 'material_id'], 'idx_alertas_abast_par');
-        });
-
         Schema::create('ejecuciones_analitica', function (Blueprint $table) {
             $table->id();
             $table->string('origen', 15)->default('manual');
@@ -109,7 +90,6 @@ return new class extends Migration
         }
 
         Schema::dropIfExists('ejecuciones_analitica');
-        Schema::dropIfExists('alertas_abastecimiento');
         Schema::dropIfExists('pronosticos_demanda');
         Schema::dropIfExists('parametros_inventario');
     }

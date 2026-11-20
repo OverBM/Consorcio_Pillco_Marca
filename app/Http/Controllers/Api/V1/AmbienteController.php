@@ -76,7 +76,7 @@ class AmbienteController extends Controller
      */
     public function indexResiduos(Request $request): JsonResponse
     {
-        $query = Residuo::with(['obra', 'almacen', 'material', 'eors'])->orderBy('id', 'desc');
+        $query = Residuo::with(['obra', 'almacen', 'material', 'proveedor'])->orderBy('id', 'desc');
 
         if ($request->filled('obra_id')) {
             $query->where('obra_id', $request->input('obra_id'));
@@ -109,7 +109,7 @@ class AmbienteController extends Controller
             'volumen' => 'required|numeric|min:0.001',
             'unidad' => 'required|string|max:10',
             'destino' => 'nullable|string|max:15',
-            'eors_id' => 'nullable|exists:empresas_eors,id',
+            'proveedor_id' => 'nullable|exists:proveedores,id',
         ]);
 
         $usuarioId = $request->user()?->id ?? 1;
@@ -122,7 +122,7 @@ class AmbienteController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Residuo o material reutilizable registrado.',
-            'data' => $residuo->load(['obra', 'almacen', 'material', 'eors']),
+            'data' => $residuo->load(['obra', 'almacen', 'material', 'proveedor']),
         ], 201);
     }
 }

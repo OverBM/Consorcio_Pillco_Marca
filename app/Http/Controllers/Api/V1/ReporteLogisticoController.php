@@ -6,7 +6,7 @@ use App\Domain\Geo\Drivers\HaversineDriver;
 use App\Domain\Geo\Dto\Coordenada;
 use App\Http\Controllers\Controller;
 use App\Models\AlertaGeoespacial;
-use App\Models\Despacho;
+use App\Models\Transferencia;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -25,19 +25,19 @@ class ReporteLogisticoController extends Controller
             ? Carbon::parse($request->input('hasta'))
             : now();
 
-        $despachos = Despacho::query()
-            ->with(['transferencia.almacenOrigen:id,nombre', 'transferencia.almacenDestino:id,nombre', 'transferencia.confirmacionRecepcion'])
+        $despachos = Transferencia::query()
+            ->with(['almacenOrigen:id,nombre', 'almacenDestino:id,nombre'])
+            ->whereNotNull('despachado_por')
             ->whereBetween('despachado_en', [$desde, $hasta])
-            ->when($request->filled('almacen_id'), fn ($query) => $query->whereHas(
-                'transferencia',
+            ->when($request->filled('almacen_id'), fn ($query) => $query->where(
                 fn ($subquery) => $subquery->where('almacen_origen_id', $request->integer('almacen_id'))
                     ->orWhere('almacen_destino_id', $request->integer('almacen_id')),
             ))
             ->orderBy('despachado_en')
             ->get();
 
-        $filas = $despachos->map(function (Despacho $despacho): array {
-            $transferencia = $despacho->transferencia;
+        $filas = $despachos->map(function (Transferencia $despacho): array {
+            $transferencia = $despacho;
             $posiciones = $despacho->posiciones()->orderBy('capturada_en')->get();
             $recorrido = 0.0;
             $anterior = null;
@@ -52,9 +52,9 @@ class ReporteLogisticoController extends Controller
                 $anterior = $actual;
             }
 
-            $alertas = AlertaGeoespacial::query()->where('despacho_id', $despacho->id)->count();
-            $tiempoReal = $transferencia?->confirmacionRecepcion?->recibida_en !== null
-                ? Carbon::parse($transferencia->confirmacionRecepcion->recibida_en)
+            $alertas = AlertaGeoespacial::query()->where('transferencia_id', $despacho->id)->count();
+            $tiempoReal = $transferencia->recibida_en !== null
+                ? Carbon::parse($transferencia->recibida_en)
                     ->diffInMinutes(Carbon::parse($despacho->despachado_en))
                 : null;
 

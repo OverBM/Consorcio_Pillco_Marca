@@ -3,13 +3,13 @@
 namespace App\Domain\Metricas;
 
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
  * Contadores de pendientes por módulo para los badges de navegación.
  *
- * Cada contador se calcula de forma independiente: si una consulta falla,
- * el módulo simplemente queda sin badge en lugar de romper la página.
+ * Se calculan en una sola consulta para minimizar round trips contra la base.
  */
 final class ContadoresModulosService
 {
@@ -18,62 +18,89 @@ final class ContadoresModulosService
      */
     public function contadores(): array
     {
-        $stockCritico = $this->seguro(fn (): int => (int) DB::table('stock_almacen')
-            ->whereRaw('(cantidad - cantidad_reservada) < stock_minimo')
-            ->count());
+        $calcular = function (): array {
+            $ahora = CarbonImmutable::now();
 
-        $urgentes = $this->seguro(fn (): int => (int) DB::table('requerimientos')
-            ->where('prioridad', 'urgente')
-            ->whereNotIn('estado', ['atendido', 'rechazado', 'anulado'])
-            ->count());
+            try {
+                $fila = DB::selectOne(<<<'SQL'
+                    select
+                        (select count(*) from stock_almacen
+                            where (cantidad - cantidad_reservada) < stock_minimo) as stock_critico,
+                        (select count(*) from solicitudes
+                            where tipo = 'compra' and urgente
+                              and estado in ('borrador', 'solicitado', 'aprobado')) as urgentes,
+                        (select count(*) from transferencias
+                            where estado in ('sugerida', 'solicitada')) as transferencias,
+                        (select count(*) from excedentes_detectados
+                            where estado in ('detectado', 'sugerido')) as excedentes,
+                        (select count(*) from riesgos
+                            where estado = 'abierto') as riesgos,
+                        (select count(*) from hitos
+                            where fecha_planificada < ? and estado <> 'completado') as hitos,
+                        (select count(*) from inventarios_fisicos
+                            where estado <> 'cerrado') as inventarios,
+                        (select count(*) from ordenes_compra
+                            where estado in ('emitida', 'confirmada_proveedor', 'en_transporte')) as ordenes,
+                        (select count(*) from incidentes
+                            where estado <> 'cerrado') as incidentes,
+                        (select count(*) from capacitaciones
+                            where estado = 'programada' and fecha_programada between ? and ?) as capacitaciones,
+                        (select count(*) from observaciones_tecnicas
+                            where estado in ('notificada', 'levantada')) as observaciones,
+                        (select count(*) from residuos
+                            where estado = 'registrado') as residuos,
+                        (select count(*) from solicitudes_acceso
+                            where estado = 'pendiente') as accesos
+                SQL, [
+                    $ahora->toDateString(),
+                    $ahora->startOfDay()->toDateTimeString(),
+                    $ahora->addDays(30)->endOfDay()->toDateTimeString(),
+                ]);
+            } catch (\Throwable) {
+                return $this->vacios();
+            }
 
-        $transferenciasPorAprobar = $this->seguro(fn (): int => (int) DB::table('transferencias')
-            ->whereIn('estado', ['sugerida', 'solicitada'])
-            ->count());
+            if ($fila === null) {
+                return $this->vacios();
+            }
 
-        return [
-            'panel-general' => $stockCritico + $urgentes + $transferenciasPorAprobar,
-            'programa-redistribucion' => $this->seguro(fn (): int => (int) DB::table('excedentes_detectados')
-                ->whereIn('estado', ['detectado', 'sugerido'])
-                ->count()),
-            'ciclo-vida' => $this->seguro(fn (): int => (int) DB::table('riesgos')
-                ->where('estado', 'abierto')
-                ->count()) + $this->seguro(fn (): int => (int) DB::table('hitos')
-                ->where('fecha_planificada', '<', CarbonImmutable::now()->toDateString())
-                ->where('estado', '!=', 'completado')
-                ->count()),
-            'matriz-stock' => $stockCritico + $this->seguro(fn (): int => (int) DB::table('inventarios_fisicos')
-                ->where('estado', '!=', 'cerrado')
-                ->count()),
-            'requerimientos' => $urgentes + $this->seguro(fn (): int => (int) DB::table('ordenes_compra')
-                ->whereIn('estado', ['emitida', 'en_transito'])
-                ->count()),
-            'asistencia-geocerca' => $this->seguro(fn (): int => (int) DB::table('incidentes')
-                ->where('estado', '!=', 'cerrado')
-                ->count()) + $this->seguro(fn (): int => (int) DB::table('capacitaciones')
-                ->where('estado', 'programada')
-                ->whereBetween('fecha_programada', [
-                    CarbonImmutable::now()->startOfDay(),
-                    CarbonImmutable::now()->addDays(30)->endOfDay(),
-                ])
-                ->count()),
-            'observaciones-tecnicas' => $this->seguro(fn (): int => (int) DB::table('observaciones_tecnicas')
-                ->whereIn('estado', ['abierta', 'en_proceso'])
-                ->count()) + $this->seguro(fn (): int => (int) DB::table('residuos')
-                ->whereIn('estado', ['registrado', 'pendiente'])
-                ->count()),
-            'solicitudes-acceso' => $this->seguro(fn (): int => (int) DB::table('solicitudes_acceso')
-                ->where('estado', 'pendiente')
-                ->count()),
-        ];
+            $stockCritico = (int) $fila->stock_critico;
+            $urgentes = (int) $fila->urgentes;
+            $transferencias = (int) $fila->transferencias;
+
+            return [
+                'panel-general' => $stockCritico + $urgentes + $transferencias,
+                'programa-redistribucion' => (int) $fila->excedentes,
+                'ciclo-vida' => (int) $fila->riesgos + (int) $fila->hitos,
+                'matriz-stock' => $stockCritico + (int) $fila->inventarios,
+                'requerimientos' => $urgentes + (int) $fila->ordenes,
+                'asistencia-geocerca' => (int) $fila->incidentes + (int) $fila->capacitaciones,
+                'observaciones-tecnicas' => (int) $fila->observaciones + (int) $fila->residuos,
+                'solicitudes-acceso' => (int) $fila->accesos,
+            ];
+        };
+
+        if (app()->runningUnitTests()) {
+            return $calcular();
+        }
+
+        return Cache::remember('contadores_modulos', 60, $calcular);
     }
 
-    private function seguro(callable $consulta): int
+    /**
+     * @return array<string, int>
+     */
+    private function vacios(): array
     {
-        try {
-            return $consulta();
-        } catch (\Throwable) {
-            return 0;
-        }
+        return [
+            'panel-general' => 0,
+            'programa-redistribucion' => 0,
+            'ciclo-vida' => 0,
+            'matriz-stock' => 0,
+            'requerimientos' => 0,
+            'asistencia-geocerca' => 0,
+            'observaciones-tecnicas' => 0,
+            'solicitudes-acceso' => 0,
+        ];
     }
 }

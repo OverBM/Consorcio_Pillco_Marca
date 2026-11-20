@@ -9,6 +9,12 @@ class Permiso extends Model
 {
     protected $table = 'permisos';
 
+    protected static function booted(): void
+    {
+        static::saved(fn () => Rol::invalidarUsuarios());
+        static::deleted(fn () => Rol::invalidarUsuarios());
+    }
+
     protected $fillable = [
         'codigo',
         'modulo',

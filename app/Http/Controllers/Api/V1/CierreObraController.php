@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Almacen;
-use App\Models\CierreObra;
 use App\Models\ExcedenteDetectado;
 use App\Models\Obra;
 use App\Models\StockAlmacen;
@@ -21,14 +20,21 @@ class CierreObraController extends Controller
     public function show(int $obraId): JsonResponse
     {
         $obra = Obra::findOrFail($obraId);
-        $cierre = CierreObra::where('obra_id', $obra->id)->first();
         $excedentes = ExcedenteDetectado::with('material')->where('obra_origen_id', $obra->id)->get();
 
         return response()->json([
             'success' => true,
             'data' => [
                 'obra' => $obra,
-                'cierre' => $cierre,
+                'cierre' => [
+                    'obra_id' => $obra->id,
+                    'estado' => $obra->estado,
+                    'informe_final_id' => $obra->informe_final_id,
+                    'acta_recepcion_id' => $obra->acta_recepcion_id,
+                    'cerrado_por' => $obra->cerrado_por,
+                    'cerrado_en' => $obra->cerrado_en,
+                    'observaciones_cierre' => $obra->observaciones_cierre,
+                ],
                 'excedentes' => $excedentes,
             ],
         ]);
@@ -41,20 +47,9 @@ class CierreObraController extends Controller
     {
         $obra = Obra::findOrFail($obraId);
 
-        $cierre = DB::transaction(function () use ($obra) {
-            $cierre = CierreObra::updateOrCreate(
-                ['obra_id' => $obra->id],
-                [
-                    'fecha_ejecucion_100' => now(),
-                    'estado' => 'en_cierre',
-                    'excedentes_evaluados' => true,
-                ]
-            );
-
-            // Obtener todos los almacenes de la obra
+        DB::transaction(function () use ($obra) {
             $almacenes = Almacen::where('obra_id', $obra->id)->pluck('id');
 
-            // Detectar saldos positivos en inventario y registrarlos como excedentes disponibles
             $stocks = StockAlmacen::whereIn('almacen_id', $almacenes)
                 ->where('cantidad', '>', 0)
                 ->get();
@@ -75,8 +70,6 @@ class CierreObraController extends Controller
             }
 
             $obra->update(['estado' => 'cierre']);
-
-            return $cierre;
         });
 
         $excedentes = ExcedenteDetectado::query()
@@ -98,7 +91,11 @@ class CierreObraController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Proceso de cierre iniciado y excedentes de materiales cargados para redistribución.',
-            'data' => $cierre->load('obra'),
+            'data' => [
+                'obra_id' => $obra->id,
+                'estado' => 'en_cierre',
+                'obra' => $obra->fresh(),
+            ],
         ]);
     }
 
@@ -108,30 +105,24 @@ class CierreObraController extends Controller
     public function finalizar(Request $request, int $obraId): JsonResponse
     {
         $obra = Obra::findOrFail($obraId);
-        $cierre = CierreObra::where('obra_id', $obra->id)->first();
 
-        if ($cierre === null || $cierre->estado !== 'en_cierre') {
+        if ($obra->estado !== 'cierre') {
             return response()->json([
                 'success' => false,
                 'message' => 'Primero inicia el proceso de cierre de la obra antes de liquidarla.',
             ], 422);
         }
 
-        DB::transaction(function () use ($obra) {
-            CierreObra::updateOrCreate(
-                ['obra_id' => $obra->id],
-                [
-                    'fecha_recepcion_obra' => now(),
-                    'estado' => 'cerrado',
-                ]
-            );
-
-            $obra->update(['estado' => 'liquidada']);
-        });
+        $obra->update([
+            'estado' => 'liquidada',
+            'cerrado_por' => $request->user()?->id ?? 1,
+            'cerrado_en' => now(),
+        ]);
 
         return response()->json([
             'success' => true,
             'message' => 'Obra liquidada y cerrada definitivamente.',
+            'data' => $obra->fresh(),
         ]);
     }
 }

@@ -18,6 +18,7 @@ class OrdenCompra extends Model
 
     protected $fillable = [
         'codigo',
+        'solicitud_id',
         'requerimiento_id',
         'cotizacion_id',
         'proveedor_id',
@@ -35,6 +36,16 @@ class OrdenCompra extends Model
         'total' => 'decimal:2',
         'fecha_entrega_prometida' => 'date',
     ];
+
+    public function setRequerimientoIdAttribute(mixed $value): void
+    {
+        $this->attributes['solicitud_id'] = $value;
+    }
+
+    public function getRequerimientoIdAttribute(): ?int
+    {
+        return isset($this->attributes['solicitud_id']) ? (int) $this->attributes['solicitud_id'] : null;
+    }
 
     public function obra(): BelongsTo
     {
@@ -54,6 +65,16 @@ class OrdenCompra extends Model
     public function proveedor(): BelongsTo
     {
         return $this->belongsTo(Proveedor::class, 'proveedor_id');
+    }
+
+    public function solicitud(): BelongsTo
+    {
+        return $this->belongsTo(Solicitud::class, 'solicitud_id');
+    }
+
+    public function requerimiento(): BelongsTo
+    {
+        return $this->belongsTo(Requerimiento::class, 'solicitud_id');
     }
 
     public function recepciones(): HasMany

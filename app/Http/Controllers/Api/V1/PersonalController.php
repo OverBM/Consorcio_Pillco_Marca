@@ -27,10 +27,13 @@ class PersonalController extends Controller
      */
     public function indexTrabajadores(Request $request): JsonResponse
     {
-        $query = Trabajador::with('obra')->orderBy('nombres');
+        $query = Trabajador::with(['persona', 'obra'])
+            ->join('personas', 'personas.id', '=', 'trabajadores.persona_id')
+            ->orderBy('personas.nombres')
+            ->select('trabajadores.*');
 
         if ($request->filled('obra_id')) {
-            $query->where('obra_id', $request->input('obra_id'));
+            $query->where('trabajadores.obra_id', $request->input('obra_id'));
         }
 
         $trabajadores = $query->paginate($request->integer('per_page', 20));
@@ -52,7 +55,7 @@ class PersonalController extends Controller
     public function storeTrabajador(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'dni' => 'required|string|max:12|unique:trabajadores,dni',
+            'dni' => 'required|string|max:12|unique:personas,dni',
             'nombres' => 'required|string|max:160',
             'cargo' => 'nullable|string|max:80',
             'obra_id' => 'nullable|exists:obras,id',

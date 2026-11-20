@@ -25,6 +25,7 @@ class Residuo extends Model
         'registrado_por',
         'destino',
         'transferencia_id',
+        'proveedor_id',
         'eors_id',
         'manifiesto_id',
         'estado',
@@ -39,8 +40,23 @@ class Residuo extends Model
         return $this->belongsTo(Obra::class, 'obra_id');
     }
 
+    public function setEorsIdAttribute(mixed $value): void
+    {
+        $this->attributes['proveedor_id'] = $value;
+    }
+
+    public function getEorsIdAttribute(): ?int
+    {
+        return isset($this->attributes['proveedor_id']) ? (int) $this->attributes['proveedor_id'] : null;
+    }
+
+    public function proveedor(): BelongsTo
+    {
+        return $this->belongsTo(Proveedor::class, 'proveedor_id');
+    }
+
     public function eors(): BelongsTo
     {
-        return $this->belongsTo(EmpresaEors::class, 'eors_id');
+        return $this->belongsTo(Proveedor::class, 'proveedor_id');
     }
 }

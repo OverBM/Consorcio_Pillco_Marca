@@ -107,7 +107,7 @@ test('un usuario con permiso de escritura completa la operación', function () {
     ])->assertCreated()
         ->assertJsonPath('success', true);
 
-    $this->assertDatabaseCount('requerimientos', 1);
+    $this->assertDatabaseHas('solicitudes', ['tipo' => 'compra']);
 });
 
 test('el token Bearer identifica al usuario en la API', function () {

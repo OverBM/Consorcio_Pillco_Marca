@@ -55,12 +55,14 @@ describe('design-system/GlobalSearch', () => {
     });
 
     it('consulta y muestra resultados agrupados', async () => {
-        const fetchMock = vi.fn().mockResolvedValue(
-            respuestaCon([
-                { titulo: 'Cemento Portland' },
-                { titulo: 'Cemento Blanco' },
-            ]),
-        );
+        const fetchMock = vi
+            .fn()
+            .mockResolvedValue(
+                respuestaCon([
+                    { titulo: 'Cemento Portland' },
+                    { titulo: 'Cemento Blanco' },
+                ]),
+            );
         vi.stubGlobal('fetch', fetchMock);
 
         render(<GlobalSearch abierto onCerrar={() => {}} />);
@@ -78,10 +80,7 @@ describe('design-system/GlobalSearch', () => {
     });
 
     it('muestra el estado vacío cuando no hay resultados', async () => {
-        vi.stubGlobal(
-            'fetch',
-            vi.fn().mockResolvedValue(respuestaCon([])),
-        );
+        vi.stubGlobal('fetch', vi.fn().mockResolvedValue(respuestaCon([])));
 
         render(<GlobalSearch abierto onCerrar={() => {}} />);
 

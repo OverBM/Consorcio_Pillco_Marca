@@ -1,10 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-    ThemeProvider,
-    useTheme,
-} from '../../components/theme/ThemeProvider';
+import { ThemeProvider, useTheme } from '../../components/theme/ThemeProvider';
 
 function BotonTema() {
     const { tema, alternarTema } = useTheme();
@@ -39,9 +36,9 @@ describe('theme/ThemeProvider', () => {
 
         expect(screen.getByRole('button').textContent).toBe('oscuro');
         expect(document.documentElement.dataset.theme).toBe('oscuro');
-        expect(document.documentElement.classList.contains('theme-changing')).toBe(
-            true,
-        );
+        expect(
+            document.documentElement.classList.contains('theme-changing'),
+        ).toBe(true);
         expect(window.localStorage.getItem('cpm_tema')).toBe('oscuro');
     });
 

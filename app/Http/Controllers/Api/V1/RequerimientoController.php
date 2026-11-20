@@ -78,7 +78,7 @@ class RequerimientoController extends Controller
 
             foreach ($validated['detalles'] as $item) {
                 RequerimientoDetalle::create([
-                    'requerimiento_id' => $requerimiento->id,
+                    'solicitud_id' => $requerimiento->id,
                     'material_id' => $item['material_id'],
                     'cantidad' => $item['cantidad'],
                     'cantidad_atendida' => 0,

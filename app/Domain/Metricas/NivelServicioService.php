@@ -71,17 +71,16 @@ final class NivelServicioService
     private function despachos(?int $obraId, ?int $almacenId, CarbonImmutable $desde): array
     {
         try {
-            $filas = DB::table('despachos as d')
-                ->join('transferencias as t', 't.id', '=', 'd.transferencia_id')
+            $filas = DB::table('transferencias as t')
                 ->join('almacenes as a', 'a.id', '=', 't.almacen_destino_id')
-                ->leftJoin('confirmaciones_recepcion_destino as c', 'c.transferencia_id', '=', 't.id')
-                ->where('d.despachado_en', '>=', $desde)
+                ->whereNotNull('t.despachado_por')
+                ->where('t.despachado_en', '>=', $desde)
                 ->when($almacenId !== null, fn ($q) => $q->where('t.almacen_destino_id', $almacenId))
                 ->when($almacenId === null && $obraId !== null, fn ($q) => $q->where('a.obra_id', $obraId))
                 ->get([
-                    'c.hay_diferencias',
-                    'c.recibida_en',
-                    'd.despachado_en',
+                    't.hay_diferencias',
+                    't.recibida_en',
+                    't.despachado_en',
                     't.eta_min',
                 ]);
         } catch (\Throwable) {

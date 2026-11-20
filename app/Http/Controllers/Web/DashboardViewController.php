@@ -25,6 +25,7 @@ use App\Models\StockAlmacen;
 use App\Models\Transferencia;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -46,78 +47,182 @@ class DashboardViewController extends Controller
 
     public function panel(): Response
     {
+        $base = null;
+        $baseData = function () use (&$base): array {
+            return $base ??= $this->datosBasePanel();
+        };
+
+        return Inertia::render('PanelGeneral', [
+            'obrasDb' => fn () => $this->mapearObras($baseData()['obrasModel']),
+            'almacenesDb' => fn () => $this->mapearAlmacenes($baseData()['almacenesModel']),
+            'obrasRedDb' => fn () => $this->mapearObras($baseData()['obrasRedModel']),
+            'almacenesRedDb' => fn () => $this->mapearAlmacenes($baseData()['almacenesRedModel']),
+            'materialesDb' => fn () => $baseData()['materialesDb'],
+            'stockDb' => fn () => $baseData()['stock'],
+            'stock' => fn () => $baseData()['stockNested'],
+            'stockRed' => fn () => $baseData()['stockRedNested'],
+            'almacenCentralId' => fn () => $baseData()['almacenCentralId'],
+            'indicadores' => Inertia::defer(fn () => $this->cachePanel('indicadores', 120, fn () => $this->construirIndicadores(
+                $baseData()['stockModel'],
+                $baseData()['obrasModel'],
+                $baseData()['disponiblePorAlmacen'],
+            )), 'panel-datos'),
+            'sobrantes' => Inertia::defer(fn () => $this->cachePanel('sobrantes', 120, fn () => $this->construirSobrantes(
+                $baseData()['obrasRedModel'],
+                $baseData()['almacenesRedModel'],
+                $baseData()['disponibleRed'],
+                $baseData()['minPorMaterialRed'],
+            )), 'panel-datos'),
+            'rutas' => Inertia::defer(fn () => $this->cachePanel('rutas', 300, fn () => $this->construirRutas()), 'panel-rapido'),
+            'movimientos7d' => Inertia::defer(fn () => $this->cachePanel('movimientos7d', 120, fn () => $this->construirMovimientos7d()), 'panel-rapido'),
+            'metricasInventario' => Inertia::defer(fn () => $this->cachePanel('metricas_inventario', 120, fn () => $this->metricasInventario->resumen(
+                $this->obraActivaId(),
+                $this->almacenActivoId(),
+            )), 'panel-datos'),
+            'nivelServicio' => Inertia::defer(fn () => $this->cachePanel('nivel_servicio', 120, fn () => $this->nivelServicio->resumen(
+                $this->obraActivaId(),
+                $this->almacenActivoId(),
+            )), 'panel-rapido'),
+            'programaPmi' => Inertia::defer(fn () => $this->cachePanel('programa_pmi', 300, fn () => $this->programaPanel->resumen()), 'panel-pmi'),
+            'analiticaResumen' => Inertia::defer(fn () => $this->cachePanel('analitica_resumen', 120, fn () => $this->construirAnaliticaResumen($baseData()['stockModel'])), 'panel-datos'),
+            'analiticaHero' => fn () => $this->cachePanel('analitica_hero', 120, fn () => $this->serieAnalitica->resumen(30, 30)),
+            'eventosDia' => fn () => $this->cachePanel('eventos_dia', 120, fn () => $this->construirEventosDia()),
+            'obraActivaId' => $this->obraActivaId(),
+        ]);
+    }
+
+    /**
+     * Precalcula y cachea las tarjetas del panel sin contexto operativo.
+     * Se usa desde el comando programado panel:precalentar.
+     */
+    public function precalentarPanel(): void
+    {
+        $contexto = ($this->obraActivaId() ?? 'all').':'.($this->almacenActivoId() ?? 'all');
+        $claves = [
+            'indicadores', 'sobrantes', 'rutas', 'movimientos7d',
+            'metricas_inventario', 'nivel_servicio', 'programa_pmi',
+            'analitica_resumen', 'analitica_hero', 'eventos_dia', 'materiales',
+        ];
+
+        $todoTibio = true;
+
+        foreach ($claves as $clave) {
+            if (! Cache::has("panel:{$clave}:{$contexto}")) {
+                $todoTibio = false;
+                break;
+            }
+        }
+
+        if ($todoTibio) {
+            return;
+        }
+
+        $base = $this->datosBasePanel();
+
+        $this->cachePanel('indicadores', 120, fn () => $this->construirIndicadores(
+            $base['stockModel'],
+            $base['obrasModel'],
+            $base['disponiblePorAlmacen'],
+        ));
+        $this->cachePanel('sobrantes', 120, fn () => $this->construirSobrantes(
+            $base['obrasRedModel'],
+            $base['almacenesRedModel'],
+            $base['disponibleRed'],
+            $base['minPorMaterialRed'],
+        ));
+        $this->cachePanel('rutas', 300, fn () => $this->construirRutas());
+        $this->cachePanel('movimientos7d', 120, fn () => $this->construirMovimientos7d());
+        $this->cachePanel('metricas_inventario', 120, fn () => $this->metricasInventario->resumen(null, null));
+        $this->cachePanel('nivel_servicio', 120, fn () => $this->nivelServicio->resumen(null, null));
+        $this->cachePanel('programa_pmi', 300, fn () => $this->programaPanel->resumen());
+        $this->cachePanel('analitica_resumen', 120, fn () => $this->construirAnaliticaResumen($base['stockModel']));
+        $this->cachePanel('analitica_hero', 120, fn () => $this->serieAnalitica->resumen(30, 30));
+        $this->cachePanel('eventos_dia', 120, fn () => $this->construirEventosDia());
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function datosBasePanel(): array
+    {
+        $almacenId = $this->almacenActivoId();
+        $obraId = $this->obraActivaId();
+        $sinContexto = $almacenId === null && $obraId === null;
+
         $obrasModel = $this->filtrarContextoObras(Obra::query())->get();
         $almacenesModel = $this->filtrarContextoAlmacenes(Almacen::query())->get();
         $stockModel = $this->filtrarContextoAlmacen(StockAlmacen::query())
             ->with(['almacen', 'material'])
             ->get();
 
-        $obrasRedModel = Obra::query()->orderBy('id')->get();
-        $almacenesRedModel = Almacen::query()->orderBy('id')->get();
-        $stockRedModel = StockAlmacen::query()->with(['almacen', 'material'])->get();
+        $obrasRedModel = $sinContexto ? $obrasModel : Obra::query()->orderBy('id')->get();
+        $almacenesRedModel = $sinContexto ? $almacenesModel : Almacen::query()->orderBy('id')->get();
+        $stockRedModel = $sinContexto ? $stockModel : StockAlmacen::query()->with(['almacen', 'material'])->get();
 
         $minPorMaterial = $this->minimosPorMaterial($stockModel);
         [$disponiblePorAlmacen, $stockNested] = $this->disponibilidadPorAlmacen($stockModel);
 
-        $minPorMaterialRed = $this->minimosPorMaterial($stockRedModel);
-        [$disponibleRed, $stockRedNested] = $this->disponibilidadPorAlmacen($stockRedModel);
+        $minPorMaterialRed = $sinContexto ? $minPorMaterial : $this->minimosPorMaterial($stockRedModel);
+        [$disponibleRed, $stockRedNested] = $sinContexto
+            ? [$disponiblePorAlmacen, $stockNested]
+            : $this->disponibilidadPorAlmacen($stockRedModel);
 
         $almacenCentralId = $this->resolverAlmacenCentralId($almacenesRedModel);
 
-        $materiales = Material::with(['categoria', 'unidadMedida'])->get()->map(fn ($m) => [
-            'id' => (string) $m->id,
-            'codigo' => $m->codigo,
-            'nombre' => $m->nombre,
-            'categoria' => $m->categoria?->nombre ?? 'General',
-            'unidad' => $m->unidadMedida?->codigo ?? 'und',
-            'stockMinimo' => $minPorMaterialRed[$m->id] ?? $minPorMaterial[$m->id] ?? 50,
-            'costoReferencial' => (float) ($m->costo_referencial ?? 30.0),
-            'criticidad' => $m->criticidad ?? 'normal',
-        ]);
-
-        $stock = $this->filtrarContextoAlmacen(StockAlmacen::query())
-            ->with(['almacen', 'material'])
+        $materiales = $this->cachePanel('materiales', 120, fn (): array => Material::with(['categoria', 'unidadMedida'])
             ->get()
-            ->map(fn ($s) => [
-                'id' => (string) $s->id,
-                'almacenId' => (string) $s->almacen_id,
-                'materialId' => (string) $s->material_id,
-                'cantidad' => (float) $s->cantidad,
-                'cantidadReservada' => (float) $s->cantidad_reservada,
-                'disponible' => max(0, (float) $s->cantidad - (float) $s->cantidad_reservada),
-                'stockMinimo' => (float) $s->stock_minimo,
-                'stockSeguridad' => (float) $s->stock_seguridad,
-                'puntoReorden' => (float) $s->punto_reorden,
-            ]);
+            ->map(fn ($m) => [
+                'id' => (string) $m->id,
+                'codigo' => $m->codigo,
+                'nombre' => $m->nombre,
+                'categoria' => $m->categoria?->nombre ?? 'General',
+                'unidad' => $m->unidadMedida?->codigo ?? 'und',
+                'stockMinimo' => $minPorMaterialRed[$m->id] ?? $minPorMaterial[$m->id] ?? 50,
+                'costoReferencial' => (float) ($m->costo_referencial ?? 30.0),
+                'criticidad' => $m->criticidad ?? 'normal',
+            ])
+            ->values()
+            ->all());
 
-        return Inertia::render('PanelGeneral', [
-            'obrasDb' => $this->mapearObras($obrasModel),
-            'almacenesDb' => $this->mapearAlmacenes($almacenesModel),
-            'obrasRedDb' => $this->mapearObras($obrasRedModel),
-            'almacenesRedDb' => $this->mapearAlmacenes($almacenesRedModel),
-            'materialesDb' => $materiales,
-            'stockDb' => $stock,
-            'stock' => $stockNested,
-            'stockRed' => $stockRedNested,
+        $stock = $stockModel->map(fn ($s) => [
+            'id' => (string) $s->id,
+            'almacenId' => (string) $s->almacen_id,
+            'materialId' => (string) $s->material_id,
+            'cantidad' => (float) $s->cantidad,
+            'cantidadReservada' => (float) $s->cantidad_reservada,
+            'disponible' => max(0, (float) $s->cantidad - (float) $s->cantidad_reservada),
+            'stockMinimo' => (float) $s->stock_minimo,
+            'stockSeguridad' => (float) $s->stock_seguridad,
+            'puntoReorden' => (float) $s->punto_reorden,
+        ])->values()->all();
+
+        return [
+            'obrasModel' => $obrasModel,
+            'almacenesModel' => $almacenesModel,
+            'stockModel' => $stockModel,
+            'obrasRedModel' => $obrasRedModel,
+            'almacenesRedModel' => $almacenesRedModel,
+            'stockRedModel' => $stockRedModel,
+            'disponiblePorAlmacen' => $disponiblePorAlmacen,
+            'disponibleRed' => $disponibleRed,
+            'minPorMaterialRed' => $minPorMaterialRed,
+            'stockNested' => $stockNested,
+            'stockRedNested' => $stockRedNested,
             'almacenCentralId' => $almacenCentralId !== null ? (string) $almacenCentralId : null,
-            'indicadores' => Inertia::defer(fn () => $this->construirIndicadores($stockModel, $obrasModel, $disponiblePorAlmacen)),
-            'sobrantes' => Inertia::defer(fn () => $this->construirSobrantes($obrasRedModel, $almacenesRedModel, $disponibleRed, $minPorMaterialRed)),
-            'rutas' => Inertia::defer(fn () => $this->construirRutas()),
-            'movimientos7d' => Inertia::defer(fn () => $this->construirMovimientos7d()),
-            'metricasInventario' => Inertia::defer(fn () => $this->metricasInventario->resumen(
-                $this->obraActivaId(),
-                $this->almacenActivoId(),
-            )),
-            'nivelServicio' => Inertia::defer(fn () => $this->nivelServicio->resumen(
-                $this->obraActivaId(),
-                $this->almacenActivoId(),
-            )),
-            'programaPmi' => Inertia::defer(fn () => $this->programaPanel->resumen()),
-            'analiticaResumen' => Inertia::defer(fn () => $this->construirAnaliticaResumen($stockModel)),
-            'analiticaHero' => $this->serieAnalitica->resumen(30, 30),
-            'eventosDia' => $this->construirEventosDia(),
-            'obraActivaId' => $this->obraActivaId(),
-        ]);
+            'materialesDb' => $materiales,
+            'stock' => $stock,
+        ];
+    }
+
+    private function cachePanel(string $clave, int $segundos, \Closure $callback): mixed
+    {
+        if (app()->runningUnitTests()) {
+            return $callback();
+        }
+
+        $contexto = ($this->obraActivaId() ?? 'all').':'.($this->almacenActivoId() ?? 'all');
+
+        return Cache::remember("panel:{$clave}:{$contexto}", $segundos, $callback);
     }
 
     /**
@@ -140,9 +245,7 @@ class DashboardViewController extends Controller
         return [
             'cobertura_dias' => $demanda > 0 ? round($stockTotal / $demanda, 1) : null,
             'quiebres_7d' => AlertaAbastecimiento::query()
-                ->where('estado', 'vigente')
-                ->where('tipo', 'quiebre_proyectado')
-                ->whereDate('fecha_estimada', '<=', now()->addDays(7)->toDateString())
+                ->quiebresHasta(now()->addDays(7)->toDateString())
                 ->count(),
             'skus_bajo_rop' => AlertaAbastecimiento::query()
                 ->where('estado', 'vigente')
@@ -313,7 +416,7 @@ class DashboardViewController extends Controller
 
         $incidencias = $this->filtrarContextoAlmacen(Transferencia::query(), 'almacen_origen_id', 'almacenOrigen')
             ->where('estado', 'completada')
-            ->whereHas('confirmacionRecepcion', fn ($q) => $q->where('hay_diferencias', true))
+            ->where('hay_diferencias', true)
             ->count();
 
         $mermas = $this->filtrarContextoAlmacen(Merma::query())
@@ -468,11 +571,11 @@ class DashboardViewController extends Controller
         $eventos = [];
 
         try {
-            DB::table('despachos as d')
-                ->join('transferencias as t', 't.id', '=', 'd.transferencia_id')
-                ->whereBetween('d.despachado_en', [$inicio, $fin])
-                ->orderBy('d.despachado_en')
-                ->get(['d.despachado_en', 't.codigo'])
+            DB::table('transferencias as t')
+                ->whereNotNull('t.despachado_por')
+                ->whereBetween('t.despachado_en', [$inicio, $fin])
+                ->orderBy('t.despachado_en')
+                ->get(['t.despachado_en', 't.codigo'])
                 ->each(function ($fila) use (&$eventos): void {
                     $eventos[] = [
                         'hora' => CarbonImmutable::parse($fila->despachado_en)->format('H:i'),

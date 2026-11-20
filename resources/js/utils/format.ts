@@ -85,6 +85,27 @@ export function formatFechaHora(iso: string): string {
     });
 }
 
+/**
+ * Fecha y hora exacta (con segundos) para registros de ejecución.
+ */
+export function formatFechaHoraExacta(iso: string): string {
+    const soloFecha = /^\d{4}-\d{2}-\d{2}$/.test(iso);
+    const date = new Date(soloFecha ? `${iso}T00:00:00` : iso);
+
+    if (Number.isNaN(date.getTime())) {
+        return iso;
+    }
+
+    return date.toLocaleString('es-PE', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+    });
+}
+
 export function iniciales(nombre: string): string {
     return nombre
         .replace(/^Ing\.\s*/i, '')

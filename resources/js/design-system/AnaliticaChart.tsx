@@ -42,10 +42,7 @@ function formatearValor(valor: number): string {
     });
 }
 
-function puntos(
-    valores: Array<number | null>,
-    maximo: number,
-): PuntoGrafico[] {
+function puntos(valores: Array<number | null>, maximo: number): PuntoGrafico[] {
     if (valores.length < 2) {
         return [];
     }
@@ -61,9 +58,7 @@ function puntos(
                 y:
                     ALTO -
                     MARGEN -
-                    (maximo > 0
-                        ? (valor / maximo) * (ALTO - MARGEN * 2)
-                        : 0),
+                    (maximo > 0 ? (valor / maximo) * (ALTO - MARGEN * 2) : 0),
                 valor,
                 indice,
             };
@@ -123,8 +118,7 @@ export function AnaliticaChart({
     const banda = serie
         .map((punto, indice) => ({ punto, indice }))
         .filter(
-            ({ punto }) =>
-                punto.inferior !== null && punto.superior !== null,
+            ({ punto }) => punto.inferior !== null && punto.superior !== null,
         );
 
     const areaBanda =
@@ -155,20 +149,19 @@ export function AnaliticaChart({
     const corte =
         indiceCorte >= 0 ? (indiceCorte / (serie.length - 1)) * ANCHO : null;
     const puntoActivo = activo !== null ? serie[activo] : null;
-    const xActivo =
-        activo !== null ? (activo / (serie.length - 1)) * ANCHO : 0;
+    const xActivo = activo !== null ? (activo / (serie.length - 1)) * ANCHO : 0;
     const xActivoPct = (xActivo / ANCHO) * 100;
 
     const areaReal =
         reales.length > 1
             ? `${reales
                   .map((punto) => `${punto.x.toFixed(2)},${punto.y.toFixed(2)}`)
-                  .join(' ')} ${reales[reales.length - 1].x.toFixed(2)},${ALTO} ${reales[0].x.toFixed(2)},${ALTO}`
+                  .join(
+                      ' ',
+                  )} ${reales[reales.length - 1].x.toFixed(2)},${ALTO} ${reales[0].x.toFixed(2)},${ALTO}`
             : '';
 
-    const alMoverCursor = (
-        evento: ReactMouseEvent<SVGSVGElement>,
-    ): void => {
+    const alMoverCursor = (evento: ReactMouseEvent<SVGSVGElement>): void => {
         const rect = evento.currentTarget.getBoundingClientRect();
         const relativo = (evento.clientX - rect.left) / rect.width;
         const indice = Math.round(relativo * (serie.length - 1));
@@ -179,8 +172,7 @@ export function AnaliticaChart({
     const dibujarPuntos = (lista: PuntoGrafico[], clase: string) =>
         lista
             .filter(
-                (punto) =>
-                    activo === punto.indice || punto.indice % 7 === 0,
+                (punto) => activo === punto.indice || punto.indice % 7 === 0,
             )
             .map((punto) => (
                 <circle

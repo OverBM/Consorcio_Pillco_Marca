@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\Almacen;
-use App\Models\Despacho;
 use App\Models\Obra;
 use App\Models\Programa;
 use App\Models\Transferencia;
@@ -57,11 +56,10 @@ test('el endpoint de despachos lista los despachos con su transferencia y almace
         'estado' => 'en_transito',
     ]);
 
-    Despacho::create([
-        'transferencia_id' => $transferencia->id,
+    $transferencia->update([
         'despachado_por' => $usuario->id,
         'despachado_en' => now(),
-        'observaciones' => 'Salida de prueba',
+        'observaciones_despacho' => 'Salida de prueba',
     ]);
 
     $response = $this->getJson('/api/v1/despachos');

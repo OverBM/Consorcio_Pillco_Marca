@@ -12,9 +12,10 @@ class RequerimientoDetalle extends Model
 
     public $timestamps = false;
 
-    protected $table = 'requerimiento_detalles';
+    protected $table = 'solicitud_detalles';
 
     protected $fillable = [
+        'solicitud_id',
         'requerimiento_id',
         'material_id',
         'cantidad',
@@ -26,9 +27,19 @@ class RequerimientoDetalle extends Model
         'cantidad_atendida' => 'decimal:3',
     ];
 
+    public function setRequerimientoIdAttribute(?int $value): void
+    {
+        $this->attributes['solicitud_id'] = $value;
+    }
+
+    public function getRequerimientoIdAttribute(): ?int
+    {
+        return isset($this->attributes['solicitud_id']) ? (int) $this->attributes['solicitud_id'] : null;
+    }
+
     public function requerimiento(): BelongsTo
     {
-        return $this->belongsTo(Requerimiento::class, 'requerimiento_id');
+        return $this->belongsTo(Requerimiento::class, 'solicitud_id');
     }
 
     public function material(): BelongsTo

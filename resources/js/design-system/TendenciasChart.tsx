@@ -1,8 +1,4 @@
-import {
-    useMemo,
-    useState,
-    type MouseEvent as ReactMouseEvent,
-} from 'react';
+import { useMemo, useState, type MouseEvent as ReactMouseEvent } from 'react';
 import { formatFecha, formatFechaHora } from '../utils/format';
 
 export interface PuntoSerie {
@@ -68,9 +64,7 @@ export function TendenciasChart({ serie }: { serie: PuntoSerie[] }) {
         );
     }
 
-    const alMoverCursor = (
-        evento: ReactMouseEvent<SVGSVGElement>,
-    ): void => {
+    const alMoverCursor = (evento: ReactMouseEvent<SVGSVGElement>): void => {
         const rect = evento.currentTarget.getBoundingClientRect();
         const relativo = (evento.clientX - rect.left) / rect.width;
         const indice = Math.round(relativo * (serie.length - 1));
@@ -79,8 +73,7 @@ export function TendenciasChart({ serie }: { serie: PuntoSerie[] }) {
     };
 
     const puntoActivo = activo !== null ? serie[activo] : null;
-    const xActivo =
-        activo !== null ? (activo / (serie.length - 1)) * ANCHO : 0;
+    const xActivo = activo !== null ? (activo / (serie.length - 1)) * ANCHO : 0;
     const xActivoPct = (xActivo / ANCHO) * 100;
 
     return (

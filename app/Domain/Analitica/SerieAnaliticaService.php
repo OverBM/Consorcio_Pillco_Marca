@@ -86,9 +86,7 @@ class SerieAnaliticaService
                 : null,
             'mape' => $mape !== null ? round((float) $mape, 2) : null,
             'quiebres_7d' => AlertaAbastecimiento::query()
-                ->where('estado', 'vigente')
-                ->where('tipo', 'quiebre_proyectado')
-                ->whereDate('fecha_estimada', '<=', $hoy->copy()->addDays(7)->toDateString())
+                ->quiebresHasta($hoy->copy()->addDays(7)->toDateString())
                 ->count(),
             'alertas' => AlertaAbastecimiento::query()->where('estado', 'vigente')->count(),
             'demanda_media' => round($demandaMedia, 3),

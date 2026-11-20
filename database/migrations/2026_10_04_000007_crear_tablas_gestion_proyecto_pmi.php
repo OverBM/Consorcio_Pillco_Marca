@@ -119,12 +119,19 @@ return new class extends Migration
         Schema::create('alertas', function (Blueprint $table) {
             $table->id();
             $table->foreignId('obra_id')->nullable()->constrained('obras');
+            $table->foreignId('almacen_id')->nullable()->constrained('almacenes');
+            $table->foreignId('material_id')->nullable()->constrained('materiales');
+            $table->foreignId('transferencia_id')->nullable()->constrained('transferencias');
             $table->string('tipo', 40);
             $table->string('severidad', 8)->default('media');
             $table->text('mensaje');
+            $table->jsonb('payload')->nullable();
+            $table->string('clave_idempotente', 120)->nullable()->unique();
             $table->string('referencia_tipo', 40)->nullable();
             $table->unsignedBigInteger('referencia_id')->nullable();
             $table->string('estado', 10)->default('abierta');
+            $table->foreignId('reconocida_por')->nullable()->constrained('usuarios');
+            $table->timestampTz('reconocida_en')->nullable();
             $table->timestampsTz();
 
             $table->index(['estado', 'severidad'], 'idx_alertas_estado');
@@ -144,17 +151,6 @@ return new class extends Migration
             $table->timestampsTz();
         });
 
-        Schema::create('interesados', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('obra_id')->nullable()->constrained('obras')->cascadeOnDelete();
-            $table->string('nombre', 160);
-            $table->string('tipo', 20);
-            $table->smallInteger('influencia')->nullable();
-            $table->smallInteger('interes')->nullable();
-            $table->string('contacto', 160)->nullable();
-            $table->timestampsTz();
-        });
-
         Schema::create('documentos', function (Blueprint $table) {
             $table->id();
             $table->foreignId('obra_id')->nullable()->constrained('obras');
@@ -163,65 +159,30 @@ return new class extends Migration
             $table->string('ruta', 255);
             $table->char('hash_sha256', 64)->nullable();
             $table->smallInteger('version')->default(1);
+            $table->string('documentable_type', 120)->nullable();
+            $table->unsignedBigInteger('documentable_id')->nullable();
+            $table->string('etapa', 40)->nullable();
             $table->foreignId('subido_por')->constrained('usuarios');
             $table->timestampsTz();
             $table->softDeletesTz();
+
+            $table->index(['documentable_type', 'documentable_id'], 'idx_documentos_documentable');
         });
 
-        Schema::create('comunicaciones', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('obra_id')->constrained('obras')->cascadeOnDelete();
-            $table->foreignId('interesado_id')->nullable()->constrained('interesados');
-            $table->string('tipo', 15);
-            $table->string('sentido', 10);
-            $table->string('asunto', 240);
-            $table->date('fecha');
-            $table->string('estado', 12)->default('pendiente');
-            $table->foreignId('documento_id')->nullable()->constrained('documentos');
-            $table->timestampsTz();
-        });
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE obras ADD CONSTRAINT obras_informe_final_id_foreign FOREIGN KEY (informe_final_id) REFERENCES documentos(id)');
+            DB::statement('ALTER TABLE obras ADD CONSTRAINT obras_acta_recepcion_id_foreign FOREIGN KEY (acta_recepcion_id) REFERENCES documentos(id)');
+        }
 
-        Schema::create('cierres_obra', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('obra_id')->unique()->constrained('obras');
-            $table->date('fecha_ejecucion_100')->nullable();
-            $table->foreignId('informe_final_id')->nullable()->constrained('documentos');
-            $table->date('fecha_recepcion_obra')->nullable();
-            $table->foreignId('acta_recepcion_id')->nullable()->constrained('documentos');
-            $table->string('estado', 15)->default('abierto');
-            $table->boolean('excedentes_evaluados')->default(false);
-            $table->timestampsTz();
-        });
-
-        Schema::create('lecciones_aprendidas', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('obra_id')->constrained('obras')->cascadeOnDelete();
-            $table->string('area_conocimiento', 20);
-            $table->text('descripcion');
-            $table->text('recomendacion')->nullable();
-            $table->foreignId('registrada_por')->nullable()->constrained('usuarios');
-            $table->timestampsTz();
-        });
-
-        Schema::create('equipos', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('obra_id')->nullable()->constrained('obras');
-            $table->string('codigo', 30)->unique();
-            $table->string('nombre', 160);
-            $table->string('tipo', 60)->nullable();
-            $table->string('estado', 15)->default('disponible');
-            $table->timestampsTz();
-        });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('equipos');
-        Schema::dropIfExists('lecciones_aprendidas');
-        Schema::dropIfExists('cierres_obra');
-        Schema::dropIfExists('comunicaciones');
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE obras DROP CONSTRAINT IF EXISTS obras_informe_final_id_foreign');
+            DB::statement('ALTER TABLE obras DROP CONSTRAINT IF EXISTS obras_acta_recepcion_id_foreign');
+        }
         Schema::dropIfExists('documentos');
-        Schema::dropIfExists('interesados');
         Schema::dropIfExists('solicitudes_cambio');
         Schema::dropIfExists('alertas');
         Schema::dropIfExists('riesgos');

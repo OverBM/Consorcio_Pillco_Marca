@@ -5,8 +5,8 @@ namespace App\Console\Commands;
 use App\Domain\Geo\Drivers\HaversineDriver;
 use App\Domain\Geo\Dto\Coordenada;
 use App\Models\AlertaGeoespacial;
-use App\Models\Despacho;
-use App\Models\DespachoPosicion;
+use App\Models\Transferencia;
+use App\Models\TransferenciaPosicion;
 use App\Support\NotificadorOperativo;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
@@ -19,22 +19,23 @@ class EvaluarAlertasTracking extends Command
 
     public function handle(HaversineDriver $haversine): int
     {
-        $despachos = Despacho::query()
-            ->with(['transferencia.almacenDestino', 'transferencia.confirmacionRecepcion'])
-            ->whereHas('transferencia', fn ($query) => $query->where('estado', 'en_transito'))
+        $despachos = Transferencia::query()
+            ->with(['almacenDestino', 'almacenOrigen'])
+            ->where('estado', 'en_transito')
+            ->whereNotNull('despachado_por')
             ->get();
 
         $creadas = 0;
 
         foreach ($despachos as $despacho) {
-            $transferencia = $despacho->transferencia;
+            $transferencia = $despacho;
 
-            if ($transferencia === null || $transferencia->confirmacionRecepcion !== null) {
+            if ($transferencia->recibida_en !== null) {
                 continue;
             }
 
-            $posiciones = DespachoPosicion::query()
-                ->where('despacho_id', $despacho->id)
+            $posiciones = TransferenciaPosicion::query()
+                ->where('transferencia_id', $despacho->id)
                 ->orderByDesc('capturada_en')
                 ->limit(5)
                 ->get();
@@ -62,11 +63,11 @@ class EvaluarAlertasTracking extends Command
             }
 
             $recientes = $posiciones->filter(
-                fn (DespachoPosicion $posicion) => Carbon::parse($posicion->capturada_en)->gt(now()->subMinutes(20))
+                fn (TransferenciaPosicion $posicion) => Carbon::parse($posicion->capturada_en)->gt(now()->subMinutes(20))
             );
 
             if ($recientes->count() >= 3
-                && $recientes->avg(fn (DespachoPosicion $posicion) => (float) $posicion->velocidad_kmh) < 1.0) {
+                && $recientes->avg(fn (TransferenciaPosicion $posicion) => (float) $posicion->velocidad_kmh) < 1.0) {
                 $creadas += $this->registrar($despacho, 'detencion_prolongada', 'media', 'Vehículo detenido por más de 20 minutos.');
             }
 
@@ -129,7 +130,7 @@ class EvaluarAlertasTracking extends Command
     }
 
     private function registrar(
-        Despacho $despacho,
+        Transferencia $despacho,
         string $tipo,
         string $severidad,
         string $detalle,

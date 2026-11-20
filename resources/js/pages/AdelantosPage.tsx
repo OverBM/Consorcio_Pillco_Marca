@@ -94,9 +94,9 @@ export default function AdelantosPage({
 
             {!usaDatosReales && (
                 <div className="border-atencion/30 bg-atencion-soft text-atencion rounded-xl border px-3 py-2 text-xs">
-                    <Badge tone="warn">Vista demostrativa</Badge>{' '}
-                    Aún no hay adelantos registrados en la base de datos. Se
-                    muestra la estructura de ejemplo.
+                    <Badge tone="warn">Vista demostrativa</Badge> Aún no hay
+                    adelantos registrados en la base de datos. Se muestra la
+                    estructura de ejemplo.
                 </div>
             )}
 

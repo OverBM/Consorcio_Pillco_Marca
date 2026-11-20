@@ -28,4 +28,28 @@ class EjecucionAnalitica extends Model
             'fin' => 'datetime',
         ];
     }
+
+    public static function marcarExpiradas(int $minutos = 5): int
+    {
+        $ahora = now();
+
+        $expiradas = static::query()
+            ->where('estado', 'en_proceso')
+            ->where('inicio', '<', $ahora->copy()->subMinutes($minutos))
+            ->get();
+
+        foreach ($expiradas as $ejecucion) {
+            $ejecucion->update([
+                'estado' => 'fallida',
+                'fin' => $ahora,
+                'duracion_ms' => $ejecucion->inicio !== null
+                    ? (int) $ejecucion->inicio->diffInMilliseconds($ahora)
+                    : null,
+                'errores' => 1,
+                'mensaje' => 'Ejecución interrumpida o expirada.',
+            ]);
+        }
+
+        return $expiradas->count();
+    }
 }

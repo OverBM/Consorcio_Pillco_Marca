@@ -63,9 +63,7 @@ const reportes = {
 
 const catalogos = {
     obras: [{ id: 1, codigo: 'OBR-1', nombre: 'Obra Uno' }],
-    almacenes: [
-        { id: 1, codigo: 'ALM-1', nombre: 'Almacén Uno', obra_id: 1 },
-    ],
+    almacenes: [{ id: 1, codigo: 'ALM-1', nombre: 'Almacén Uno', obra_id: 1 }],
     categorias: [{ id: 1, nombre: 'Agregados' }],
 };
 
@@ -125,9 +123,7 @@ describe('pages/ReportesPage', () => {
             expect.objectContaining({ preserveState: true }),
         );
 
-        fireEvent.click(
-            screen.getByRole('button', { name: /Exportar CSV/ }),
-        );
+        fireEvent.click(screen.getByRole('button', { name: /Exportar CSV/ }));
         expect(screen.getByText('Reporte exportado en CSV.')).toBeTruthy();
     });
 
@@ -139,7 +135,9 @@ describe('pages/ReportesPage', () => {
         });
 
         expect(
-            screen.getByText('No hay movimientos de materiales para los filtros.'),
+            screen.getByText(
+                'No hay movimientos de materiales para los filtros.',
+            ),
         ).toBeTruthy();
     });
 });

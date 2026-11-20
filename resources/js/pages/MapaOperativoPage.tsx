@@ -102,7 +102,7 @@ interface SugerenciaRedistribucion {
     destino_stock: number;
     destino_rop: number;
     cantidad: number;
-    prioridad: 'alta' | 'media' | string;
+    prioridad: string;
     distancia_km: number | null;
     eta_min: number | null;
     geometria: Array<{ lat: number; lng: number }>;
@@ -200,8 +200,9 @@ export default function MapaOperativoPage({
     );
     const [posiciones, setPosiciones] = useState<PosicionDetalle[]>([]);
     const [cargandoDetalle, setCargandoDetalle] = useState(false);
-    const [almacenGeocerca, setAlmacenGeocerca] =
-        useState<AlmacenMapa | null>(null);
+    const [almacenGeocerca, setAlmacenGeocerca] = useState<AlmacenMapa | null>(
+        null,
+    );
     const [radio, setRadio] = useState('150');
     const [direccion, setDireccion] = useState('');
     const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
@@ -220,8 +221,7 @@ export default function MapaOperativoPage({
     const [redistribucionTitulo, setRedistribucionTitulo] = useState(
         'Redistribución sugerida',
     );
-    const [cargandoRedistribucion, setCargandoRedistribucion] =
-        useState(false);
+    const [cargandoRedistribucion, setCargandoRedistribucion] = useState(false);
     const [sugerenciaSeleccionada, setSugerenciaSeleccionada] =
         useState<SugerenciaRedistribucion | null>(null);
 
@@ -287,9 +287,7 @@ export default function MapaOperativoPage({
         };
 
         const alFijarFrente = (evento: Event) => {
-            const detalle = (
-                evento as CustomEvent<{ obraId?: string }>
-            ).detail;
+            const detalle = (evento as CustomEvent<{ obraId?: string }>).detail;
 
             if (!detalle?.obraId) {
                 return;
@@ -299,9 +297,7 @@ export default function MapaOperativoPage({
             const obra = obrasDb.find(
                 (item) => String(item.id) === detalle.obraId,
             );
-            notify.success(
-                `Frente activo: ${obra?.nombre ?? detalle.obraId}`,
-            );
+            notify.success(`Frente activo: ${obra?.nombre ?? detalle.obraId}`);
         };
 
         window.addEventListener('cpm:calcular-redistribucion', alCalcular);
@@ -372,13 +368,10 @@ export default function MapaOperativoPage({
                 `/api/v1/geo/sugerencias?q=${encodeURIComponent(texto)}`,
                 { headers: { Accept: 'application/json' } },
             )
-                .then((respuesta) =>
-                    respuesta.ok ? respuesta.json() : null,
-                )
+                .then((respuesta) => (respuesta.ok ? respuesta.json() : null))
                 .then((cuerpo) => {
-                    const datos = (
-                        cuerpo as { data?: SugerenciaDireccion[] }
-                    )?.data;
+                    const datos = (cuerpo as { data?: SugerenciaDireccion[] })
+                        ?.data;
                     setSugerencias(datos ?? []);
                 })
                 .catch(() => setSugerencias([]))
@@ -586,7 +579,7 @@ export default function MapaOperativoPage({
 
         http.transform(() => ({
             radio_geocerca_m: Number(radio),
-            ...(coords ?? {}),
+            ...coords,
         }));
 
         void http.patch(`/api/v1/geo/almacenes/${almacenGeocerca.id}`, {
@@ -595,8 +588,7 @@ export default function MapaOperativoPage({
                 setAlmacenGeocerca(null);
                 refrescarProps('almacenesDb');
             },
-            onError: () =>
-                notify.error('No se pudo actualizar la geocerca.'),
+            onError: () => notify.error('No se pudo actualizar la geocerca.'),
         });
     };
 
@@ -756,7 +748,7 @@ export default function MapaOperativoPage({
                     {obraFiltro !== '' && (
                         <div className="border-brand-200 bg-brand-50 flex items-center justify-between gap-2 rounded-xl border px-3 py-2">
                             <div>
-                                <p className="text-brand-700 text-[10px] font-mono uppercase">
+                                <p className="text-brand-700 font-mono text-[10px] uppercase">
                                     Frente activo
                                 </p>
                                 <p className="text-ink text-xs font-bold">
@@ -1025,8 +1017,8 @@ export default function MapaOperativoPage({
                                         className={cn(
                                             'border-line rounded-xl border p-3 transition-all hover:-translate-y-0.5 hover:shadow-md',
                                             sugerencia.prioridad === 'alta'
-                                                ? 'border-l-4 border-l-atencion'
-                                                : 'border-l-4 border-l-brand-300',
+                                                ? 'border-l-atencion border-l-4'
+                                                : 'border-l-brand-300 border-l-4',
                                         )}
                                     >
                                         <div className="flex items-start justify-between gap-2">

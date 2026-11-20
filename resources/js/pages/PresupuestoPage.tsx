@@ -115,9 +115,7 @@ export default function PresupuestoPage({
                     usaDatosReales && obrasDb.length > 0 ? (
                         <select
                             value={obraId}
-                            onChange={(event) =>
-                                setObraId(event.target.value)
-                            }
+                            onChange={(event) => setObraId(event.target.value)}
                             className="border-line bg-surface text-ink rounded-lg border px-3 py-1.5 text-xs"
                         >
                             <option value="todas">Todas las obras</option>
@@ -133,9 +131,9 @@ export default function PresupuestoPage({
 
             {!usaDatosReales && (
                 <div className="border-atencion/30 bg-atencion-soft text-atencion rounded-xl border px-3 py-2 text-xs">
-                    <Badge tone="warn">Vista demostrativa</Badge>{' '}
-                    Aún no hay partidas presupuestales registradas en la base
-                    de datos. Se muestra la estructura de ejemplo.
+                    <Badge tone="warn">Vista demostrativa</Badge> Aún no hay
+                    partidas presupuestales registradas en la base de datos. Se
+                    muestra la estructura de ejemplo.
                 </div>
             )}
 

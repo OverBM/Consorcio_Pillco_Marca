@@ -17,8 +17,10 @@ class UsuarioController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $usuarios = Usuario::with(['roles:id,codigo,nombre', 'obras:id,nombre'])
-            ->orderBy('name')
+        $usuarios = Usuario::with(['persona', 'roles:id,codigo,nombre', 'obras:id,nombre'])
+            ->join('personas', 'personas.id', '=', 'usuarios.persona_id')
+            ->orderBy('personas.nombres')
+            ->select('usuarios.*')
             ->get()
             ->map(fn (Usuario $usuario) => $this->payload($usuario));
 
@@ -37,7 +39,7 @@ class UsuarioController extends Controller
             'name' => 'required|string|max:150',
             'email' => 'required|email|max:160|unique:usuarios,email',
             'password' => ['required', 'string', new PasswordPolicy],
-            'dni' => 'nullable|string|max:12|unique:usuarios,dni',
+            'dni' => 'nullable|string|max:12|unique:personas,dni',
             'telefono' => 'nullable|string|max:30',
             'rol_codigo' => 'required|string|exists:roles,codigo',
             'obra_id' => 'nullable|exists:obras,id',
@@ -82,7 +84,7 @@ class UsuarioController extends Controller
                 'nullable',
                 'string',
                 'max:12',
-                Rule::unique('usuarios', 'dni')->ignore($usuario->id),
+                Rule::unique('personas', 'dni')->ignore($usuario->id),
             ],
             'telefono' => 'sometimes|nullable|string|max:30',
             'rol_codigo' => 'sometimes|nullable|string|exists:roles,codigo',
@@ -127,6 +129,8 @@ class UsuarioController extends Controller
         } else {
             $usuario->obras()->sync([]);
         }
+
+        Rol::invalidarUsuarios();
     }
 
     /**

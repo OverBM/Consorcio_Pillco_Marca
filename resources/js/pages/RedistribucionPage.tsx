@@ -163,9 +163,7 @@ const ETIQUETAS_ESTADO: Record<string, string> = {
 
 const etiquetaTexto = (valor: string, mapa: Record<string, string>): string =>
     mapa[valor] ??
-    valor
-        .replace(/_/g, ' ')
-        .replace(/^\w/, (letra) => letra.toUpperCase());
+    valor.replace(/_/g, ' ').replace(/^\w/, (letra) => letra.toUpperCase());
 
 export default function RedistribucionPage({
     excedentesDb = [],

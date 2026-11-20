@@ -163,7 +163,11 @@ export default function ReportesPage({
 
     const limpiar = (): void => {
         setFormulario({ ...aFormulario(filtros), desde: '', hasta: '' });
-        router.get('/reportes', {}, { preserveState: true, preserveScroll: true });
+        router.get(
+            '/reportes',
+            {},
+            { preserveState: true, preserveScroll: true },
+        );
     };
 
     const exportar = (): void => {
@@ -281,10 +285,7 @@ export default function ReportesPage({
                         >
                             <option value="">Todas las categorías</option>
                             {catalogos.categorias.map((categoria) => (
-                                <option
-                                    key={categoria.id}
-                                    value={categoria.id}
-                                >
+                                <option key={categoria.id} value={categoria.id}>
                                     {categoria.nombre}
                                 </option>
                             ))}

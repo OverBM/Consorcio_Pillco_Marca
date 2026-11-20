@@ -88,8 +88,7 @@ export default function AsistenciaPage({
                     (fila) => fila.obra?.id === obra.id,
                 );
                 const horas = registros.reduce(
-                    (acc, fila) =>
-                        acc + Number(fila.horas_trabajadas ?? 0),
+                    (acc, fila) => acc + Number(fila.horas_trabajadas ?? 0),
                     0,
                 );
 
@@ -140,8 +139,7 @@ export default function AsistenciaPage({
             porObra,
             porEstado,
             trabajadoresUnicos,
-            promedioHoras:
-                filas.length > 0 ? totalHoras / filas.length : null,
+            promedioHoras: filas.length > 0 ? totalHoras / filas.length : null,
         };
     }, [filas, obrasDb, totalHoras]);
 

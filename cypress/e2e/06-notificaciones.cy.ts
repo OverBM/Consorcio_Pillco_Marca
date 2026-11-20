@@ -19,7 +19,9 @@ describe('E2E-06 Notificaciones por rol', () => {
             'aria-pressed',
             'true',
         );
-        cy.get('button[aria-label="Actualizar notificaciones"]').should('exist');
+        cy.get('button[aria-label="Actualizar notificaciones"]').should(
+            'exist',
+        );
         cy.screenshot('E2E-06-notificaciones-rol');
     });
 });

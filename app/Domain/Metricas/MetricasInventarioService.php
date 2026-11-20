@@ -10,8 +10,8 @@ use Illuminate\Support\Facades\DB;
  * Indicadores de inventario para el Panel General.
  *
  * Todas las consultas son de solo lectura y respetan el contexto operativo
- * (obra o almacén activo). Los cálculos se hacen en SQL salvo la serie diaria,
- * que se agrupa en PHP para mantener compatibilidad entre PostgreSQL y SQLite.
+ * (obra o almacén activo). Se hacen tres consultas base (stock, kardex y
+ * transferencias) y el resto se calcula en PHP para minimizar round trips.
  */
 final class MetricasInventarioService
 {
@@ -33,18 +33,168 @@ final class MetricasInventarioService
     {
         $desde = CarbonImmutable::now()->subDays($dias - 1)->startOfDay();
 
-        $valor = (float) $this->stockQuery($obraId, $almacenId)
-            ->sum(DB::raw('s.cantidad * COALESCE(m.costo_referencial, 0)'));
+        $stock = $this->stockQuery($obraId, $almacenId)->get([
+            's.almacen_id',
+            's.material_id',
+            's.cantidad',
+            's.cantidad_reservada',
+            's.stock_minimo',
+            'm.costo_referencial',
+            'a.nombre as almacen_nombre',
+        ]);
 
-        $skusTotales = (int) $this->stockQuery($obraId, $almacenId)->count();
-
-        $stockCritico = (int) $this->stockQuery($obraId, $almacenId)
-            ->whereRaw('(s.cantidad - s.cantidad_reservada) < s.stock_minimo')
-            ->count();
-
-        $neto = (float) $this->kardexQuery($obraId, $almacenId)
+        $movimientos = $this->kardexQuery($obraId, $almacenId)
             ->where('k.created_at', '>=', $desde)
-            ->sum(DB::raw('k.cantidad * COALESCE(k.costo_unitario, m.costo_referencial, 0)'));
+            ->get([
+                'k.almacen_id',
+                'k.material_id',
+                'k.cantidad',
+                'k.costo_unitario',
+                'k.created_at',
+                'm.costo_referencial',
+            ]);
+
+        $transferencias = DB::table('transferencias as t')
+            ->join('almacenes as a', 'a.id', '=', 't.almacen_destino_id')
+            ->when($almacenId !== null, fn ($q) => $q->where('t.almacen_destino_id', $almacenId))
+            ->when($almacenId === null && $obraId !== null, fn ($q) => $q->where('a.obra_id', $obraId))
+            ->get(['t.estado', 't.created_at']);
+
+        $valor = 0.0;
+        $stockCritico = 0;
+        $pares = [];
+        $salud = [];
+
+        foreach ($stock as $fila) {
+            $cantidad = (float) $fila->cantidad;
+            $reservada = (float) $fila->cantidad_reservada;
+            $minimo = (float) $fila->stock_minimo;
+
+            $valor += $cantidad * (float) ($fila->costo_referencial ?? 0);
+
+            $critico = ($cantidad - $reservada) < $minimo;
+
+            if ($critico) {
+                $stockCritico++;
+            }
+
+            $clave = $fila->almacen_id.':'.$fila->material_id;
+            $pares[$clave] = [
+                'actual' => $cantidad,
+                'reservada' => $reservada,
+                'minimo' => $minimo,
+                'movimientos' => array_fill(0, $dias, 0.0),
+                'neto' => 0.0,
+            ];
+
+            $almacenFilaId = (int) $fila->almacen_id;
+
+            if (! isset($salud[$almacenFilaId])) {
+                $salud[$almacenFilaId] = [
+                    'almacenId' => $almacenFilaId,
+                    'nombre' => (string) $fila->almacen_nombre,
+                    'criticos' => 0,
+                    'total' => 0,
+                ];
+            }
+
+            $salud[$almacenFilaId]['total']++;
+            if ($critico) {
+                $salud[$almacenFilaId]['criticos']++;
+            }
+        }
+
+        $neto = 0.0;
+        $buckets = [];
+
+        for ($i = 0; $i < $dias; $i++) {
+            $dia = $desde->addDays($i);
+            $buckets[$dia->toDateString()] = [
+                'fecha' => $dia->toDateString(),
+                'ingreso' => 0.0,
+                'salida' => 0.0,
+            ];
+        }
+
+        foreach ($movimientos as $fila) {
+            $cantidad = (float) $fila->cantidad;
+            $costo = (float) ($fila->costo_unitario ?? $fila->costo_referencial ?? 0);
+            $neto += $cantidad * $costo;
+
+            $fecha = CarbonImmutable::parse($fila->created_at);
+            $claveDia = $fecha->toDateString();
+
+            if (isset($buckets[$claveDia])) {
+                if ($cantidad >= 0) {
+                    $buckets[$claveDia]['ingreso'] += $cantidad;
+                } else {
+                    $buckets[$claveDia]['salida'] += abs($cantidad);
+                }
+            }
+
+            $clave = $fila->almacen_id.':'.$fila->material_id;
+
+            if (! isset($pares[$clave])) {
+                continue;
+            }
+
+            $indice = (int) $fecha->diffInDays($desde);
+            $indice = max(0, min($dias - 1, $indice));
+            $pares[$clave]['movimientos'][$indice] += $cantidad;
+            $pares[$clave]['neto'] += $cantidad;
+        }
+
+        $serieCriticos = array_fill(0, $dias, 0);
+
+        foreach ($pares as &$par) {
+            $par['stock'] = $par['actual'] - $par['neto'];
+        }
+        unset($par);
+
+        for ($dia = 0; $dia < $dias; $dia++) {
+            foreach ($pares as &$par) {
+                $par['stock'] += $par['movimientos'][$dia];
+
+                if ($par['minimo'] > $par['stock'] - $par['reservada']) {
+                    $serieCriticos[$dia]++;
+                }
+            }
+            unset($par);
+        }
+
+        $transito = 0;
+        $serieTransferencias = array_fill(0, $dias, 0);
+
+        foreach ($transferencias as $fila) {
+            if (in_array($fila->estado, ['sugerida', 'solicitada', 'aprobada', 'en_transito'], true)) {
+                $transito++;
+            }
+
+            $fecha = CarbonImmutable::parse($fila->created_at);
+
+            if ($fecha->lt($desde)) {
+                continue;
+            }
+
+            $indice = (int) $fecha->diffInDays($desde);
+            $indice = max(0, min($dias - 1, $indice));
+            $serieTransferencias[$indice]++;
+        }
+
+        $salud = array_values(array_map(function (array $fila): array {
+            $total = (int) $fila['total'];
+            $criticos = (int) $fila['criticos'];
+
+            return [
+                'almacenId' => $fila['almacenId'],
+                'nombre' => $fila['nombre'],
+                'criticos' => $criticos,
+                'total' => $total,
+                'pctCritico' => $total > 0 ? round(($criticos / $total) * 100, 1) : 0.0,
+            ];
+        }, $salud));
+
+        usort($salud, fn (array $a, array $b): int => $b['pctCritico'] <=> $a['pctCritico']);
 
         $valorAnterior = $valor - $neto;
         $variacionPct = $valorAnterior > 0
@@ -56,12 +206,12 @@ final class MetricasInventarioService
             'valorAnterior' => round($valorAnterior, 2),
             'variacionPct' => $variacionPct,
             'stockCritico' => $stockCritico,
-            'skusTotales' => $skusTotales,
-            'transferenciasTransito' => $this->transferenciasEnTransito($obraId, $almacenId),
-            'serie30d' => $this->serieDiaria($obraId, $almacenId, $desde),
-            'serieCriticos30d' => $this->serieCriticos($obraId, $almacenId, $desde),
-            'serieTransferencias30d' => $this->serieTransferencias($obraId, $almacenId, $desde),
-            'saludAlmacenes' => $this->saludPorAlmacen($obraId, $almacenId),
+            'skusTotales' => $stock->count(),
+            'transferenciasTransito' => $transito,
+            'serie30d' => array_values($buckets),
+            'serieCriticos30d' => $serieCriticos,
+            'serieTransferencias30d' => $serieTransferencias,
+            'saludAlmacenes' => $salud,
         ];
     }
 
@@ -79,193 +229,5 @@ final class MetricasInventarioService
     private function kardexQuery(?int $obraId, ?int $almacenId)
     {
         return ConsultasInventario::kardexQuery($almacenId, $obraId);
-    }
-
-    private function transferenciasEnTransito(?int $obraId, ?int $almacenId): int
-    {
-        try {
-            return (int) DB::table('transferencias as t')
-                ->join('almacenes as a', 'a.id', '=', 't.almacen_destino_id')
-                ->whereIn('t.estado', ['sugerida', 'solicitada', 'aprobada', 'en_transito'])
-                ->when($almacenId !== null, fn ($q) => $q->where('t.almacen_destino_id', $almacenId))
-                ->when($almacenId === null && $obraId !== null, fn ($q) => $q->where('a.obra_id', $obraId))
-                ->count();
-        } catch (\Throwable) {
-            return 0;
-        }
-    }
-
-    /**
-     * @return list<array{fecha: string, ingreso: float, salida: float}>
-     */
-    private function serieDiaria(?int $obraId, ?int $almacenId, CarbonImmutable $desde): array
-    {
-        $buckets = [];
-
-        for ($i = 0; $i < 30; $i++) {
-            $dia = $desde->addDays($i);
-            $buckets[$dia->toDateString()] = [
-                'fecha' => $dia->toDateString(),
-                'ingreso' => 0.0,
-                'salida' => 0.0,
-            ];
-        }
-
-        try {
-            $filas = $this->kardexQuery($obraId, $almacenId)
-                ->where('k.created_at', '>=', $desde)
-                ->get(['k.cantidad', 'k.created_at']);
-
-            foreach ($filas as $fila) {
-                $clave = CarbonImmutable::parse($fila->created_at)->toDateString();
-
-                if (! isset($buckets[$clave])) {
-                    continue;
-                }
-
-                $cantidad = (float) $fila->cantidad;
-
-                if ($cantidad >= 0) {
-                    $buckets[$clave]['ingreso'] += $cantidad;
-                } else {
-                    $buckets[$clave]['salida'] += abs($cantidad);
-                }
-            }
-        } catch (\Throwable) {
-            // Serie vacía si el kardex no está disponible.
-        }
-
-        return array_values($buckets);
-    }
-
-    /**
-     * Reconstruye, hacia atrás desde el stock actual, cuántos SKUs estuvieron
-     * bajo el mínimo en cada uno de los últimos 30 días.
-     *
-     * @return list<int>
-     */
-    private function serieCriticos(?int $obraId, ?int $almacenId, CarbonImmutable $desde): array
-    {
-        $dias = 30;
-        $conteo = array_fill(0, $dias, 0);
-
-        try {
-            $stock = $this->stockQuery($obraId, $almacenId)->get([
-                's.almacen_id',
-                's.material_id',
-                's.cantidad',
-                's.cantidad_reservada',
-                's.stock_minimo',
-            ]);
-
-            $movimientos = $this->kardexQuery($obraId, $almacenId)
-                ->where('k.created_at', '>=', $desde)
-                ->get(['k.almacen_id', 'k.material_id', 'k.cantidad', 'k.created_at']);
-
-            $pares = [];
-
-            foreach ($stock as $fila) {
-                $clave = $fila->almacen_id.':'.$fila->material_id;
-                $pares[$clave] = [
-                    'actual' => (float) $fila->cantidad,
-                    'reservada' => (float) $fila->cantidad_reservada,
-                    'minimo' => (float) $fila->stock_minimo,
-                    'movimientos' => array_fill(0, $dias, 0.0),
-                    'neto' => 0.0,
-                ];
-            }
-
-            foreach ($movimientos as $fila) {
-                $clave = $fila->almacen_id.':'.$fila->material_id;
-
-                if (! isset($pares[$clave])) {
-                    continue;
-                }
-
-                $indice = (int) CarbonImmutable::parse($fila->created_at)->diffInDays($desde);
-                $indice = max(0, min($dias - 1, $indice));
-                $cantidad = (float) $fila->cantidad;
-
-                $pares[$clave]['movimientos'][$indice] += $cantidad;
-                $pares[$clave]['neto'] += $cantidad;
-            }
-
-            foreach ($pares as &$par) {
-                $par['stock'] = $par['actual'] - $par['neto'];
-            }
-            unset($par);
-
-            for ($dia = 0; $dia < $dias; $dia++) {
-                foreach ($pares as &$par) {
-                    $par['stock'] += $par['movimientos'][$dia];
-
-                    if ($par['minimo'] > $par['stock'] - $par['reservada']) {
-                        $conteo[$dia]++;
-                    }
-                }
-                unset($par);
-            }
-        } catch (\Throwable) {
-            return $conteo;
-        }
-
-        return $conteo;
-    }
-
-    /**
-     * @return list<int>
-     */
-    private function serieTransferencias(?int $obraId, ?int $almacenId, CarbonImmutable $desde): array
-    {
-        $dias = 30;
-        $conteo = array_fill(0, $dias, 0);
-
-        try {
-            $filas = DB::table('transferencias as t')
-                ->join('almacenes as a', 'a.id', '=', 't.almacen_destino_id')
-                ->where('t.created_at', '>=', $desde)
-                ->when($almacenId !== null, fn ($q) => $q->where('t.almacen_destino_id', $almacenId))
-                ->when($almacenId === null && $obraId !== null, fn ($q) => $q->where('a.obra_id', $obraId))
-                ->get(['t.created_at']);
-
-            foreach ($filas as $fila) {
-                $indice = (int) CarbonImmutable::parse($fila->created_at)->diffInDays($desde);
-                $indice = max(0, min($dias - 1, $indice));
-                $conteo[$indice]++;
-            }
-        } catch (\Throwable) {
-            return $conteo;
-        }
-
-        return $conteo;
-    }
-
-    /**
-     * @return list<array{almacenId: int, nombre: string, criticos: int, total: int, pctCritico: float}>
-     */
-    private function saludPorAlmacen(?int $obraId, ?int $almacenId): array
-    {
-        try {
-            $filas = $this->stockQuery($obraId, $almacenId)
-                ->selectRaw('a.id as almacen_id, a.nombre as nombre, COUNT(*) as total')
-                ->selectRaw('SUM(CASE WHEN (s.cantidad - s.cantidad_reservada) < s.stock_minimo THEN 1 ELSE 0 END) as criticos')
-                ->groupBy('a.id', 'a.nombre')
-                ->get();
-        } catch (\Throwable) {
-            return [];
-        }
-
-        return array_values($filas->map(function ($fila): array {
-            $total = (int) $fila->total;
-            $criticos = (int) $fila->criticos;
-
-            return [
-                'almacenId' => (int) $fila->almacen_id,
-                'nombre' => (string) $fila->nombre,
-                'criticos' => $criticos,
-                'total' => $total,
-                'pctCritico' => $total > 0 ? round(($criticos / $total) * 100, 1) : 0.0,
-            ];
-        })->sortByDesc('pctCritico')->values()->all());
     }
 }

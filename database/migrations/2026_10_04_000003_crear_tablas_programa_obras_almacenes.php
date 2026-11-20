@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('nombre', 160);
             $table->text('descripcion')->nullable();
             $table->string('entidad_contratante', 160)->nullable();
-            $table->string('estado', 20)->default('activo');
+            $table->string('estado', 20)->default('activa');
             $table->timestampsTz();
             $table->softDeletesTz();
         });
@@ -34,6 +34,11 @@ return new class extends Migration
             $table->decimal('avance_fisico_pct', 5, 2)->default(0);
             $table->decimal('presupuesto_base', 14, 2)->default(0);
             $table->foreignId('residente_id')->nullable()->constrained('usuarios');
+            $table->unsignedBigInteger('informe_final_id')->nullable();
+            $table->unsignedBigInteger('acta_recepcion_id')->nullable();
+            $table->foreignId('cerrado_por')->nullable()->constrained('usuarios');
+            $table->timestampTz('cerrado_en')->nullable();
+            $table->text('observaciones_cierre')->nullable();
             $table->timestampsTz();
             $table->softDeletesTz();
         });

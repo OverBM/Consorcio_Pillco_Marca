@@ -116,7 +116,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                         <Link
                             href="/panel"
                             aria-label="Ir al panel general"
-                            className="cpm-logo border-line bg-surface shadow-card rounded-pill group flex items-center gap-2 border px-2.5 py-1.5 transition-shadow hover:shadow-pop"
+                            className="cpm-logo border-line bg-surface shadow-card rounded-pill group hover:shadow-pop flex items-center gap-2 border px-2.5 py-1.5 transition-shadow"
                         >
                             <span className="bg-ink text-ink relative grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full text-white">
                                 <IconBrandMark size={20} />
@@ -164,7 +164,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                                             className="rounded-pill border-line bg-surface text-ink hover:bg-soft flex max-w-[45vw] items-center gap-1.5 border px-3 py-2 font-mono text-[11px] font-semibold transition-colors lg:max-w-none"
                                         >
                                             <span
-                                                className={`h-2 w-2 shrink-0 rounded-full text-exito ${
+                                                className={`text-exito h-2 w-2 shrink-0 rounded-full ${
                                                     obraActiva
                                                         ? 'cpm-indicator-ping bg-exito'
                                                         : 'bg-muted'

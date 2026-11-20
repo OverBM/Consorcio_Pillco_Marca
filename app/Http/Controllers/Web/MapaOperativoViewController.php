@@ -10,12 +10,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Web\Concerns\FiltraContextoOperativo;
 use App\Models\AlertaGeoespacial;
 use App\Models\Almacen;
-use App\Models\Despacho;
-use App\Models\DespachoPosicion;
 use App\Models\Material;
 use App\Models\Obra;
 use App\Models\StockAlmacen;
 use App\Models\Transferencia;
+use App\Models\TransferenciaPosicion;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -50,18 +49,17 @@ class MapaOperativoViewController extends Controller
             ->groupBy('material_id')
             ->map(fn ($filas): float => (float) $filas->max('stock_minimo'));
 
-        $despachos = Despacho::query()
+        $despachos = Transferencia::query()
             ->with([
-                'transferencia:id,codigo,almacen_origen_id,almacen_destino_id,estado,eta_min,distancia_m',
-                'transferencia.almacenDestino:id,latitud,longitud,nombre',
+                'almacenDestino:id,latitud,longitud,nombre',
                 'posiciones' => fn ($query) => $query->latest('capturada_en')->limit(1),
             ])
-            ->whereHas('transferencia', fn ($query) => $query->where('estado', 'en_transito'))
-            ->get();
+            ->where('estado', 'en_transito')
+            ->whereNotNull('despachado_por')
+            ->get(['id', 'codigo', 'almacen_origen_id', 'almacen_destino_id', 'estado', 'eta_min', 'distancia_m']);
 
         $transferencias = Transferencia::query()
             ->with([
-                'despacho:id,transferencia_id',
                 'almacenOrigen:id,nombre,ubicacion',
                 'almacenDestino:id,nombre,ubicacion',
             ])
@@ -70,8 +68,8 @@ class MapaOperativoViewController extends Controller
             ->get(['id', 'codigo', 'almacen_origen_id', 'almacen_destino_id', 'estado', 'eta_min']);
 
         $posicionesPorTransferencia = $despachos
-            ->mapWithKeys(fn (Despacho $despacho): array => [
-                $despacho->transferencia_id => $despacho->posiciones->first(),
+            ->mapWithKeys(fn (Transferencia $transferencia): array => [
+                $transferencia->id => $transferencia->posiciones->first(),
             ]);
 
         return Inertia::render('MapaOperativoPage', [
@@ -94,22 +92,22 @@ class MapaOperativoViewController extends Controller
                 $posicionesPorTransferencia->get($transferencia->id),
             ))->values(),
             'sugerenciasDb' => $this->redistribucion->sugerencias(null, null, 6),
-            'despachosDb' => $despachos->map(fn (Despacho $despacho): array => [
+            'despachosDb' => $despachos->map(fn (Transferencia $despacho): array => [
                 'id' => $despacho->id,
-                'codigo' => $despacho->transferencia?->codigo,
-                'transferenciaId' => $despacho->transferencia_id,
-                'etaMin' => $despacho->transferencia?->eta_min,
+                'codigo' => $despacho->codigo,
+                'transferenciaId' => $despacho->id,
+                'etaMin' => $despacho->eta_min,
                 'etaRestanteMin' => $this->etaDesdePosicion(
                     $despacho->posiciones->first(),
-                    $despacho->transferencia?->almacenDestino,
+                    $despacho->almacenDestino,
                 ),
-                'distanciaM' => $despacho->transferencia?->distancia_m,
+                'distanciaM' => $despacho->distancia_m,
                 'ultimaPosicion' => $despacho->posiciones->first()?->only([
                     'latitud', 'longitud', 'velocidad_kmh', 'capturada_en',
                 ]),
             ])->values(),
             'alertasGeoDb' => AlertaGeoespacial::query()
-                ->with('despacho.transferencia:id,codigo')
+                ->with('despacho')
                 ->where('estado', 'vigente')
                 ->latest('id')
                 ->limit(30)
@@ -122,7 +120,7 @@ class MapaOperativoViewController extends Controller
     /**
      * @return array<string, mixed>
      */
-    private function mapearRuta(Transferencia $transferencia, ?DespachoPosicion $posicion): array
+    private function mapearRuta(Transferencia $transferencia, ?TransferenciaPosicion $posicion): array
     {
         $destino = $transferencia->almacenDestino;
         $etaRestante = null;
@@ -154,7 +152,7 @@ class MapaOperativoViewController extends Controller
             'etaMin' => $transferencia->eta_min !== null ? (float) $transferencia->eta_min : null,
             'etaRestanteMin' => $etaRestante,
             'distanciaRestanteM' => $distanciaRestante,
-            'despachoId' => $transferencia->despacho?->id,
+            'despachoId' => $transferencia->id,
             'posicionActual' => $posicion !== null ? [
                 'lat' => (float) $posicion->latitud,
                 'lng' => (float) $posicion->longitud,
@@ -166,7 +164,7 @@ class MapaOperativoViewController extends Controller
         ];
     }
 
-    private function etaDesdePosicion(?DespachoPosicion $posicion, ?Almacen $destino): ?float
+    private function etaDesdePosicion(?TransferenciaPosicion $posicion, ?Almacen $destino): ?float
     {
         if ($posicion === null || $destino === null
             || $destino->latitud === null || $destino->longitud === null) {

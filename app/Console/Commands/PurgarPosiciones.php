@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\DespachoPosicion;
+use App\Models\TransferenciaPosicion;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -24,7 +24,7 @@ class PurgarPosiciones extends Command
             return self::FAILURE;
         }
 
-        $eliminadas = DespachoPosicion::query()
+        $eliminadas = TransferenciaPosicion::query()
             ->where('capturada_en', '<', now()->subDays($dias))
             ->delete();
 

@@ -17,15 +17,15 @@ negocio se ejecutan en un único despliegue Laravel. El único servicio separado
 es el **motor predictivo en Python (FastAPI)**, que funciona como servicio
 satélite interno y no como núcleo del sistema.
 
-| Característica | Implementación verificada |
-|---|---|
-| Estilo principal | Monolito modular (Laravel 13.17) |
-| Presentación | React 19 + Inertia.js 3 + Tailwind CSS 4 |
-| API | REST versionada en `/api/v1` (122 rutas expuestas) |
-| Persistencia | PostgreSQL 18.6 + PostGIS (104 tablas) |
-| Servicio satélite | FastAPI/uvicorn en `127.0.0.1:8001` |
-| Comunicación cliente-servidor | Props Inertia en navegación; JSON en la API |
-| Autenticación | Sesión web + token Bearer (`remember_token`) para API |
+| Característica                | Implementación verificada                             |
+| ----------------------------- | ----------------------------------------------------- |
+| Estilo principal              | Monolito modular (Laravel 13.17)                      |
+| Presentación                  | React 19 + Inertia.js 3 + Tailwind CSS 4              |
+| API                           | REST versionada en `/api/v1` (122 rutas expuestas)    |
+| Persistencia                  | PostgreSQL 18.6 + PostGIS (104 tablas)                |
+| Servicio satélite             | FastAPI/uvicorn en `127.0.0.1:8001`                   |
+| Comunicación cliente-servidor | Props Inertia en navegación; JSON en la API           |
+| Autenticación                 | Sesión web + token Bearer (`remember_token`) para API |
 
 ### Capas y componentes principales
 
@@ -53,19 +53,19 @@ satélite interno y no como núcleo del sistema.
 
 ### Módulos funcionales y responsabilidades
 
-| Módulo | Rutas principales | Responsabilidad |
-|---|---|---|
-| Acceso y seguridad | `/login`, `/registro`, `/admin/usuarios`, `/admin/solicitudes` | Autenticación por sesión, RBAC por rol/permiso, solicitudes de alta y auditoría |
-| Panel general | `/panel` | Consolidado de inventario, nivel de servicio, PMI y analítica |
-| Logística e inventario | `/stock`, `/recepcion`, `/solicitudes`, `/despachos`, `/transferencias`, `/inventario-fisico`, `/mermas` | Stock multi-almacén, kardex inmutable, reservas, despachos y mermas |
-| Compras y abastecimiento | `/compras/*`, proveedores, cotizaciones, órdenes, devoluciones | Requerimientos, comparativo de cotizaciones y órdenes de compra |
-| Proyectos y PMI | `/programa`, `/gestion-obra/*` | Partidas, cronograma/EVM, riesgos, cambios, cierre y liquidación |
-| Personal y SST | `/personal/*`, `/sst/*` | Asistencia con geocerca, planillas, capacitaciones, EPP e incidentes |
-| Calidad y ambiente | `/calidad/observaciones`, `/ambiente/*` | Observaciones técnicas, monitoreo ambiental y residuos |
-| Geolocalización | `/mapa-operativo`, `/api/v1/geo/*` | Geocodificación, rutas, geocercas y tracking de despachos |
-| Analítica predictiva | `/analitica`, `/api/v1/analitica/*` | Pronóstico de demanda, EOQ, alertas y redistribución |
-| Reportes | `/reportes` | Indicadores de negocio con filtros y exportación CSV |
-| Administración | `/admin/*` | Usuarios, parámetros, fases, auditoría y solicitudes de acceso |
+| Módulo                   | Rutas principales                                                                                        | Responsabilidad                                                                 |
+| ------------------------ | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Acceso y seguridad       | `/login`, `/registro`, `/admin/usuarios`, `/admin/solicitudes`                                           | Autenticación por sesión, RBAC por rol/permiso, solicitudes de alta y auditoría |
+| Panel general            | `/panel`                                                                                                 | Consolidado de inventario, nivel de servicio, PMI y analítica                   |
+| Logística e inventario   | `/stock`, `/recepcion`, `/solicitudes`, `/despachos`, `/transferencias`, `/inventario-fisico`, `/mermas` | Stock multi-almacén, kardex inmutable, reservas, despachos y mermas             |
+| Compras y abastecimiento | `/compras/*`, proveedores, cotizaciones, órdenes, devoluciones                                           | Requerimientos, comparativo de cotizaciones y órdenes de compra                 |
+| Proyectos y PMI          | `/programa`, `/gestion-obra/*`                                                                           | Partidas, cronograma/EVM, riesgos, cambios, cierre y liquidación                |
+| Personal y SST           | `/personal/*`, `/sst/*`                                                                                  | Asistencia con geocerca, planillas, capacitaciones, EPP e incidentes            |
+| Calidad y ambiente       | `/calidad/observaciones`, `/ambiente/*`                                                                  | Observaciones técnicas, monitoreo ambiental y residuos                          |
+| Geolocalización          | `/mapa-operativo`, `/api/v1/geo/*`                                                                       | Geocodificación, rutas, geocercas y tracking de despachos                       |
+| Analítica predictiva     | `/analitica`, `/api/v1/analitica/*`                                                                      | Pronóstico de demanda, EOQ, alertas y redistribución                            |
+| Reportes                 | `/reportes`                                                                                              | Indicadores de negocio con filtros y exportación CSV                            |
+| Administración           | `/admin/*`                                                                                               | Usuarios, parámetros, fases, auditoría y solicitudes de acceso                  |
 
 ### Comunicación entre componentes
 
@@ -96,13 +96,13 @@ satélite interno y no como núcleo del sistema.
 
 ### Integración con servicios externos
 
-| API o servicio | Funcionalidad | Información intercambiada | Justificación |
-|---|---|---|---|
-| OpenRouteService (ORS) | Geocodificación directa/inversa y rutas | Dirección, coordenadas, distancia y geometría | Ubicar obras, almacenes y calcular rutas logísticas |
-| OSRM | Ruteo alternativo | Coordenadas de origen/destino y ruta | Respaldo si ORS falla o agota presupuesto |
-| OpenStreetMap | Mapa base y enlace público | Tiles y coordenadas (bbox/marcador) | Visualización sin costo de licencia |
-| WhatsApp (`wa.me`) | Notificación saliente al proveedor | Teléfono y mensaje prellenado | Avisar sin contratar una API de mensajería |
-| Motor analítico FastAPI | Pronóstico y alertas | Payload JSON de inventario/consumo | Cálculo estadístico fuera de PHP |
+| API o servicio          | Funcionalidad                           | Información intercambiada                     | Justificación                                       |
+| ----------------------- | --------------------------------------- | --------------------------------------------- | --------------------------------------------------- |
+| OpenRouteService (ORS)  | Geocodificación directa/inversa y rutas | Dirección, coordenadas, distancia y geometría | Ubicar obras, almacenes y calcular rutas logísticas |
+| OSRM                    | Ruteo alternativo                       | Coordenadas de origen/destino y ruta          | Respaldo si ORS falla o agota presupuesto           |
+| OpenStreetMap           | Mapa base y enlace público              | Tiles y coordenadas (bbox/marcador)           | Visualización sin costo de licencia                 |
+| WhatsApp (`wa.me`)      | Notificación saliente al proveedor      | Teléfono y mensaje prellenado                 | Avisar sin contratar una API de mensajería          |
+| Motor analítico FastAPI | Pronóstico y alertas                    | Payload JSON de inventario/consumo            | Cálculo estadístico fuera de PHP                    |
 
 **Justificación de las ausencias:** no se integra una pasarela de pagos porque el
 sistema gestiona abastecimiento e inventario, no cobros en línea. El correo usa
@@ -179,17 +179,17 @@ sequenceDiagram
 
 ### Evidencias de la arquitectura
 
-| Evidencia | Ubicación / verificación |
-|---|---|
-| Estructura de capas | `app/Domain`, `app/Http/Controllers`, `resources/js` |
-| Rutas web y API | `php artisan route:list --except-vendor` → 179 rutas, 122 de `/api/v1` |
-| Módulos de dominio | `app/Domain/{Analitica,Excedentes,Geo,Inventario,Metricas,Optimization,Personal,Project,Proyectos}` |
-| Base de datos | `php artisan db:show` → PostgreSQL 18.6, 104 tablas |
+| Evidencia                  | Ubicación / verificación                                                                                                        |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Estructura de capas        | `app/Domain`, `app/Http/Controllers`, `resources/js`                                                                            |
+| Rutas web y API            | `php artisan route:list --except-vendor` → 179 rutas, 122 de `/api/v1`                                                          |
+| Módulos de dominio         | `app/Domain/{Analitica,Excedentes,Geo,Inventario,Metricas,Optimization,Personal,Project,Proyectos}`                             |
+| Base de datos              | `php artisan db:show` → PostgreSQL 18.6, 104 tablas                                                                             |
 | PostGIS y kardex inmutable | `database/migrations/2026_10_04_000001_habilitar_extension_postgis.php` y `..._000004_crear_tablas_materiales_stock_kardex.php` |
-| Transacciones de stock | `app/Domain/Inventario/StockService.php` (`DB::transaction`, `lockForUpdate`) |
-| APIs externas | `config/ruteo.php`, `app/Domain/Geo/Drivers/*`, `.env` (`ORS_API_KEY`) |
-| Integración analítica | `app/Domain/Analitica/AnaliticaClient.php`, `analytics/app/main.py` |
-| Evidencia de ejecución | `docs/evidencias/reportes-actual.png`, `docs/evidencias/modo-oscuro-actual.png`, `docs/evidencias/buscador-superposicion.png` |
+| Transacciones de stock     | `app/Domain/Inventario/StockService.php` (`DB::transaction`, `lockForUpdate`)                                                   |
+| APIs externas              | `config/ruteo.php`, `app/Domain/Geo/Drivers/*`, `.env` (`ORS_API_KEY`)                                                          |
+| Integración analítica      | `app/Domain/Analitica/AnaliticaClient.php`, `analytics/app/main.py`                                                             |
+| Evidencia de ejecución     | `docs/evidencias/reportes-actual.png`, `docs/evidencias/modo-oscuro-actual.png`, `docs/evidencias/buscador-superposicion.png`   |
 
 > **Nota de corrección:** el documento anterior `docs/01-arquitectura.md`
 > describía un despliegue separado `frontend/web:4200` + `backend/api:3000` con

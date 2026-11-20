@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Transferencia extends Model
 {
@@ -31,6 +30,15 @@ class Transferencia extends Model
         'creada_por',
         'aprobada_por',
         'aprobada_en',
+        'despachado_por',
+        'despachado_en',
+        'observaciones_despacho',
+        'recibido_por',
+        'recibida_en',
+        'firma_ruta',
+        'foto_ruta',
+        'hay_diferencias',
+        'observaciones_recepcion',
     ];
 
     protected $casts = [
@@ -39,6 +47,9 @@ class Transferencia extends Model
         'eta_min' => 'decimal:1',
         'puntaje' => 'decimal:4',
         'aprobada_en' => 'datetime',
+        'despachado_en' => 'datetime',
+        'recibida_en' => 'datetime',
+        'hay_diferencias' => 'boolean',
     ];
 
     public function almacenOrigen(): BelongsTo
@@ -53,7 +64,7 @@ class Transferencia extends Model
 
     public function solicitud(): BelongsTo
     {
-        return $this->belongsTo(SolicitudMaterial::class, 'solicitud_id');
+        return $this->belongsTo(Solicitud::class, 'solicitud_id');
     }
 
     public function excedente(): BelongsTo
@@ -71,18 +82,23 @@ class Transferencia extends Model
         return $this->belongsTo(Usuario::class, 'aprobada_por');
     }
 
+    public function despachador(): BelongsTo
+    {
+        return $this->belongsTo(Usuario::class, 'despachado_por');
+    }
+
+    public function receptor(): BelongsTo
+    {
+        return $this->belongsTo(Usuario::class, 'recibido_por');
+    }
+
     public function detalles(): HasMany
     {
         return $this->hasMany(TransferenciaDetalle::class, 'transferencia_id');
     }
 
-    public function despacho(): HasOne
+    public function posiciones(): HasMany
     {
-        return $this->hasOne(Despacho::class, 'transferencia_id');
-    }
-
-    public function confirmacionRecepcion(): HasOne
-    {
-        return $this->hasOne(ConfirmacionRecepcionDestino::class, 'transferencia_id');
+        return $this->hasMany(TransferenciaPosicion::class, 'transferencia_id');
     }
 }

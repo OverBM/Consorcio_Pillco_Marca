@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class ObservacionTecnica extends Model
 {
@@ -40,8 +40,13 @@ class ObservacionTecnica extends Model
         return $this->belongsTo(Usuario::class, 'responsable_id');
     }
 
-    public function evidencias(): HasMany
+    public function documentos(): MorphMany
     {
-        return $this->hasMany(ObservacionEvidencia::class, 'observacion_id');
+        return $this->morphMany(Documento::class, 'documentable');
+    }
+
+    public function evidencias(): MorphMany
+    {
+        return $this->documentos();
     }
 }

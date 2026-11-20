@@ -575,10 +575,7 @@ export default function ProveedoresPage({
                         )}
                     </div>
 
-                    <form
-                        onSubmit={enviarAbastecimiento}
-                        className="space-y-4"
-                    >
+                    <form onSubmit={enviarAbastecimiento} className="space-y-4">
                         <Field label="Material" required>
                             <select
                                 value={httpAbastecimiento.data.material_id}
@@ -590,7 +587,9 @@ export default function ProveedoresPage({
                                 }
                                 className="border-line bg-canvas text-ink w-full rounded-lg border px-3 py-1.5 text-xs"
                             >
-                                <option value="">Selecciona un material…</option>
+                                <option value="">
+                                    Selecciona un material…
+                                </option>
                                 {materialesDb.map((material) => (
                                     <option
                                         key={material.id}
@@ -628,9 +627,7 @@ export default function ProveedoresPage({
                                     type="number"
                                     min={0}
                                     step="0.01"
-                                    value={
-                                        httpAbastecimiento.data.costo_pedido
-                                    }
+                                    value={httpAbastecimiento.data.costo_pedido}
                                     onChange={(e) =>
                                         httpAbastecimiento.setData(
                                             'costo_pedido',
@@ -638,8 +635,7 @@ export default function ProveedoresPage({
                                         )
                                     }
                                     invalid={
-                                        !!httpAbastecimiento.errors
-                                            .costo_pedido
+                                        !!httpAbastecimiento.errors.costo_pedido
                                     }
                                 />
                             </Field>
@@ -664,9 +660,7 @@ export default function ProveedoresPage({
                         <label className="text-ink flex items-center gap-2">
                             <input
                                 type="checkbox"
-                                checked={
-                                    httpAbastecimiento.data.es_principal
-                                }
+                                checked={httpAbastecimiento.data.es_principal}
                                 onChange={(e) =>
                                     httpAbastecimiento.setData(
                                         'es_principal',
@@ -681,9 +675,7 @@ export default function ProveedoresPage({
                             <Button
                                 variant="secondary"
                                 type="button"
-                                onClick={() =>
-                                    setProveedorAbastecimiento(null)
-                                }
+                                onClick={() => setProveedorAbastecimiento(null)}
                             >
                                 Cerrar
                             </Button>

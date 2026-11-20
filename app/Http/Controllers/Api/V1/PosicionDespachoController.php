@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Api\V1;
 use App\Domain\Geo\Drivers\HaversineDriver;
 use App\Domain\Geo\Dto\Coordenada;
 use App\Http\Controllers\Controller;
-use App\Models\Despacho;
-use App\Models\DespachoPosicion;
+use App\Models\Transferencia;
+use App\Models\TransferenciaPosicion;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -20,7 +20,7 @@ class PosicionDespachoController extends Controller
 {
     public function __construct(private readonly HaversineDriver $haversine) {}
 
-    public function store(Request $request, Despacho $despacho): JsonResponse
+    public function store(Request $request, Transferencia $despacho): JsonResponse
     {
         if (! $this->estaEnRuta($despacho)) {
             return response()->json([
@@ -69,14 +69,14 @@ class PosicionDespachoController extends Controller
 
                 $uuid = (string) ($validado['uuid'] ?? Str::uuid());
 
-                if (DespachoPosicion::query()->where('uuid', $uuid)->exists()) {
+                if (TransferenciaPosicion::query()->where('uuid', $uuid)->exists()) {
                     $aceptadas[] = ['uuid' => $uuid, 'duplicado' => true];
 
                     continue;
                 }
 
-                $posicion = DespachoPosicion::create([
-                    'despacho_id' => $despacho->id,
+                $posicion = TransferenciaPosicion::create([
+                    'transferencia_id' => $despacho->id,
                     'latitud' => $validado['lat'],
                     'longitud' => $validado['lng'],
                     'precision_m' => $validado['precision_m'] ?? null,
@@ -105,14 +105,14 @@ class PosicionDespachoController extends Controller
         ], 201);
     }
 
-    public function index(Request $request, Despacho $despacho): JsonResponse
+    public function index(Request $request, Transferencia $despacho): JsonResponse
     {
         $desde = $request->filled('desde')
             ? Carbon::parse($request->input('desde'))
             : now()->subDay();
 
-        $posiciones = DespachoPosicion::query()
-            ->where('despacho_id', $despacho->id)
+        $posiciones = TransferenciaPosicion::query()
+            ->where('transferencia_id', $despacho->id)
             ->where('capturada_en', '>=', $desde)
             ->orderBy('capturada_en')
             ->limit(5000)
@@ -133,29 +133,26 @@ class PosicionDespachoController extends Controller
         ]);
     }
 
-    private function estaEnRuta(Despacho $despacho): bool
+    private function estaEnRuta(Transferencia $despacho): bool
     {
-        $despacho->loadMissing('transferencia.confirmacionRecepcion');
-
-        return $despacho->transferencia !== null
-            && $despacho->transferencia->estado === 'en_transito'
-            && $despacho->transferencia->confirmacionRecepcion === null;
+        return $despacho->estado === 'en_transito'
+            && $despacho->recibida_en === null;
     }
 
-    private function guardarGeografia(DespachoPosicion $posicion): void
+    private function guardarGeografia(TransferenciaPosicion $posicion): void
     {
         if (DB::getDriverName() !== 'pgsql') {
             return;
         }
 
         DB::update(
-            'UPDATE despacho_posiciones SET ubicacion = ST_SetSRID(ST_MakePoint(?, ?), 4326) WHERE id = ?',
+            'UPDATE transferencia_posiciones SET ubicacion = ST_SetSRID(ST_MakePoint(?, ?), 4326) WHERE id = ?',
             [(float) $posicion->longitud, (float) $posicion->latitud, $posicion->id],
         );
     }
 
     /**
-     * @param  Collection<int, DespachoPosicion>  $posiciones
+     * @param  Collection<int, TransferenciaPosicion>  $posiciones
      */
     private function distanciaRecorrida($posiciones): float
     {

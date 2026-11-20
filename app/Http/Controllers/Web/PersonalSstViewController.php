@@ -7,7 +7,6 @@ use App\Models\Adelanto;
 use App\Models\Asistencia;
 use App\Models\Auditoria;
 use App\Models\Capacitacion;
-use App\Models\EmpresaEors;
 use App\Models\EppAsignacion;
 use App\Models\Incidente;
 use App\Models\IndicadorAmbiental;
@@ -17,10 +16,12 @@ use App\Models\Obra;
 use App\Models\ObservacionTecnica;
 use App\Models\Partida;
 use App\Models\Planilla;
+use App\Models\Proveedor;
 use App\Models\Residuo;
 use App\Models\Rol;
 use App\Models\Trabajador;
 use App\Models\Usuario;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -55,11 +56,25 @@ class PersonalSstViewController extends Controller
         ],
     ];
 
+    /**
+     * @return Collection<int, Trabajador>
+     */
+    private function trabajadoresActivos()
+    {
+        return Trabajador::query()
+            ->with('persona:id,nombres')
+            ->where('trabajadores.activo', true)
+            ->join('personas', 'personas.id', '=', 'trabajadores.persona_id')
+            ->orderBy('personas.nombres')
+            ->select('trabajadores.*')
+            ->get();
+    }
+
     public function asistencia(): Response
     {
         $asistencias = Asistencia::with(['trabajador', 'obra'])->latest()->take(50)->get();
         $obras = Obra::all();
-        $trabajadores = Trabajador::where('activo', true)->orderBy('nombres')->get(['id', 'nombres', 'cargo', 'obra_id']);
+        $trabajadores = $this->trabajadoresActivos();
 
         return Inertia::render('AsistenciaPage', [
             'asistenciasDb' => $asistencias,
@@ -89,7 +104,7 @@ class PersonalSstViewController extends Controller
     public function incidentes(): Response
     {
         $incidentes = Incidente::with(['obra', 'trabajador'])->latest()->get();
-        $trabajadores = Trabajador::where('activo', true)->orderBy('nombres')->get(['id', 'nombres', 'cargo', 'obra_id']);
+        $trabajadores = $this->trabajadoresActivos();
 
         return Inertia::render('IncidentesPage', [
             'incidentesDb' => $incidentes,
@@ -100,7 +115,7 @@ class PersonalSstViewController extends Controller
     public function epp(): Response
     {
         $asignaciones = EppAsignacion::with(['trabajador', 'material', 'almacen'])->orderBy('entregado_en', 'desc')->get();
-        $trabajadores = Trabajador::where('activo', true)->orderBy('nombres')->get(['id', 'nombres', 'cargo', 'obra_id']);
+        $trabajadores = $this->trabajadoresActivos();
 
         return Inertia::render('EppPage', [
             'asignacionesDb' => $asignaciones,
@@ -130,8 +145,8 @@ class PersonalSstViewController extends Controller
 
     public function residuos(): Response
     {
-        $residuos = Residuo::with(['obra', 'almacen', 'material', 'eors'])->orderByDesc('id')->get();
-        $eors = EmpresaEors::orderBy('razon_social')->get();
+        $residuos = Residuo::with(['obra', 'almacen', 'material', 'proveedor'])->orderByDesc('id')->get();
+        $eors = Proveedor::where('tipo', 'eors')->orderBy('razon_social')->get();
 
         return Inertia::render('ResiduosPage', [
             'residuosDb' => $residuos,
@@ -209,19 +224,24 @@ class PersonalSstViewController extends Controller
 
     public function usuarios(): Response
     {
-        $usuarios = Usuario::with(['roles', 'obras'])->orderBy('name')->get()->map(fn ($u) => [
-            'id' => (string) $u->id,
-            'nombre' => $u->name ?? $u->email,
-            'email' => $u->email,
-            'dni' => $u->dni,
-            'telefono' => $u->telefono,
-            'rol' => $u->roles->first()?->nombre ?? 'Sin rol asignado',
-            'rol_codigo' => $u->roles->first()?->codigo,
-            'obra' => $u->obras->first()?->nombre ?? 'Todas las Obras',
-            'obra_id' => $u->obras->first()?->id,
-            'activo' => (bool) $u->activo,
-            'estado' => $u->activo ? 'activo' : 'inactivo',
-        ]);
+        $usuarios = Usuario::with(['persona', 'roles', 'obras'])
+            ->join('personas', 'personas.id', '=', 'usuarios.persona_id')
+            ->orderBy('personas.nombres')
+            ->select('usuarios.*')
+            ->get()
+            ->map(fn ($u) => [
+                'id' => (string) $u->id,
+                'nombre' => $u->name ?? $u->email,
+                'email' => $u->email,
+                'dni' => $u->dni,
+                'telefono' => $u->telefono,
+                'rol' => $u->roles->first()?->nombre ?? 'Sin rol asignado',
+                'rol_codigo' => $u->roles->first()?->codigo,
+                'obra' => $u->obras->first()?->nombre ?? 'Todas las Obras',
+                'obra_id' => $u->obras->first()?->id,
+                'activo' => (bool) $u->activo,
+                'estado' => $u->activo ? 'activo' : 'inactivo',
+            ]);
 
         $roles = Rol::orderBy('nombre')->get(['id', 'codigo', 'nombre'])->map(fn ($rol) => [
             'codigo' => $rol->codigo,
@@ -265,12 +285,14 @@ class PersonalSstViewController extends Controller
             ]);
 
         $usuarios = Usuario::query()
-            ->whereIn('id', Auditoria::query()->whereNotNull('usuario_id')->select('usuario_id'))
-            ->orderBy('name')
-            ->get(['id', 'name', 'email'])
+            ->with('persona:id,nombres')
+            ->join('personas', 'personas.id', '=', 'usuarios.persona_id')
+            ->whereIn('usuarios.id', Auditoria::query()->whereNotNull('usuario_id')->select('usuario_id'))
+            ->orderBy('personas.nombres')
+            ->get(['usuarios.id', 'usuarios.email', 'usuarios.persona_id'])
             ->map(fn (Usuario $usuario): array => [
                 'id' => (string) $usuario->id,
-                'nombre' => $usuario->name ?? $usuario->email,
+                'nombre' => $usuario->persona?->nombres ?? $usuario->email,
                 'email' => $usuario->email,
             ])
             ->values();

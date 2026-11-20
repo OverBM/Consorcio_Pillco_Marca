@@ -11,10 +11,8 @@ return new class extends Migration
     {
         Schema::create('trabajadores', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('usuario_id')->nullable()->unique()->constrained('usuarios');
+            $table->foreignId('persona_id')->unique()->constrained('personas');
             $table->foreignId('obra_id')->nullable()->constrained('obras');
-            $table->string('dni', 12)->unique();
-            $table->string('nombres', 160);
             $table->string('cargo', 80)->nullable();
             $table->foreignId('frente_id')->nullable()->constrained('frentes_trabajo');
             $table->boolean('activo')->default(true);
@@ -96,31 +94,6 @@ return new class extends Migration
             $table->timestampsTz();
         });
 
-        Schema::create('capacitacion_participantes', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('capacitacion_id')->constrained('capacitaciones')->cascadeOnDelete();
-            $table->foreignId('usuario_id')->nullable()->constrained('usuarios');
-            $table->foreignId('trabajador_id')->nullable()->constrained('trabajadores');
-            $table->decimal('nota', 4, 1)->nullable();
-            $table->smallInteger('intento')->default(1);
-            $table->boolean('aprobado')->nullable();
-            $table->string('certificado_ruta', 255)->nullable();
-        });
-
-        if (DB::getDriverName() === 'pgsql') {
-            DB::statement('ALTER TABLE capacitacion_participantes ADD CONSTRAINT chk_participante_usuario_o_trabajador CHECK (usuario_id IS NOT NULL OR trabajador_id IS NOT NULL)');
-        }
-
-        Schema::create('certificaciones_usuario', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('usuario_id')->constrained('usuarios');
-            $table->foreignId('capacitacion_id')->constrained('capacitaciones');
-            $table->string('tipo', 15)->default('sistema_almacen');
-            $table->date('vigente_desde')->useCurrent();
-            $table->date('vigente_hasta')->nullable();
-            $table->timestampsTz();
-        });
-
         Schema::create('incidentes', function (Blueprint $table) {
             $table->id();
             $table->string('codigo', 30)->unique();
@@ -148,30 +121,6 @@ return new class extends Migration
             });
         }
 
-        Schema::create('acciones_correctivas', function (Blueprint $table) {
-            $table->id();
-            $table->string('origen_tipo', 20);
-            $table->unsignedBigInteger('origen_id');
-            $table->text('descripcion');
-            $table->string('tipo', 12);
-            $table->foreignId('responsable_id')->nullable()->constrained('usuarios');
-            $table->date('fecha_limite')->nullable();
-            $table->string('estado', 12)->default('pendiente');
-            $table->timestampsTz();
-        });
-
-        Schema::create('epp_solicitudes', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('trabajador_id')->constrained('trabajadores');
-            $table->foreignId('almacen_id')->constrained('almacenes');
-            $table->foreignId('material_id')->constrained('materiales');
-            $table->decimal('cantidad', 10, 2)->default(1);
-            $table->foreignId('autorizada_por')->nullable()->constrained('usuarios');
-            $table->string('estado', 15)->default('solicitada');
-            $table->foreignId('requerimiento_id')->nullable()->constrained('requerimientos');
-            $table->timestampsTz();
-        });
-
         Schema::create('epp_asignaciones', function (Blueprint $table) {
             $table->id();
             $table->foreignId('trabajador_id')->constrained('trabajadores');
@@ -189,11 +138,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('epp_asignaciones');
-        Schema::dropIfExists('epp_solicitudes');
-        Schema::dropIfExists('acciones_correctivas');
         Schema::dropIfExists('incidentes');
-        Schema::dropIfExists('certificaciones_usuario');
-        Schema::dropIfExists('capacitacion_participantes');
         Schema::dropIfExists('capacitaciones');
         Schema::dropIfExists('planilla_detalles');
         Schema::dropIfExists('planillas');

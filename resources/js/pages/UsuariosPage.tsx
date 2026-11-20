@@ -74,8 +74,7 @@ export default function UsuariosPage({
     const obras = catalogos?.obras ?? [];
 
     const filas = useMemo(
-        () =>
-            (usuariosDb ?? []).map((u) => ({ ...u, id: String(u.id) })),
+        () => (usuariosDb ?? []).map((u) => ({ ...u, id: String(u.id) })),
         [usuariosDb],
     );
 

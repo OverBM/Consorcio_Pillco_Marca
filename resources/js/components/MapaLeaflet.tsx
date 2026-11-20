@@ -110,13 +110,11 @@ function puntoMedioTramo(
     for (let indice = 1; indice < puntos.length; indice += 1) {
         const anterior = puntos[indice - 1];
         const actual = puntos[indice];
-        const dx = (actual.lng - anterior.lng) * Math.cos(
-            ((actual.lat + anterior.lat) / 2) * (Math.PI / 180),
-        );
+        const dx =
+            (actual.lng - anterior.lng) *
+            Math.cos(((actual.lat + anterior.lat) / 2) * (Math.PI / 180));
         const dy = actual.lat - anterior.lat;
-        distancias.push(
-            distancias[indice - 1] + Math.sqrt(dx * dx + dy * dy),
-        );
+        distancias.push(distancias[indice - 1] + Math.sqrt(dx * dx + dy * dy));
     }
 
     const mitad = distancias[distancias.length - 1] / 2;
@@ -132,11 +130,9 @@ function puntoMedioTramo(
 
         return [
             puntos[indice - 1].lat +
-                (puntos[indice].lat - puntos[indice - 1].lat) *
-                    proporcion,
+                (puntos[indice].lat - puntos[indice - 1].lat) * proporcion,
             puntos[indice - 1].lng +
-                (puntos[indice].lng - puntos[indice - 1].lng) *
-                    proporcion,
+                (puntos[indice].lng - puntos[indice - 1].lng) * proporcion,
         ];
     }
 
@@ -369,7 +365,10 @@ export function MapaLeaflet({
                                 lat: ruta.posicionActual.lat,
                                 lng: ruta.posicionActual.lng,
                             },
-                            { lat: almDestino.coords.lat, lng: almDestino.coords.lng },
+                            {
+                                lat: almDestino.coords.lat,
+                                lng: almDestino.coords.lng,
+                            },
                         ]
                       : [];
 
@@ -406,10 +405,9 @@ export function MapaLeaflet({
 
             // La etiqueta se ubica en el centro real del tramo A→B, no al
             // inicio ni en un vértice arbitrario de la geometría.
-            const puntoEtiqueta =
-                puntoMedioTramo(
-                    latlngs.map(([lat, lng]) => ({ lat, lng })),
-                ) ?? [almDestino.coords.lat, almDestino.coords.lng];
+            const puntoEtiqueta = puntoMedioTramo(
+                latlngs.map(([lat, lng]) => ({ lat, lng })),
+            ) ?? [almDestino.coords.lat, almDestino.coords.lng];
 
             const eta = ruta.etaRestanteMin ?? ruta.etaMin;
 
@@ -447,13 +445,21 @@ export function MapaLeaflet({
             );
 
             truckMarker.on('click', () => {
-                if (ruta.despachoId !== null && ruta.despachoId !== undefined && onDespachoClick) {
+                if (
+                    ruta.despachoId !== null &&
+                    ruta.despachoId !== undefined &&
+                    onDespachoClick
+                ) {
                     onDespachoClick(ruta.despachoId);
                 }
             });
 
             polyline.on('click', () => {
-                if (ruta.despachoId !== null && ruta.despachoId !== undefined && onDespachoClick) {
+                if (
+                    ruta.despachoId !== null &&
+                    ruta.despachoId !== undefined &&
+                    onDespachoClick
+                ) {
                     onDespachoClick(ruta.despachoId);
                 }
             });

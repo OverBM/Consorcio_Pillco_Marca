@@ -16,7 +16,9 @@ return [
     */
 
     'ssr' => [
-        'enabled' => true,
+        // Deshabilitado por defecto: el proyecto no mantiene un proceso SSR.
+        // Si se habilita, ejecutar `npm run build:ssr` y mantener el servidor SSR.
+        'enabled' => (bool) env('INERTIA_SSR_ENABLED', false),
         'url' => 'http://127.0.0.1:13714',
         // 'bundle' => base_path('bootstrap/ssr/ssr.mjs'),
 

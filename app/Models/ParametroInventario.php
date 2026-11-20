@@ -15,8 +15,8 @@ class ParametroInventario extends Model
         'almacen_id',
         'material_id',
         'eoq',
-        'stock_seguridad',
-        'punto_reorden',
+        'stock_seguridad_calculado',
+        'punto_reorden_calculado',
         'costo_total_relevante',
         'demanda_media_diaria',
         'demanda_anual',
@@ -38,8 +38,8 @@ class ParametroInventario extends Model
     {
         return [
             'eoq' => 'decimal:3',
-            'stock_seguridad' => 'decimal:3',
-            'punto_reorden' => 'decimal:3',
+            'stock_seguridad_calculado' => 'decimal:3',
+            'punto_reorden_calculado' => 'decimal:3',
             'costo_total_relevante' => 'decimal:3',
             'demanda_media_diaria' => 'decimal:4',
             'demanda_anual' => 'decimal:4',

@@ -35,12 +35,8 @@ describe('design-system/PanelHero', () => {
             />,
         );
 
-        expect(
-            screen.getByText(/Sin datos de analítica todavía/),
-        ).toBeTruthy();
-        expect(
-            screen.getByText(/Sin requerimientos urgentes/),
-        ).toBeTruthy();
+        expect(screen.getByText(/Sin datos de analítica todavía/)).toBeTruthy();
+        expect(screen.getByText(/Sin requerimientos urgentes/)).toBeTruthy();
     });
 });
 

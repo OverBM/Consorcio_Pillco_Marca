@@ -9,6 +9,7 @@ use App\Models\Obra;
 use App\Models\Usuario;
 use App\Support\NotificacionesFeed;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -56,7 +57,7 @@ class HandleInertiaRequests extends Middleware
                 'almacen_activo_id' => $request->session()->get('almacen_activo_id'),
             ],
             'catalogos' => [
-                'obras' => fn () => Obra::query()
+                'obras' => fn () => $this->remember('catalogo_obras', 300, fn () => Obra::query()
                     ->orderBy('nombre')
                     ->get(['id', 'codigo', 'nombre', 'distrito', 'estado', 'avance_fisico_pct'])
                     ->map(fn (Obra $obra) => [
@@ -67,8 +68,8 @@ class HandleInertiaRequests extends Middleware
                         'estado' => $obra->estado,
                         'avance_fisico_pct' => $obra->avance_fisico_pct,
                     ])
-                    ->values(),
-                'almacenes' => fn () => Almacen::query()
+                    ->values()->all()),
+                'almacenes' => fn () => $this->remember('catalogo_almacenes', 300, fn () => Almacen::query()
                     ->orderBy('nombre')
                     ->get(['id', 'codigo', 'nombre', 'obra_id'])
                     ->map(fn (Almacen $almacen) => [
@@ -77,8 +78,8 @@ class HandleInertiaRequests extends Middleware
                         'nombre' => $almacen->nombre,
                         'obra_id' => $almacen->obra_id,
                     ])
-                    ->values(),
-                'materiales' => fn () => Material::query()
+                    ->values()->all()),
+                'materiales' => fn () => $this->remember('catalogo_materiales', 300, fn () => Material::query()
                     ->with('unidad:id,codigo,nombre')
                     ->orderBy('nombre')
                     ->get(['id', 'codigo', 'nombre', 'unidad_id'])
@@ -92,7 +93,7 @@ class HandleInertiaRequests extends Middleware
                             'nombre' => $material->unidad->nombre,
                         ] : null,
                     ])
-                    ->values(),
+                    ->values()->all()),
             ],
         ];
     }
@@ -110,7 +111,11 @@ class HandleInertiaRequests extends Middleware
             return ['items' => [], 'sin_leer' => 0];
         }
 
-        return NotificacionesFeed::paraUsuario($usuario);
+        return $this->remember(
+            "notificaciones_feed_{$usuario->id}",
+            30,
+            fn (): array => NotificacionesFeed::paraUsuario($usuario),
+        );
     }
 
     /**
@@ -126,27 +131,43 @@ class HandleInertiaRequests extends Middleware
             return null;
         }
 
-        $usuario->loadMissing(['roles.permisos', 'obras', 'almacenes']);
+        $version = (int) Cache::get('usuarios_payload_version', 1);
 
-        return [
-            'id' => $usuario->id,
-            'name' => $usuario->name,
-            'email' => $usuario->email,
-            'dni' => $usuario->dni,
-            'roles' => $usuario->roles
-                ->map(fn ($rol) => ['codigo' => $rol->codigo, 'nombre' => $rol->nombre])
-                ->values(),
-            'permisos' => $usuario->roles
-                ->flatMap(fn ($rol) => $rol->permisos)
-                ->pluck('codigo')
-                ->unique()
-                ->values(),
-            'obras' => $usuario->obras
-                ->map(fn ($obra) => ['id' => $obra->id, 'codigo' => $obra->codigo, 'nombre' => $obra->nombre])
-                ->values(),
-            'almacenes' => $usuario->almacenes
-                ->map(fn ($almacen) => ['id' => $almacen->id, 'codigo' => $almacen->codigo, 'nombre' => $almacen->nombre])
-                ->values(),
-        ];
+        return $this->remember("usuario_payload_{$usuario->id}_v{$version}", 60, function () use ($usuario): array {
+            $usuario->loadMissing(['roles.permisos', 'obras', 'almacenes']);
+
+            return [
+                'id' => $usuario->id,
+                'name' => $usuario->name,
+                'email' => $usuario->email,
+                'dni' => $usuario->dni,
+                'roles' => $usuario->roles
+                    ->map(fn ($rol) => ['codigo' => $rol->codigo, 'nombre' => $rol->nombre])
+                    ->values()->all(),
+                'permisos' => $usuario->roles
+                    ->flatMap(fn ($rol) => $rol->permisos)
+                    ->pluck('codigo')
+                    ->unique()
+                    ->values()->all(),
+                'obras' => $usuario->obras
+                    ->map(fn ($obra) => ['id' => $obra->id, 'codigo' => $obra->codigo, 'nombre' => $obra->nombre])
+                    ->values()->all(),
+                'almacenes' => $usuario->almacenes
+                    ->map(fn ($almacen) => ['id' => $almacen->id, 'codigo' => $almacen->codigo, 'nombre' => $almacen->nombre])
+                    ->values()->all(),
+            ];
+        });
+    }
+
+    /**
+     * Cachea un valor compartido sin contaminar la suite de pruebas.
+     */
+    private function remember(string $key, int $segundos, \Closure $callback): mixed
+    {
+        if (app()->runningUnitTests()) {
+            return $callback();
+        }
+
+        return Cache::remember($key, $segundos, $callback);
     }
 }

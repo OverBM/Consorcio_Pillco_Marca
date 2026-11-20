@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Web\Concerns\FiltraContextoOperativo;
 use App\Models\Almacen;
-use App\Models\Despacho;
 use App\Models\InventarioFisico;
 use App\Models\Merma;
 use App\Models\OrdenCompra;
@@ -85,12 +84,24 @@ class LogisticaViewController extends Controller
 
     public function despachos(): Response
     {
-        $despachos = Despacho::with([
-            'transferencia.almacenOrigen',
-            'transferencia.almacenDestino',
-            'transferencia.detalles.material.unidadMedida',
+        $despachos = Transferencia::with([
+            'almacenOrigen',
+            'almacenDestino',
+            'detalles.material.unidadMedida',
             'despachador',
-        ])->orderBy('id', 'desc')->get();
+        ])
+            ->whereNotNull('despachado_por')
+            ->orderBy('id', 'desc')
+            ->get()
+            ->map(fn (Transferencia $transferencia): array => [
+                'id' => $transferencia->id,
+                'transferencia_id' => $transferencia->id,
+                'despachado_por' => $transferencia->despachado_por,
+                'despachado_en' => $transferencia->despachado_en,
+                'observaciones' => $transferencia->observaciones_despacho,
+                'despachador' => $transferencia->despachador,
+                'transferencia' => $transferencia,
+            ]);
 
         $transferenciasAprobadas = Transferencia::with([
             'almacenOrigen',
@@ -98,7 +109,7 @@ class LogisticaViewController extends Controller
             'detalles.material.unidadMedida',
         ])
             ->where('estado', 'aprobada')
-            ->whereDoesntHave('despacho')
+            ->whereNull('despachado_por')
             ->orderBy('id', 'desc')
             ->get();
 

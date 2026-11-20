@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use App\Domain\Inventario\StockService;
 use App\Http\Controllers\Controller;
 use App\Models\Auditoria;
-use App\Models\ConfirmacionRecepcionDestino;
 use App\Models\Transferencia;
 use App\Models\TransferenciaDetalle;
 use App\Support\NotificadorOperativo;
@@ -31,8 +30,8 @@ class TransferenciaController extends Controller
             'creador',
             'aprobador',
             'detalles.material.unidadMedida',
-            'despacho',
-            'confirmacionRecepcion',
+            'despachador',
+            'receptor',
         ])->orderBy('id', 'desc');
 
         if ($request->filled('estado')) {
@@ -173,14 +172,13 @@ class TransferenciaController extends Controller
         $usuarioId = $request->user()?->id ?? 1;
 
         DB::transaction(function () use ($transferencia, $validated, $usuarioId) {
-            ConfirmacionRecepcionDestino::create([
-                'transferencia_id' => $transferencia->id,
-                'almacenero_id' => $usuarioId,
+            $transferencia->update([
+                'recibido_por' => $usuarioId,
                 'recibida_en' => now(),
                 'firma_ruta' => $validated['firma_ruta'] ?? null,
                 'foto_ruta' => $validated['foto_ruta'] ?? null,
                 'hay_diferencias' => $validated['hay_diferencias'] ?? false,
-                'observaciones' => $validated['observaciones'] ?? null,
+                'observaciones_recepcion' => $validated['observaciones'] ?? null,
             ]);
 
             foreach ($validated['detalles'] as $itemDetalle) {
@@ -208,7 +206,7 @@ class TransferenciaController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Transferencia recibida conforme e inventario actualizado en destino.',
-            'data' => $transferencia->fresh()->load(['confirmacionRecepcion', 'detalles']),
+            'data' => $transferencia->fresh()->load(['detalles']),
         ]);
     }
 }

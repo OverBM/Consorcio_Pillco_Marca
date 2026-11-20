@@ -110,18 +110,10 @@ return new class extends Migration
 
             $table->unique(['obra_id', 'codigo']);
         });
-
-        Schema::create('partida_materiales', function (Blueprint $table) {
-            $table->foreignId('partida_id')->constrained('partidas')->cascadeOnDelete();
-            $table->foreignId('material_id')->constrained('materiales');
-            $table->decimal('cantidad_por_unidad', 14, 5);
-            $table->primary(['partida_id', 'material_id']);
-        });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('partida_materiales');
         Schema::dropIfExists('partidas');
         if (DB::getDriverName() === 'pgsql') {
             DB::statement('DROP TRIGGER IF EXISTS trg_kardex_inmutable ON kardex');

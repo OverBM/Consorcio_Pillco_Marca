@@ -12,7 +12,7 @@ class SolicitudMaterialDetalle extends Model
 
     public $timestamps = false;
 
-    protected $table = 'solicitud_material_detalles';
+    protected $table = 'solicitud_detalles';
 
     protected $fillable = [
         'solicitud_id',

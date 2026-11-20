@@ -3,12 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\Almacen;
-use App\Models\ConfirmacionRecepcionDestino;
-use App\Models\Despacho;
-use App\Models\DespachoPosicion;
 use App\Models\Obra;
 use App\Models\Programa;
 use App\Models\Transferencia;
+use App\Models\TransferenciaPosicion;
 use App\Models\Usuario;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
@@ -18,7 +16,7 @@ class TrackingDespachosTest extends TestCase
 {
     use RefreshDatabase;
 
-    private Despacho $despacho;
+    private Transferencia $despacho;
 
     private Transferencia $transferencia;
 
@@ -74,11 +72,11 @@ class TrackingDespachosTest extends TestCase
             'eta_min' => 25,
         ]);
 
-        $this->despacho = Despacho::create([
-            'transferencia_id' => $this->transferencia->id,
+        $this->transferencia->update([
             'despachado_por' => $usuario->id,
             'despachado_en' => now()->subMinutes(5),
         ]);
+        $this->despacho = $this->transferencia->fresh();
     }
 
     public function test_registra_una_posicion(): void
@@ -98,7 +96,7 @@ class TrackingDespachosTest extends TestCase
             ->assertJsonPath('success', true)
             ->assertJsonCount(1, 'data.aceptadas');
 
-        $this->assertSame(1, DespachoPosicion::query()->count());
+        $this->assertSame(1, TransferenciaPosicion::query()->count());
     }
 
     public function test_uuid_duplicado_es_idempotente(): void
@@ -118,7 +116,7 @@ class TrackingDespachosTest extends TestCase
         ])->assertStatus(201)
             ->assertJsonPath('data.aceptadas.0.duplicado', true);
 
-        $this->assertSame(1, DespachoPosicion::query()->count());
+        $this->assertSame(1, TransferenciaPosicion::query()->count());
     }
 
     public function test_rechaza_posicion_antigua(): void
@@ -135,16 +133,15 @@ class TrackingDespachosTest extends TestCase
         $respuesta->assertStatus(201)
             ->assertJsonCount(1, 'data.rechazadas');
 
-        $this->assertSame(0, DespachoPosicion::query()->count());
+        $this->assertSame(0, TransferenciaPosicion::query()->count());
     }
 
     public function test_rechaza_despacho_recepcionado(): void
     {
         $this->transferencia->update(['estado' => 'recibida']);
 
-        ConfirmacionRecepcionDestino::create([
-            'transferencia_id' => $this->transferencia->id,
-            'almacenero_id' => $this->despacho->despachado_por,
+        $this->transferencia->update([
+            'recibido_por' => $this->despacho->despachado_por,
             'recibida_en' => now(),
             'hay_diferencias' => false,
         ]);
@@ -175,8 +172,8 @@ class TrackingDespachosTest extends TestCase
 
     public function test_consulta_recorrido_y_ultima_posicion(): void
     {
-        DespachoPosicion::create([
-            'despacho_id' => $this->despacho->id,
+        TransferenciaPosicion::create([
+            'transferencia_id' => $this->despacho->id,
             'latitud' => -12.065,
             'longitud' => -75.205,
             'uuid' => (string) Str::uuid(),
@@ -192,8 +189,8 @@ class TrackingDespachosTest extends TestCase
 
     public function test_purga_posiciones_vencidas(): void
     {
-        DespachoPosicion::create([
-            'despacho_id' => $this->despacho->id,
+        TransferenciaPosicion::create([
+            'transferencia_id' => $this->despacho->id,
             'latitud' => -12.065,
             'longitud' => -75.205,
             'uuid' => (string) Str::uuid(),
@@ -203,13 +200,13 @@ class TrackingDespachosTest extends TestCase
 
         $this->artisan('tracking:purgar')->assertSuccessful();
 
-        $this->assertSame(0, DespachoPosicion::query()->count());
+        $this->assertSame(0, TransferenciaPosicion::query()->count());
     }
 
     public function test_genera_alerta_por_perdida_de_senal(): void
     {
-        DespachoPosicion::create([
-            'despacho_id' => $this->despacho->id,
+        TransferenciaPosicion::create([
+            'transferencia_id' => $this->despacho->id,
             'latitud' => -12.065,
             'longitud' => -75.205,
             'velocidad_kmh' => 30,
@@ -220,8 +217,8 @@ class TrackingDespachosTest extends TestCase
 
         $this->artisan('tracking:evaluar-alertas')->assertSuccessful();
 
-        $this->assertDatabaseHas('alertas_geoespaciales', [
-            'despacho_id' => $this->despacho->id,
+        $this->assertDatabaseHas('alertas', [
+            'transferencia_id' => $this->despacho->id,
             'tipo' => 'sin_senal_tracking',
         ]);
     }

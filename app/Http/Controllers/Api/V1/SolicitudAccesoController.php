@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Persona;
 use App\Models\Rol;
 use App\Models\SolicitudAcceso;
 use App\Models\Usuario;
@@ -31,7 +32,7 @@ class SolicitudAccesoController extends Controller
             return $this->respuestaError('Ya existe una cuenta con el correo de esta solicitud.');
         }
 
-        if ($solicitud->dni && Usuario::withTrashed()->where('dni', $solicitud->dni)->exists()) {
+        if ($solicitud->dni && Persona::withTrashed()->where('dni', $solicitud->dni)->exists()) {
             return $this->respuestaError('Ya existe una cuenta con el DNI de esta solicitud.');
         }
 
@@ -54,6 +55,7 @@ class SolicitudAccesoController extends Controller
             ]);
 
             $usuario->roles()->sync([$rol->id]);
+            Rol::invalidarUsuarios();
 
             $solicitud->update([
                 'estado' => SolicitudAcceso::ESTADO_APROBADA,

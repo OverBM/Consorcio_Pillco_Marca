@@ -36,3 +36,62 @@ jobs:
 
       - name: Run CI Checks
         run: composer ci:check
+
+  schema-pgsql:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgis/postgis:18-3.6
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: consorcio_pillcomarca
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_pgsql, pgsql
+          tools: composer:v2
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          sed -i 's/^DB_CONNECTION=.*/DB_CONNECTION=pgsql/' .env
+          sed -i 's/^DB_HOST=.*/DB_HOST=127.0.0.1/' .env
+          sed -i 's/^DB_PORT=.*/DB_PORT=5432/' .env
+          sed -i 's/^DB_DATABASE=.*/DB_DATABASE=consorcio_pillcomarca/' .env
+          sed -i 's/^DB_USERNAME=.*/DB_USERNAME=postgres/' .env
+          sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=postgres/' .env
+          sed -i 's/^DB_URL=.*/DB_URL=/' .env
+
+      - name: Test migrations from scratch
+        run: |
+          mv database/schema/pgsql-schema.sql database/schema/pgsql-schema.sql.bak
+          php artisan migrate:fresh --seed --force
+          php artisan db:seed --class=DemoProduccionSeeder --force
+          php artisan db:seed --class=DemoProduccionSeeder --force
+          php artisan test --configuration=phpunit.pgsql.xml --compact tests/Feature/EsquemaConsolidadoTest.php tests/Feature/EstadoCatalogoTest.php
+
+      - name: Test baseline load
+        run: |
+          mv database/schema/pgsql-schema.sql.bak database/schema/pgsql-schema.sql
+          php artisan migrate:fresh --force

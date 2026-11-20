@@ -19,10 +19,7 @@ describe('E2E-03 Registro y validación de proveedores', () => {
             .find('input')
             .clear()
             .type(ruc);
-        cy.contains('label', 'Razón Social')
-            .find('input')
-            .clear()
-            .type(razon);
+        cy.contains('label', 'Razón Social').find('input').clear().type(razon);
         cy.contains('label', 'Contacto comercial')
             .find('input')
             .clear()

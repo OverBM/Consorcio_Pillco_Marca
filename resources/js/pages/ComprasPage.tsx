@@ -5,10 +5,7 @@ import { Link } from '@inertiajs/react';
 import { PageHeader } from '../components/PageHeader';
 import { Card } from '../components/ui';
 import { KpiTile } from '../design-system/KpiTile';
-import {
-    MiniBarChart,
-    type BarraModulo,
-} from '../design-system/MiniBarChart';
+import { MiniBarChart, type BarraModulo } from '../design-system/MiniBarChart';
 import {
     IconBoxes,
     IconFileText,

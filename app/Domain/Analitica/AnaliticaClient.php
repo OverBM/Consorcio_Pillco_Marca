@@ -20,6 +20,8 @@ class AnaliticaClient
         $baseUrl = rtrim((string) config('analytics.base_url'), '/');
         $token = (string) config('analytics.token');
 
+        $this->esperarMotor($baseUrl);
+
         $response = Http::withHeaders(['X-Internal-Token' => $token])
             ->timeout((int) config('analytics.timeout'))
             ->retry((int) config('analytics.retries'), 250, throw: false)
@@ -51,5 +53,33 @@ class AnaliticaClient
         } catch (\Throwable) {
             return false;
         }
+    }
+
+    /**
+     * Espera a que el motor termine de arrancar antes del primer pipeline.
+     */
+    private function esperarMotor(string $baseUrl): void
+    {
+        if (app()->runningUnitTests()) {
+            return;
+        }
+
+        $limite = microtime(true) + max(1, (int) config('analytics.startup_wait', 20));
+
+        do {
+            try {
+                if (Http::timeout(2)->get("{$baseUrl}/health")->successful()) {
+                    return;
+                }
+            } catch (\Throwable) {
+                // El motor todavía no escucha; se reintenta.
+            }
+
+            usleep(500_000);
+        } while (microtime(true) < $limite);
+
+        throw new RuntimeException(
+            'El motor predictivo no está disponible. Inicia el servicio de analítica o revisa ANALYTICS_BASE_URL.'
+        );
     }
 }

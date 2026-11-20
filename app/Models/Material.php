@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Cache;
 
 class Material extends Model
 {
@@ -15,6 +16,13 @@ class Material extends Model
     use SoftDeletes;
 
     protected $table = 'materiales';
+
+    protected static function booted(): void
+    {
+        static::saved(fn () => Cache::forget('catalogo_materiales'));
+        static::deleted(fn () => Cache::forget('catalogo_materiales'));
+        static::restored(fn () => Cache::forget('catalogo_materiales'));
+    }
 
     protected $fillable = [
         'codigo',

@@ -4,6 +4,7 @@ namespace App\Domain\Project;
 
 use App\Models\Obra;
 use App\Models\Valorizacion;
+use Illuminate\Support\Collection;
 
 class EvmProjectService
 {
@@ -14,63 +15,20 @@ class EvmProjectService
      */
     public function calcularEvmObra(Obra|int $obra): array
     {
-        $obra = is_int($obra) ? Obra::with(['partidas', 'almacenes'])->find($obra) : $obra;
+        $obra = is_int($obra) ? Obra::find($obra) : $obra;
 
         if (! $obra) {
             return $this->evmDefault();
         }
 
-        $bac = (float) ($obra->presupuesto_base ?? 1850000.0);
-        $pctAvanceReal = (float) ($obra->avance_fisico_pct ?? 65.0) / 100.0;
+        $valores = $this->valoresAprobados([$obra->id])->get($obra->id);
 
-        // Suma de valorizaciones reales aprobadas o costo incurrido
-        $valPlanificado = (float) Valorizacion::where('obra_id', $obra->id)
-            ->where('estado', 'aprobada')
-            ->sum('valor_planificado');
-
-        $valGanado = (float) Valorizacion::where('obra_id', $obra->id)
-            ->where('estado', 'aprobada')
-            ->sum('valor_ganado');
-
-        $valCostoReal = (float) Valorizacion::where('obra_id', $obra->id)
-            ->where('estado', 'aprobada')
-            ->sum('costo_real');
-
-        // 1. Métricas base EVM
-        $pv = $valPlanificado > 0 ? round($valPlanificado, 2) : round($bac * min(1.0, $pctAvanceReal + 0.05), 2);
-        $ev = $valGanado > 0 ? round($valGanado, 2) : round($bac * $pctAvanceReal, 2);
-        $ac = $valCostoReal > 0 ? round($valCostoReal, 2) : round($ev * 0.96, 2);
-
-        // 2. Variaciones
-        $cv = round($ev - $ac, 2); // Cost Variance
-        $sv = round($ev - $pv, 2); // Schedule Variance
-
-        // 3. Índices de Desempeño
-        $cpi = $ac > 0 ? round($ev / $ac, 2) : 1.0; // Cost Performance Index
-        $spi = $pv > 0 ? round($ev / $pv, 2) : 1.0; // Schedule Performance Index
-
-        // 4. Proyecciones
-        $eac = $cpi > 0 ? round($bac / $cpi, 2) : $bac; // Estimate at Completion
-        $etc = max(0.0, round($eac - $ac, 2));         // Estimate to Complete
-        $vac = round($bac - $eac, 2);                  // Variance at Completion
-
-        return [
-            'obraId' => (string) $obra->id,
-            'nombre' => $obra->nombre,
-            'bac' => $bac,
-            'pv' => $pv,
-            'ev' => $ev,
-            'ac' => $ac,
-            'cv' => $cv,
-            'sv' => $sv,
-            'cpi' => $cpi,
-            'spi' => $spi,
-            'eac' => $eac,
-            'etc' => $etc,
-            'vac' => $vac,
-            'saludCosto' => $cpi >= 1.0 ? 'optimo' : ($cpi >= 0.90 ? 'alerta' : 'critico'),
-            'saludTiempo' => $spi >= 1.0 ? 'optimo' : ($spi >= 0.90 ? 'alerta' : 'critico'),
-        ];
+        return $this->evmConValores(
+            $obra,
+            (float) ($valores->pv ?? 0),
+            (float) ($valores->ev ?? 0),
+            (float) ($valores->ac ?? 0),
+        );
     }
 
     /**
@@ -86,13 +44,23 @@ class EvmProjectService
             return $this->evmDefault();
         }
 
+        $valores = $this->valoresAprobados($obras->pluck('id')->all());
+
         $totalBac = 0.0;
         $totalPv = 0.0;
         $totalEv = 0.0;
         $totalAc = 0.0;
 
         foreach ($obras as $obra) {
-            $evmData = $this->calcularEvmObra($obra->id);
+            $fila = $valores->get($obra->id);
+
+            $evmData = $this->evmConValores(
+                $obra,
+                (float) ($fila->pv ?? 0),
+                (float) ($fila->ev ?? 0),
+                (float) ($fila->ac ?? 0),
+            );
+
             $totalBac += $evmData['bac'];
             $totalPv += $evmData['pv'];
             $totalEv += $evmData['ev'];
@@ -116,6 +84,69 @@ class EvmProjectService
         ];
     }
 
+    /**
+     * @param  list<int|string>  $obraIds
+     * @return Collection<int|string, object>
+     */
+    private function valoresAprobados(array $obraIds): Collection
+    {
+        return Valorizacion::query()
+            ->whereIn('obra_id', $obraIds)
+            ->where('estado', 'aprobada')
+            ->selectRaw('obra_id, COALESCE(SUM(valor_planificado), 0) as pv, COALESCE(SUM(valor_ganado), 0) as ev, COALESCE(SUM(costo_real), 0) as ac')
+            ->groupBy('obra_id')
+            ->get()
+            ->keyBy('obra_id');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function evmConValores(Obra $obra, float $valPlanificado, float $valGanado, float $valCostoReal): array
+    {
+        $bac = (float) ($obra->presupuesto_base ?? 1850000.0);
+        $pctAvanceReal = (float) ($obra->avance_fisico_pct ?? 65.0) / 100.0;
+
+        // 1. Métricas base EVM
+        $pv = $valPlanificado > 0 ? round($valPlanificado, 2) : round($bac * min(1.0, $pctAvanceReal + 0.05), 2);
+        $ev = $valGanado > 0 ? round($valGanado, 2) : round($bac * $pctAvanceReal, 2);
+        $ac = $valCostoReal > 0 ? round($valCostoReal, 2) : round($ev * 0.96, 2);
+
+        // 2. Variaciones
+        $cv = round($ev - $ac, 2);
+        $sv = round($ev - $pv, 2);
+
+        // 3. Índices de desempeño
+        $cpi = $ac > 0 ? round($ev / $ac, 2) : 1.0;
+        $spi = $pv > 0 ? round($ev / $pv, 2) : 1.0;
+
+        // 4. Proyecciones
+        $eac = $cpi > 0 ? round($bac / $cpi, 2) : $bac;
+        $etc = max(0.0, round($eac - $ac, 2));
+        $vac = round($bac - $eac, 2);
+
+        return [
+            'obraId' => (string) $obra->id,
+            'nombre' => $obra->nombre,
+            'bac' => $bac,
+            'pv' => $pv,
+            'ev' => $ev,
+            'ac' => $ac,
+            'cv' => $cv,
+            'sv' => $sv,
+            'cpi' => $cpi,
+            'spi' => $spi,
+            'eac' => $eac,
+            'etc' => $etc,
+            'vac' => $vac,
+            'saludCosto' => $cpi >= 1.0 ? 'optimo' : ($cpi >= 0.90 ? 'alerta' : 'critico'),
+            'saludTiempo' => $spi >= 1.0 ? 'optimo' : ($spi >= 0.90 ? 'alerta' : 'critico'),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
     protected function evmDefault(): array
     {
         return [

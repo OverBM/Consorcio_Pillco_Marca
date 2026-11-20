@@ -51,7 +51,9 @@ describe('CalidadPage', () => {
         expect(screen.getAllByText('CONTROL_INTERNO')[0]).toBeTruthy();
         expect(screen.getAllByText('Falta encofrado en losa')[0]).toBeTruthy();
         expect(screen.getAllByText('Ana Torres')[0]).toBeTruthy();
-        expect(screen.getAllByText(formatFechaCalendario('2026-02-15'))[0]).toBeTruthy();
+        expect(
+            screen.getAllByText(formatFechaCalendario('2026-02-15'))[0],
+        ).toBeTruthy();
         expect(screen.getAllByText('Pendiente')[0]).toBeTruthy();
         expect(screen.getAllByText('Actualizado')[0]).toBeTruthy();
         expect(screen.getAllByText('NOTIFICADA')[0]).toBeTruthy();
@@ -150,4 +152,3 @@ describe('CalidadPage', () => {
         ).toBeTruthy();
     });
 });
-

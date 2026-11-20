@@ -5,4 +5,5 @@ return [
     'token' => env('ANALYTICS_API_TOKEN', 'dev-token'),
     'timeout' => (int) env('ANALYTICS_TIMEOUT', 120),
     'retries' => (int) env('ANALYTICS_RETRIES', 3),
+    'startup_wait' => (int) env('ANALYTICS_STARTUP_WAIT', 20),
 ];

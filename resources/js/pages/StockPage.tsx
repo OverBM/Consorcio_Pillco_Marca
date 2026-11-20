@@ -532,6 +532,18 @@ export default function StockPage({
                                                             c.cantidadReservada,
                                                         )}
                                                     </p>
+                                                    <p>
+                                                        Seguridad (aplicado):{' '}
+                                                        {formatCantidad(
+                                                            c.stockSeguridad,
+                                                        )}
+                                                    </p>
+                                                    <p>
+                                                        Reorden (aplicado):{' '}
+                                                        {formatCantidad(
+                                                            c.puntoReorden,
+                                                        )}
+                                                    </p>
                                                 </div>
                                                 <button
                                                     type="button"

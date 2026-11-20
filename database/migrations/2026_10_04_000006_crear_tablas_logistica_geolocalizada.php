@@ -9,62 +9,6 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('solicitudes_material', function (Blueprint $table) {
-            $table->id();
-            $table->string('codigo', 30)->unique();
-            $table->foreignId('obra_id')->constrained('obras');
-            $table->foreignId('almacen_id')->constrained('almacenes');
-            $table->foreignId('solicitante_id')->constrained('usuarios');
-            $table->foreignId('frente_id')->nullable()->constrained('frentes_trabajo');
-            $table->foreignId('partida_id')->nullable()->constrained('partidas');
-            $table->boolean('urgente')->default(false);
-            $table->string('estado', 20)->default('registrada');
-            $table->timestampTz('atendida_en')->nullable();
-            $table->timestampsTz();
-
-            $table->index(['estado', 'urgente'], 'idx_sol_estado');
-        });
-
-        if (DB::getDriverName() === 'pgsql') {
-            DB::statement('ALTER TABLE solicitudes_material ADD COLUMN ubicacion_solicitud geography(Point,4326)');
-        } else {
-            Schema::table('solicitudes_material', function (Blueprint $table) {
-                $table->text('ubicacion_solicitud')->nullable();
-            });
-        }
-
-        Schema::create('solicitud_material_detalles', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('solicitud_id')->constrained('solicitudes_material')->cascadeOnDelete();
-            $table->foreignId('material_id')->constrained('materiales');
-            $table->decimal('cantidad', 14, 3);
-            $table->decimal('cantidad_atendida', 14, 3)->default(0);
-        });
-
-        Schema::create('busquedas_multialmacen', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('solicitud_id')->nullable()->constrained('solicitudes_material');
-            $table->foreignId('material_id')->constrained('materiales');
-            $table->foreignId('almacen_solicitante_id')->constrained('almacenes');
-            $table->decimal('cantidad_requerida', 14, 3);
-            $table->integer('radio_m');
-            $table->jsonb('pesos');
-            $table->foreignId('ejecutada_por')->nullable()->constrained('usuarios');
-            $table->timestampTz('created_at')->useCurrent();
-        });
-
-        Schema::create('busqueda_resultados', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('busqueda_id')->constrained('busquedas_multialmacen')->cascadeOnDelete();
-            $table->foreignId('almacen_candidato_id')->constrained('almacenes');
-            $table->decimal('cantidad_disponible', 14, 3);
-            $table->decimal('distancia_m', 12, 1);
-            $table->decimal('eta_min', 8, 1)->nullable();
-            $table->decimal('puntaje', 8, 4);
-            $table->smallInteger('posicion');
-            $table->boolean('elegido')->default(false);
-        });
-
         Schema::create('excedentes_detectados', function (Blueprint $table) {
             $table->id();
             $table->foreignId('obra_origen_id')->constrained('obras');
@@ -82,7 +26,7 @@ return new class extends Migration
             $table->string('codigo', 30)->unique();
             $table->foreignId('almacen_origen_id')->constrained('almacenes');
             $table->foreignId('almacen_destino_id')->constrained('almacenes');
-            $table->foreignId('solicitud_id')->nullable()->constrained('solicitudes_material');
+            $table->foreignId('solicitud_id')->nullable()->constrained('solicitudes');
             $table->foreignId('excedente_id')->nullable()->constrained('excedentes_detectados');
             $table->string('motivo', 25);
             $table->string('estado', 25)->default('sugerida');
@@ -93,10 +37,31 @@ return new class extends Migration
             $table->foreignId('creada_por')->nullable()->constrained('usuarios');
             $table->foreignId('aprobada_por')->nullable()->constrained('usuarios');
             $table->timestampTz('aprobada_en')->nullable();
+            $table->foreignId('despachado_por')->nullable()->constrained('usuarios');
+            $table->timestampTz('despachado_en')->nullable();
+            $table->text('observaciones_despacho')->nullable();
+            $table->foreignId('recibido_por')->nullable()->constrained('usuarios');
+            $table->timestampTz('recibida_en')->nullable();
+            $table->string('firma_ruta', 255)->nullable();
+            $table->string('foto_ruta', 255)->nullable();
+            $table->boolean('hay_diferencias')->default(false);
+            $table->text('observaciones_recepcion')->nullable();
             $table->timestampsTz();
 
             $table->index('estado', 'idx_transf_estado');
         });
+
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE transferencias ADD COLUMN ubicacion_despacho geography(Point,4326)');
+            DB::statement('ALTER TABLE transferencias ADD COLUMN ubicacion_recepcion geography(Point,4326)');
+            DB::statement('CREATE INDEX idx_transferencias_ubicacion_despacho ON transferencias USING GIST (ubicacion_despacho)');
+            DB::statement('CREATE INDEX idx_transferencias_ubicacion_recepcion ON transferencias USING GIST (ubicacion_recepcion)');
+        } else {
+            Schema::table('transferencias', function (Blueprint $table) {
+                $table->text('ubicacion_despacho')->nullable();
+                $table->text('ubicacion_recepcion')->nullable();
+            });
+        }
 
         if (DB::getDriverName() === 'pgsql') {
             DB::statement('ALTER TABLE transferencias ADD CONSTRAINT chk_almacenes_distintos CHECK (almacen_origen_id <> almacen_destino_id)');
@@ -112,43 +77,6 @@ return new class extends Migration
             $table->decimal('cantidad_despachada', 14, 3)->nullable();
             $table->decimal('cantidad_recibida', 14, 3)->nullable();
         });
-
-        Schema::create('despachos', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('transferencia_id')->unique()->constrained('transferencias');
-            $table->foreignId('despachado_por')->constrained('usuarios');
-            $table->timestampTz('despachado_en')->useCurrent();
-            $table->text('observaciones')->nullable();
-            $table->timestampsTz();
-        });
-
-        if (DB::getDriverName() === 'pgsql') {
-            DB::statement('ALTER TABLE despachos ADD COLUMN ubicacion_despacho geography(Point,4326)');
-        } else {
-            Schema::table('despachos', function (Blueprint $table) {
-                $table->text('ubicacion_despacho')->nullable();
-            });
-        }
-
-        Schema::create('confirmaciones_recepcion_destino', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('transferencia_id')->unique()->constrained('transferencias');
-            $table->foreignId('almacenero_id')->constrained('usuarios');
-            $table->timestampTz('recibida_en')->useCurrent();
-            $table->string('firma_ruta', 255)->nullable();
-            $table->string('foto_ruta', 255)->nullable();
-            $table->boolean('hay_diferencias')->default(false);
-            $table->text('observaciones')->nullable();
-            $table->timestampsTz();
-        });
-
-        if (DB::getDriverName() === 'pgsql') {
-            DB::statement('ALTER TABLE confirmaciones_recepcion_destino ADD COLUMN ubicacion_recepcion geography(Point,4326)');
-        } else {
-            Schema::table('confirmaciones_recepcion_destino', function (Blueprint $table) {
-                $table->text('ubicacion_recepcion')->nullable();
-            });
-        }
 
         Schema::create('mermas', function (Blueprint $table) {
             $table->id();
@@ -208,17 +136,11 @@ return new class extends Migration
         Schema::dropIfExists('inventario_fisico_detalles');
         Schema::dropIfExists('inventarios_fisicos');
         Schema::dropIfExists('mermas');
-        Schema::dropIfExists('confirmaciones_recepcion_destino');
-        Schema::dropIfExists('despachos');
         Schema::dropIfExists('transferencia_detalles');
         if (DB::getDriverName() === 'pgsql') {
             DB::statement('ALTER TABLE transportes DROP CONSTRAINT IF EXISTS fk_transporte_transf');
         }
         Schema::dropIfExists('transferencias');
         Schema::dropIfExists('excedentes_detectados');
-        Schema::dropIfExists('busqueda_resultados');
-        Schema::dropIfExists('busquedas_multialmacen');
-        Schema::dropIfExists('solicitud_material_detalles');
-        Schema::dropIfExists('solicitudes_material');
     }
 };

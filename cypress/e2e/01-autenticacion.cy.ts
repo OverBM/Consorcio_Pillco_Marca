@@ -5,14 +5,12 @@ describe('E2E-01 Autenticación de usuarios', () => {
         cy.fixture('usuarios').then((usuarios) => {
             cy.visit('/login');
             cy.get('#login-email').clear().type(usuarios.invalido.email);
-            cy.get('#login-password')
-                .clear()
-                .type(usuarios.invalido.password);
+            cy.get('#login-password').clear().type(usuarios.invalido.password);
             cy.contains('button', 'Ingresar al Panel').click();
 
-            cy.contains(
-                'Las credenciales ingresadas son incorrectas',
-            ).should('be.visible');
+            cy.contains('Las credenciales ingresadas son incorrectas').should(
+                'be.visible',
+            );
             cy.url().should('include', '/login');
             cy.screenshot('E2E-01.1-credenciales-invalidas');
         });

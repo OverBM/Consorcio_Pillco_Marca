@@ -7,33 +7,33 @@
 
 ## 2.1. Identificación de las tecnologías
 
-| Componente | Tecnología utilizada | Versión verificada | Propósito |
-|---|---|---|---|
-| Frontend | React + TypeScript | React 19.2 / TS 5.7.2 | Construcción de la interfaz de usuario (42 páginas) |
-| Framework frontend | Inertia.js | `@inertiajs/react` 3.x | Comunicación SPA sin API manual, props del servidor |
-| Estilos | Tailwind CSS | 4.1.11 | Design system, modo claro/oscuro y responsive |
-| Backend | PHP | 8.5.5 (composer exige ^8.3) | Implementación de la lógica de negocio |
-| Framework backend | Laravel | 13.30.1 | Estructuración, routing, ORM, seguridad y scheduler |
-| Puente full-stack | Inertia Laravel | 3.3.3 | Renderizado de páginas y props diferidos |
-| Tipado de rutas | Laravel Wayfinder | 0.1.14 | Funciones TypeScript generadas desde controladores |
-| Base de datos | PostgreSQL + PostGIS | 18.6 / PostGIS 3.7 | Almacenamiento relacional y datos geográficos |
-| Acceso a datos | Eloquent + Query Builder | Laravel 13 | Modelos, relaciones, transacciones y consultas |
-| Servicio analítico | Python + FastAPI | Python 3.12 / FastAPI 0.115.6 | Pronóstico, EOQ y alertas |
-| Servidor analítico | uvicorn | 0.34.0 | Exposición del motor en `127.0.0.1:8001` |
-| Librerías analíticas | pandas / numpy / statsmodels | 2.2.3 / 2.2.1 / 0.14.4 | Series temporales y estadística |
-| Entorno de desarrollo | OpenCode + VS Code compatible | — | Edición, agentes y ejecución de tareas |
-| Runtime JS | Node.js | 24.15.0 (CI: 22) | Build, pruebas y tooling |
-| Bundler | Vite / vite-plus | Vite 8 / vite-plus 0.3.0 | Compilación de assets y HMR |
-| Control de versiones | Git + GitHub | — | Gestión de cambios y repositorio remoto |
-| Servidor local | `php artisan serve` | Laravel 13 | Ejecución en `127.0.0.1:8000` |
-| CI | GitHub Actions | `tests.yml` | Integración continua en push/PR a `main` |
-| Automatización de pruebas | Cypress | 16.2.1 | Pruebas E2E sobre la aplicación real |
-| Pruebas backend | Pest + PHPUnit | 5.1.4 / 13.3.2 | Pruebas de feature y unitarias |
-| Pruebas frontend | Vitest + Testing Library | Vitest 4.1.11 | Pruebas de componentes y utilidades |
-| Cobertura | Xdebug + V8 | Xdebug 3.5.3 / `@vitest/coverage-v8` | Reportes `coverage.xml` y `coverage/lcov.info` |
-| Análisis de calidad | SonarCloud (SonarQube SaaS) | Scanner `@sonar/scan` | Evaluación estática, Quality Gate y métricas |
-| Formato / lint | Pint + ESLint (vite-plus) | Pint 1.27 | Estilo consistente de PHP y TS |
-| Tipado estático | Larastan / PHPStan | 3.9 | Análisis estático de PHP |
+| Componente                | Tecnología utilizada          | Versión verificada                   | Propósito                                           |
+| ------------------------- | ----------------------------- | ------------------------------------ | --------------------------------------------------- |
+| Frontend                  | React + TypeScript            | React 19.2 / TS 5.7.2                | Construcción de la interfaz de usuario (42 páginas) |
+| Framework frontend        | Inertia.js                    | `@inertiajs/react` 3.x               | Comunicación SPA sin API manual, props del servidor |
+| Estilos                   | Tailwind CSS                  | 4.1.11                               | Design system, modo claro/oscuro y responsive       |
+| Backend                   | PHP                           | 8.5.5 (composer exige ^8.3)          | Implementación de la lógica de negocio              |
+| Framework backend         | Laravel                       | 13.30.1                              | Estructuración, routing, ORM, seguridad y scheduler |
+| Puente full-stack         | Inertia Laravel               | 3.3.3                                | Renderizado de páginas y props diferidos            |
+| Tipado de rutas           | Laravel Wayfinder             | 0.1.14                               | Funciones TypeScript generadas desde controladores  |
+| Base de datos             | PostgreSQL + PostGIS          | 18.6 / PostGIS 3.7                   | Almacenamiento relacional y datos geográficos       |
+| Acceso a datos            | Eloquent + Query Builder      | Laravel 13                           | Modelos, relaciones, transacciones y consultas      |
+| Servicio analítico        | Python + FastAPI              | Python 3.12 / FastAPI 0.115.6        | Pronóstico, EOQ y alertas                           |
+| Servidor analítico        | uvicorn                       | 0.34.0                               | Exposición del motor en `127.0.0.1:8001`            |
+| Librerías analíticas      | pandas / numpy / statsmodels  | 2.2.3 / 2.2.1 / 0.14.4               | Series temporales y estadística                     |
+| Entorno de desarrollo     | OpenCode + VS Code compatible | —                                    | Edición, agentes y ejecución de tareas              |
+| Runtime JS                | Node.js                       | 24.15.0 (CI: 22)                     | Build, pruebas y tooling                            |
+| Bundler                   | Vite / vite-plus              | Vite 8 / vite-plus 0.3.0             | Compilación de assets y HMR                         |
+| Control de versiones      | Git + GitHub                  | —                                    | Gestión de cambios y repositorio remoto             |
+| Servidor local            | `php artisan serve`           | Laravel 13                           | Ejecución en `127.0.0.1:8000`                       |
+| CI                        | GitHub Actions                | `tests.yml`                          | Integración continua en push/PR a `main`            |
+| Automatización de pruebas | Cypress                       | 16.2.1                               | Pruebas E2E sobre la aplicación real                |
+| Pruebas backend           | Pest + PHPUnit                | 5.1.4 / 13.3.2                       | Pruebas de feature y unitarias                      |
+| Pruebas frontend          | Vitest + Testing Library      | Vitest 4.1.11                        | Pruebas de componentes y utilidades                 |
+| Cobertura                 | Xdebug + V8                   | Xdebug 3.5.3 / `@vitest/coverage-v8` | Reportes `coverage.xml` y `coverage/lcov.info`      |
+| Análisis de calidad       | SonarCloud (SonarQube SaaS)   | Scanner `@sonar/scan`                | Evaluación estática, Quality Gate y métricas        |
+| Formato / lint            | Pint + ESLint (vite-plus)     | Pint 1.27                            | Estilo consistente de PHP y TS                      |
+| Tipado estático           | Larastan / PHPStan            | 3.9                                  | Análisis estático de PHP                            |
 
 > **Sobre SonarQube:** la rúbrica menciona SonarQube. Se utiliza
 > **SonarCloud**, el servicio en la nube del mismo motor SonarQube. El proyecto
@@ -215,19 +215,19 @@ SonarCloud y el workflow de GitHub Actions son la puerta de calidad.
 
 ### Evidencias de la arquitectura tecnológica
 
-| Evidencia | Ubicación / comando |
-|---|---|
-| Versiones backend | `composer show laravel/framework inertiajs/inertia-laravel pestphp/pest` |
-| Versiones frontend | `package.json` (React 19.2, Vite 8, Tailwind 4, Cypress 16.2.1) |
-| Runtime | `php -v` → 8.5.5; `node -v` → 24.15.0 |
-| Base de datos | `php artisan db:show` → PostgreSQL 18.6, 104 tablas; PostGIS 3.7 |
-| Configuración de build | `vite.config.ts`, `tsconfig.json` |
-| Configuración de pruebas | `phpunit.xml`, `cypress.config.ts`, `vite.config.ts` (test) |
-| Análisis de calidad | `sonar-project.properties`, `sonar-scan-output-7.txt` |
-| CI | `.github/workflows/tests.yml` |
-| Aplicación en ejecución | `docs/evidencias/reportes-actual.png`, `docs/evidencias/modo-oscuro-actual.png` |
-| Cobertura | `coverage.xml`, `coverage/lcov.info`, `phpunit-report.xml` |
-| Entorno de desarrollo | `opencode.json`, `AGENTS.md`, `.editorconfig`, `.specsmd/`, `docs/evidencias/entorno-desarrollo.txt` |
+| Evidencia                | Ubicación / comando                                                                                  |
+| ------------------------ | ---------------------------------------------------------------------------------------------------- |
+| Versiones backend        | `composer show laravel/framework inertiajs/inertia-laravel pestphp/pest`                             |
+| Versiones frontend       | `package.json` (React 19.2, Vite 8, Tailwind 4, Cypress 16.2.1)                                      |
+| Runtime                  | `php -v` → 8.5.5; `node -v` → 24.15.0                                                                |
+| Base de datos            | `php artisan db:show` → PostgreSQL 18.6, 104 tablas; PostGIS 3.7                                     |
+| Configuración de build   | `vite.config.ts`, `tsconfig.json`                                                                    |
+| Configuración de pruebas | `phpunit.xml`, `cypress.config.ts`, `vite.config.ts` (test)                                          |
+| Análisis de calidad      | `sonar-project.properties`, `sonar-scan-output-7.txt`                                                |
+| CI                       | `.github/workflows/tests.yml`                                                                        |
+| Aplicación en ejecución  | `docs/evidencias/reportes-actual.png`, `docs/evidencias/modo-oscuro-actual.png`                      |
+| Cobertura                | `coverage.xml`, `coverage/lcov.info`, `phpunit-report.xml`                                           |
+| Entorno de desarrollo    | `opencode.json`, `AGENTS.md`, `.editorconfig`, `.specsmd/`, `docs/evidencias/entorno-desarrollo.txt` |
 
 > **Nota:** las capturas del IDE y del servidor en ejecución se adjuntan en
 > `docs/evidencias/`. Si se requiere una captura actualizada, ejecutar

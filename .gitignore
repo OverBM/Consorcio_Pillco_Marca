@@ -83,6 +83,12 @@ htmlcov/
 # Artefactos locales de Inertia y del navegador
 /storage/inertia-devtools/
 
+# Respaldos y perfiles generados en local
+*.dump
+*.dump.gz
+*.cpuprofile
+/analytics/.hypothesis/
+
 # Herramientas locales de IA / especificaciones
 /.freebuff
 /.specsmd

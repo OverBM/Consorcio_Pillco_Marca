@@ -26,13 +26,15 @@ class EjecutarAnalitica extends Command
         AnaliticaClient $client,
         PersistenciaAnaliticaService $persistencia,
     ): int {
-        $lock = Cache::lock('analitica:ejecutar', 3600);
+        $lock = Cache::lock('analitica:ejecutar', 300);
 
         if (! $this->option('force') && ! $lock->get()) {
             $this->error('Ya hay una ejecución de analítica en curso.');
 
             return self::FAILURE;
         }
+
+        EjecucionAnalitica::marcarExpiradas(5);
 
         $inicio = now();
         $ejecucion = EjecucionAnalitica::create([

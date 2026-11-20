@@ -60,7 +60,7 @@ class AnaliticaController extends Controller
             ->when($request->filled('tipo'), fn ($q) => $q->where('tipo', $request->input('tipo')))
             ->when($request->filled('almacen_id'), fn ($q) => $q->where('almacen_id', $request->integer('almacen_id')))
             ->orderByRaw("CASE severidad WHEN 'critica' THEN 1 WHEN 'alta' THEN 2 WHEN 'media' THEN 3 ELSE 4 END")
-            ->orderBy('fecha_estimada');
+            ->ordenarPorFechaEstimada();
 
         return $this->paginar($query->paginate($request->integer('per_page', 25)));
     }
@@ -83,9 +83,7 @@ class AnaliticaController extends Controller
                     ->where('severidad', 'critica')
                     ->count(),
                 'quiebres_7d' => AlertaAbastecimiento::query()
-                    ->where('estado', 'vigente')
-                    ->where('tipo', 'quiebre_proyectado')
-                    ->whereDate('fecha_estimada', '<=', now()->addDays(7)->toDateString())
+                    ->quiebresHasta(now()->addDays(7)->toDateString())
                     ->count(),
                 'ultima_ejecucion' => $ultima,
                 'cuota_ruteo' => $this->cuotaRuteo->hoy(),
@@ -108,6 +106,8 @@ class AnaliticaController extends Controller
 
     public function ejecuciones(): JsonResponse
     {
+        EjecucionAnalitica::marcarExpiradas(5);
+
         return response()->json([
             'success' => true,
             'data' => EjecucionAnalitica::query()->latest('inicio')->limit(30)->get(),
@@ -119,6 +119,8 @@ class AnaliticaController extends Controller
      */
     public function ejecutar(): JsonResponse
     {
+        set_time_limit(120);
+
         try {
             $codigo = Artisan::call('analitica:ejecutar', [
                 '--origen' => 'manual',

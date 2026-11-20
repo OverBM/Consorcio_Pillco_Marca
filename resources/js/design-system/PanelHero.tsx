@@ -1,8 +1,5 @@
 import { Link } from '@inertiajs/react';
-import {
-    AnaliticaChart,
-    type PuntoSerieAnalitica,
-} from './AnaliticaChart';
+import { AnaliticaChart, type PuntoSerieAnalitica } from './AnaliticaChart';
 
 export interface EventoDia {
     hora: string;
@@ -106,17 +103,11 @@ export function PanelHero({
                     <span className="bg-soft text-muted inline-block h-4 w-80 max-w-full animate-pulse rounded" />
                 ) : (
                     <>
-                        <strong className="text-ink">
-                            {obrasActivas}
-                        </strong>{' '}
-                        {obrasActivas === 1
-                            ? 'obra activa'
-                            : 'obras activas'}
-                        , <strong className="text-ink">{almacenes}</strong>{' '}
+                        <strong className="text-ink">{obrasActivas}</strong>{' '}
+                        {obrasActivas === 1 ? 'obra activa' : 'obras activas'},{' '}
+                        <strong className="text-ink">{almacenes}</strong>{' '}
                         {almacenes === 1 ? 'almacén' : 'almacenes'} y{' '}
-                        <strong className="text-ink">
-                            {despachosEnRuta}
-                        </strong>{' '}
+                        <strong className="text-ink">{despachosEnRuta}</strong>{' '}
                         {despachosEnRuta === 1
                             ? 'despacho en ruta'
                             : 'despachos en ruta'}
@@ -144,8 +135,7 @@ export function PanelHero({
             <div className="mt-5">
                 {analitica !== undefined &&
                 analitica.serie.some(
-                    (punto) =>
-                        punto.real !== null || punto.pronostico !== null,
+                    (punto) => punto.real !== null || punto.pronostico !== null,
                 ) ? (
                     <div>
                         <div className="mb-2 flex items-center justify-between gap-2">
@@ -168,15 +158,11 @@ export function PanelHero({
 
                         <div className="text-micro text-muted mt-2 flex flex-wrap gap-x-4 gap-y-1">
                             <span>
-                                Cobertura:{' '}
-                                {analitica.cobertura_dias ?? '—'} días
+                                Cobertura: {analitica.cobertura_dias ?? '—'}{' '}
+                                días
                             </span>
-                            <span>
-                                MAPE: {analitica.mape ?? '—'}%
-                            </span>
-                            <span>
-                                Quiebres 7d: {analitica.quiebres_7d}
-                            </span>
+                            <span>MAPE: {analitica.mape ?? '—'}%</span>
+                            <span>Quiebres 7d: {analitica.quiebres_7d}</span>
                             <span>Alertas: {analitica.alertas}</span>
                         </div>
                     </div>

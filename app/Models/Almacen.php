@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class Almacen extends Model
@@ -18,6 +19,13 @@ class Almacen extends Model
     use SoftDeletes;
 
     protected $table = 'almacenes';
+
+    protected static function booted(): void
+    {
+        static::saved(fn () => Cache::forget('catalogo_almacenes'));
+        static::deleted(fn () => Cache::forget('catalogo_almacenes'));
+        static::restored(fn () => Cache::forget('catalogo_almacenes'));
+    }
 
     protected $fillable = [
         'obra_id',

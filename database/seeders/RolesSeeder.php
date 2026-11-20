@@ -83,13 +83,23 @@ class RolesSeeder extends Seeder
         ];
 
         foreach ($usuariosIniciales as $u) {
+            DB::table('personas')->updateOrInsert(
+                ['dni' => $u['dni']],
+                [
+                    'nombres' => $u['name'],
+                    'telefono' => $u['telefono'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
+
+            $persona = DB::table('personas')->where('dni', $u['dni'])->first();
+
             DB::table('usuarios')->updateOrInsert(
                 ['email' => $u['email']],
                 [
-                    'name' => $u['name'],
+                    'persona_id' => $persona->id,
                     'password' => $u['password'],
-                    'dni' => $u['dni'],
-                    'telefono' => $u['telefono'],
                     'activo' => true,
                     'created_at' => now(),
                     'updated_at' => now(),

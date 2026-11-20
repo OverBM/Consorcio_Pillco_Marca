@@ -20,7 +20,7 @@ class CotizacionController extends Controller
             ->orderBy('id', 'desc');
 
         if ($request->filled('requerimiento_id')) {
-            $query->where('requerimiento_id', $request->input('requerimiento_id'));
+            $query->where('solicitud_id', $request->input('requerimiento_id'));
         }
 
         $cotizaciones = $query->get();
@@ -37,7 +37,7 @@ class CotizacionController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'requerimiento_id' => 'required|exists:requerimientos,id',
+            'requerimiento_id' => 'required|exists:solicitudes,id',
             'proveedor_id' => 'required|exists:proveedores,id',
             'plazo_entrega_dias' => 'nullable|integer|min:1',
             'condiciones' => 'nullable|string',
@@ -54,7 +54,7 @@ class CotizacionController extends Controller
             }
 
             $cotizacion = Cotizacion::create([
-                'requerimiento_id' => $validated['requerimiento_id'],
+                'solicitud_id' => $validated['requerimiento_id'],
                 'proveedor_id' => $validated['proveedor_id'],
                 'total' => $total,
                 'plazo_entrega_dias' => $validated['plazo_entrega_dias'] ?? 7,
@@ -94,7 +94,7 @@ class CotizacionController extends Controller
 
         DB::transaction(function () use ($cotizacion, $validated) {
             // Marcar las otras cotizaciones del mismo requerimiento como rechazadas
-            Cotizacion::where('requerimiento_id', $cotizacion->requerimiento_id)
+            Cotizacion::where('solicitud_id', $cotizacion->solicitud_id)
                 ->where('id', '!=', $cotizacion->id)
                 ->update(['estado' => 'rechazada']);
 

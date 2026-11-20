@@ -1,10 +1,10 @@
 <?php
 
 use App\Models\Almacen;
-use App\Models\EmpresaEors;
 use App\Models\IndicadorAmbiental;
 use App\Models\Obra;
 use App\Models\Programa;
+use App\Models\Proveedor;
 use App\Models\Usuario;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -47,9 +47,10 @@ function contextoCalidadAmbiente(): array
         'limite_maximo' => 85,
     ]);
 
-    $eors = EmpresaEors::create([
+    $eors = Proveedor::create([
         'ruc' => '20123456789',
         'razon_social' => 'ECO AMBIENTAL HUANCAYO SAC',
+        'tipo' => 'eors',
     ]);
 
     return [$usuario, $obra, $almacen, $indicador, $eors];
@@ -111,11 +112,11 @@ test('el endpoint de residuos registra un residuo reutilizable', function () {
         'volumen' => 120.5,
         'unidad' => 'M3',
         'destino' => 'reutilizacion',
-        'eors_id' => $eors->id,
+        'proveedor_id' => $eors->id,
     ]);
 
     $response->assertCreated()
         ->assertJsonPath('success', true)
         ->assertJsonPath('data.clase', 'reutilizable')
-        ->assertJsonPath('data.eors.razon_social', 'ECO AMBIENTAL HUANCAYO SAC');
+        ->assertJsonPath('data.proveedor.razon_social', 'ECO AMBIENTAL HUANCAYO SAC');
 });
