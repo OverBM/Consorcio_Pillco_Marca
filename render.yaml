@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: pillco-analytics
+    runtime: docker
+    plan: free
+    region: ohio
+    rootDir: analytics
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: ANALYTICS_API_TOKEN
+        sync: false
+      - key: ANALYTICS_MAX_SERIES
+        value: "2000"
