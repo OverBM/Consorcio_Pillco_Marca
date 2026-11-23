@@ -8,9 +8,11 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::command('analitica:ejecutar --origen=programado')
-    ->hourly()
-    ->withoutOverlapping(60);
+if (config('analytics.schedule_enabled')) {
+    Schedule::command('analitica:ejecutar --origen=programado')
+        ->hourly()
+        ->withoutOverlapping(60);
+}
 
 Schedule::command('tracking:evaluar-alertas')
     ->everyFiveMinutes()
@@ -21,5 +23,5 @@ Schedule::command('tracking:purgar')
     ->withoutOverlapping(30);
 
 Schedule::command('panel:precalentar')
-    ->everyMinute()
+    ->everyThirtyMinutes()
     ->withoutOverlapping(5);

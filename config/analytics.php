@@ -6,4 +6,5 @@ return [
     'timeout' => (int) env('ANALYTICS_TIMEOUT', 120),
     'retries' => (int) env('ANALYTICS_RETRIES', 3),
     'startup_wait' => (int) env('ANALYTICS_STARTUP_WAIT', 20),
+    'schedule_enabled' => filter_var(env('ANALYTICS_SCHEDULE_ENABLED', true), FILTER_VALIDATE_BOOL),
 ];

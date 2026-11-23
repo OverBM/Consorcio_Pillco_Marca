@@ -26,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'modulo' => EnsureModuleAccess::class,
         ]);
         $middleware->redirectGuestsTo(fn () => route('login'));
+        $middleware->trustProxies(at: '*');
 
         // El resolutor de identidad debe ejecutarse antes de la autorización.
         $middleware->prependToPriorityList(AuthenticatesRequests::class, ResolveApiUser::class);

@@ -14,6 +14,7 @@ use App\Http\Controllers\Web\ProyectoPublicoViewController;
 use App\Http\Controllers\Web\RegistroController;
 use App\Http\Controllers\Web\ReportesViewController;
 use App\Http\Controllers\Web\SolicitudesAccesoController;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -37,6 +38,31 @@ Route::post('/logout', [AuthWebController::class, 'logout'])->name('logout');
 // Registro público de solicitudes de acceso
 Route::get('/registro', [RegistroController::class, 'show'])->name('registro');
 Route::post('/registro', [RegistroController::class, 'store'])->name('registro.store');
+
+// Disparadores internos para cron externo (token en la URL).
+Route::get('/interno/schedule/{token}', function (string $token) {
+    $esperado = (string) config('app.schedule_token');
+
+    abort_if($esperado === '', 404);
+    abort_unless(hash_equals($esperado, $token), 404);
+
+    ignore_user_abort(true);
+    Artisan::call('schedule:run');
+
+    return response()->noContent();
+})->name('interno.schedule');
+
+Route::get('/interno/analitica/{token}', function (string $token) {
+    $esperado = (string) config('app.schedule_token');
+
+    abort_if($esperado === '', 404);
+    abort_unless(hash_equals($esperado, $token), 404);
+
+    ignore_user_abort(true);
+    Artisan::call('analitica:ejecutar', ['--force' => true]);
+
+    return response()->noContent();
+})->name('interno.analitica');
 
 // Rutas protegidas que requieren autenticación obligatoria
 Route::middleware(['auth'])->group(function () {
