@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::view('/', 'landing')->name('home');
+Route::view('/como-trabajamos', 'como-trabajamos')->name('como-trabajamos');
 Route::get('/proyectos/{id}', [ProyectoPublicoViewController::class, 'show'])
     ->whereNumber('id')
     ->name('proyecto.publico');

@@ -6,6 +6,7 @@ use App\Domain\Analitica\RedistribucionAnaliticaService;
 use App\Domain\Geo\Dto\Coordenada;
 use App\Domain\Geo\ResumenCuotaRuteo;
 use App\Domain\Geo\RuteoService;
+use App\Domain\Geo\TrackingDespachoService;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Web\Concerns\FiltraContextoOperativo;
 use App\Models\AlertaGeoespacial;
@@ -26,6 +27,7 @@ class MapaOperativoViewController extends Controller
         private readonly RuteoService $ruteo,
         private readonly ResumenCuotaRuteo $cuotaRuteo,
         private readonly RedistribucionAnaliticaService $redistribucion,
+        private readonly TrackingDespachoService $tracking,
     ) {}
 
     private const MANTARO_LAT = -12.068;
@@ -56,7 +58,7 @@ class MapaOperativoViewController extends Controller
             ])
             ->where('estado', 'en_transito')
             ->whereNotNull('despachado_por')
-            ->get(['id', 'codigo', 'almacen_origen_id', 'almacen_destino_id', 'estado', 'eta_min', 'distancia_m']);
+            ->get(['id', 'codigo', 'almacen_origen_id', 'almacen_destino_id', 'estado', 'eta_min', 'distancia_m', 'despachado_en', 'recibida_en']);
 
         $transferencias = Transferencia::query()
             ->with([
@@ -67,10 +69,41 @@ class MapaOperativoViewController extends Controller
             ->limit(20)
             ->get(['id', 'codigo', 'almacen_origen_id', 'almacen_destino_id', 'estado', 'eta_min']);
 
+        $coordenadas = $this->coordenadasDeAlmacenes($almacenes);
+
+        foreach ($despachos as $despacho) {
+            $this->tracking->asegurar($despacho, $coordenadas);
+        }
+
+        $despachos->load([
+            'posiciones' => fn ($query) => $query->latest('capturada_en')->limit(1),
+        ]);
+
         $posicionesPorTransferencia = $despachos
             ->mapWithKeys(fn (Transferencia $transferencia): array => [
                 $transferencia->id => $transferencia->posiciones->first(),
             ]);
+        $sugerencias = $this->redistribucion->sugerencias(null, null, 6);
+        $sugerencias = array_map(
+            function (array $sugerencia) use ($coordenadas): array {
+                $origen = $coordenadas[(string) $sugerencia['origen_id']] ?? null;
+                $destino = $coordenadas[(string) $sugerencia['destino_id']] ?? null;
+
+                if ($origen !== null && $destino !== null) {
+                    $ruta = $this->ruteo->calcular(
+                        new Coordenada((float) $origen['lat'], (float) $origen['lng']),
+                        new Coordenada((float) $destino['lat'], (float) $destino['lng']),
+                    );
+
+                    $sugerencia['geometria'] = $ruta->geometria;
+                    $sugerencia['distancia_km'] = round($ruta->distanciaM / 1000, 2);
+                    $sugerencia['eta_min'] = round($ruta->duracionS / 60, 1);
+                }
+
+                return $sugerencia;
+            },
+            $sugerencias,
+        );
 
         return Inertia::render('MapaOperativoPage', [
             'obrasDb' => $this->mapearObras($obras),
@@ -90,8 +123,9 @@ class MapaOperativoViewController extends Controller
             'rutasDb' => $transferencias->map(fn (Transferencia $transferencia): array => $this->mapearRuta(
                 $transferencia,
                 $posicionesPorTransferencia->get($transferencia->id),
+                $coordenadas,
             ))->values(),
-            'sugerenciasDb' => $this->redistribucion->sugerencias(null, null, 6),
+            'sugerenciasDb' => $sugerencias,
             'despachosDb' => $despachos->map(fn (Transferencia $despacho): array => [
                 'id' => $despacho->id,
                 'codigo' => $despacho->codigo,
@@ -118,20 +152,53 @@ class MapaOperativoViewController extends Controller
     }
 
     /**
+     * Coordenadas del mapa, incluyendo la dispersión determinista cuando el
+     * almacén no tiene latitud/longitud en base.
+     *
+     * @return array<string, array{lat: float, lng: float}>
+     */
+    private function coordenadasDeAlmacenes($almacenes): array
+    {
+        $coordenadas = [];
+
+        foreach ($almacenes->values() as $indice => $almacen) {
+            $coordenadas[(string) $almacen->id] = $this->coords(
+                $almacen->latitud,
+                $almacen->longitud,
+                $indice,
+            );
+        }
+
+        return $coordenadas;
+    }
+
+    /**
+     * @param  array<string, array{lat: float, lng: float}>  $coordenadas
      * @return array<string, mixed>
      */
-    private function mapearRuta(Transferencia $transferencia, ?TransferenciaPosicion $posicion): array
-    {
-        $destino = $transferencia->almacenDestino;
+    private function mapearRuta(
+        Transferencia $transferencia,
+        ?TransferenciaPosicion $posicion,
+        array $coordenadas,
+    ): array {
+        $destino = $coordenadas[(string) $transferencia->almacen_destino_id] ?? null;
+        $origen = $coordenadas[(string) $transferencia->almacen_origen_id] ?? null;
         $etaRestante = null;
         $distanciaRestante = null;
         $geometriaRestante = [];
+        $rutaPrincipal = null;
 
-        if ($posicion !== null && $destino !== null
-            && $destino->latitud !== null && $destino->longitud !== null) {
+        if ($origen !== null && $destino !== null) {
+            $rutaPrincipal = $this->ruteo->calcular(
+                new Coordenada((float) $origen['lat'], (float) $origen['lng']),
+                new Coordenada((float) $destino['lat'], (float) $destino['lng']),
+            );
+        }
+
+        if ($posicion !== null && $destino !== null) {
             $ruta = $this->ruteo->calcular(
                 new Coordenada((float) $posicion->latitud, (float) $posicion->longitud),
-                new Coordenada((float) $destino->latitud, (float) $destino->longitud),
+                new Coordenada((float) $destino['lat'], (float) $destino['lng']),
             );
 
             $etaRestante = round($ruta->duracionS / 60, 1);
@@ -149,7 +216,9 @@ class MapaOperativoViewController extends Controller
                 'aprobada', 'solicitada' => 'pendiente',
                 default => 'pendiente',
             },
-            'etaMin' => $transferencia->eta_min !== null ? (float) $transferencia->eta_min : null,
+            'etaMin' => $transferencia->eta_min !== null
+                ? (float) $transferencia->eta_min
+                : ($rutaPrincipal !== null ? round($rutaPrincipal->duracionS / 60, 1) : null),
             'etaRestanteMin' => $etaRestante,
             'distanciaRestanteM' => $distanciaRestante,
             'despachoId' => $transferencia->id,
@@ -159,7 +228,7 @@ class MapaOperativoViewController extends Controller
                 'velocidadKmh' => $posicion->velocidad_kmh !== null ? (float) $posicion->velocidad_kmh : null,
                 'capturadaEn' => $posicion->capturada_en,
             ] : null,
-            'geometria' => $this->geometriaRuta($transferencia),
+            'geometria' => $rutaPrincipal?->geometria ?? [],
             'geometriaRestante' => $geometriaRestante,
         ];
     }
@@ -175,29 +244,6 @@ class MapaOperativoViewController extends Controller
             new Coordenada((float) $posicion->latitud, (float) $posicion->longitud),
             new Coordenada((float) $destino->latitud, (float) $destino->longitud),
         )->duracionS / 60, 1);
-    }
-
-    /**
-     * Geometría real de la ruta entre almacenes. Usa el servicio de ruteo
-     * (ORS con fallback Haversine) y devuelve la lista de puntos.
-     *
-     * @return array<int, array{lat: float, lng: float}>
-     */
-    private function geometriaRuta(Transferencia $transferencia): array
-    {
-        $origen = $transferencia->almacenOrigen;
-        $destino = $transferencia->almacenDestino;
-
-        if ($origen === null || $destino === null
-            || $origen->latitud === null || $origen->longitud === null
-            || $destino->latitud === null || $destino->longitud === null) {
-            return [];
-        }
-
-        return $this->ruteo->calcular(
-            new Coordenada((float) $origen->latitud, (float) $origen->longitud),
-            new Coordenada((float) $destino->latitud, (float) $destino->longitud),
-        )->geometria;
     }
 
     /**

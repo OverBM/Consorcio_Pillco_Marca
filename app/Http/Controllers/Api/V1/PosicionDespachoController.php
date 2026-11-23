@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Domain\Geo\Drivers\HaversineDriver;
 use App\Domain\Geo\Dto\Coordenada;
+use App\Domain\Geo\TrackingDespachoService;
 use App\Http\Controllers\Controller;
 use App\Models\Transferencia;
 use App\Models\TransferenciaPosicion;
@@ -18,7 +19,10 @@ use Illuminate\Validation\ValidationException;
 
 class PosicionDespachoController extends Controller
 {
-    public function __construct(private readonly HaversineDriver $haversine) {}
+    public function __construct(
+        private readonly HaversineDriver $haversine,
+        private readonly TrackingDespachoService $tracking,
+    ) {}
 
     public function store(Request $request, Transferencia $despacho): JsonResponse
     {
@@ -107,6 +111,8 @@ class PosicionDespachoController extends Controller
 
     public function index(Request $request, Transferencia $despacho): JsonResponse
     {
+        $this->tracking->asegurar($despacho);
+
         $desde = $request->filled('desde')
             ? Carbon::parse($request->input('desde'))
             : now()->subDay();

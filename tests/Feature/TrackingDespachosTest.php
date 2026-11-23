@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\AlertaGeoespacial;
 use App\Models\Almacen;
 use App\Models\Obra;
 use App\Models\Programa;
@@ -185,6 +186,76 @@ class TrackingDespachosTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.ultima_posicion.latitud', '-12.0650000')
             ->assertJsonStructure(['data' => ['posiciones', 'ultima_posicion', 'antiguedad_seg', 'distancia_recorrida_m']]);
+    }
+
+    public function test_consulta_genera_tracking_cuando_no_existe(): void
+    {
+        AlertaGeoespacial::create([
+            'transferencia_id' => $this->despacho->id,
+            'tipo' => 'sin_senal_tracking',
+            'severidad' => 'alta',
+            'mensaje' => 'Sin posiciones desde el despacho.',
+            'estado' => 'vigente',
+        ]);
+
+        $this->assertSame(0, TransferenciaPosicion::query()->count());
+
+        $this->getJson("/api/v1/despachos/{$this->despacho->id}/posiciones")
+            ->assertOk()
+            ->assertJsonStructure([
+                'data' => ['posiciones', 'ultima_posicion', 'antiguedad_seg', 'distancia_recorrida_m'],
+            ])
+            ->assertJsonPath('data.posiciones.0.transferencia_id', $this->despacho->id);
+
+        $this->assertGreaterThan(0, TransferenciaPosicion::query()->count());
+        $this->assertDatabaseHas('alertas', [
+            'transferencia_id' => $this->despacho->id,
+            'tipo' => 'sin_senal_tracking',
+            'estado' => 'resuelta',
+        ]);
+    }
+
+    public function test_consulta_no_duplica_tracking_existente(): void
+    {
+        $this->getJson("/api/v1/despachos/{$this->despacho->id}/posiciones")->assertOk();
+        $generadas = TransferenciaPosicion::query()->count();
+
+        $this->getJson("/api/v1/despachos/{$this->despacho->id}/posiciones")->assertOk();
+
+        $this->assertSame($generadas, TransferenciaPosicion::query()->count());
+    }
+
+    public function test_despacho_recepcionado_genera_la_traza_completa(): void
+    {
+        $this->transferencia->update([
+            'estado' => 'recibida',
+            'recibida_en' => now(),
+        ]);
+
+        $this->getJson("/api/v1/despachos/{$this->despacho->id}/posiciones")
+            ->assertOk()
+            ->assertJsonCount(5, 'data.posiciones');
+
+        $ultima = TransferenciaPosicion::query()->latest('capturada_en')->first();
+
+        $this->assertNotNull($ultima);
+        $this->assertEqualsWithDelta(-12.08, (float) $ultima->latitud, 0.0001);
+        $this->assertEqualsWithDelta(-75.20, (float) $ultima->longitud, 0.0001);
+    }
+
+    public function test_transferencia_sin_despacho_no_genera_tracking(): void
+    {
+        $this->transferencia->update([
+            'estado' => 'aprobada',
+            'despachado_por' => null,
+            'despachado_en' => null,
+        ]);
+
+        $this->getJson("/api/v1/despachos/{$this->despacho->id}/posiciones")
+            ->assertOk()
+            ->assertJsonCount(0, 'data.posiciones');
+
+        $this->assertSame(0, TransferenciaPosicion::query()->count());
     }
 
     public function test_purga_posiciones_vencidas(): void

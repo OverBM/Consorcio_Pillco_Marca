@@ -16,6 +16,10 @@
     <meta property="og:description" content="{{ $descripcionMeta }}" />
     <meta property="og:type" content="article" />
     <meta property="og:url" content="{{ url()->current() }}" />
+    @if (! empty($obra['imagen']))
+      <meta property="og:image" content="{{ url($obra['imagen']['url']) }}" />
+      <meta property="og:image:alt" content="{{ $obra['imagen']['alt'] }}" />
+    @endif
     <title>{{ $obra['nombre'] }} — Consorcio Pillco Marca</title>
     <link rel="canonical" href="{{ url()->current() }}" />
     <link rel="icon" href="/assets/brand-mark.svg" type="image/svg+xml" />
@@ -36,15 +40,31 @@
         <p class="eyebrow"><span class="mint-tag">{{ $obra['programa'] ?? 'OBRA' }}</span></p>
         <h1 class="display-heading" id="proyecto-title">{{ $obra['nombre'] }}</h1>
 
-        <figure class="project-detail-art" aria-label="Imagen referencial de la obra {{ $obra['nombre'] }}">
-          <svg viewBox="0 0 480 230" role="img" aria-hidden="true">
-            <path d="M54 193h372M95 193V93l70-42 70 42v100M235 193V72l71-34 70 34v121" />
-            <path d="M117 112h24v29h-24zm52 0h24v29h-24zm89-18h25v31h-25zm53 0h25v31h-25zm-53 57h25v31h-25zm53 0h25v31h-25z" />
-            <path class="art-accent" d="m90 86 75-45 74 45M230 65l76-36 76 36" />
-          </svg>
+        <figure class="project-detail-art{{ ! empty($obra['imagen']) ? ' project-detail-art-photo' : '' }}" aria-label="Imagen referencial de la obra {{ $obra['nombre'] }}">
+          @if (! empty($obra['imagen']))
+            <img
+              src="{{ $obra['imagen']['url'] }}"
+              alt="{{ $obra['imagen']['alt'] }}"
+              width="1600"
+              height="900"
+              fetchpriority="high"
+            />
+          @else
+            <svg viewBox="0 0 480 230" role="img" aria-hidden="true">
+              <path d="M54 193h372M95 193V93l70-42 70 42v100M235 193V72l71-34 70 34v121" />
+              <path d="M117 112h24v29h-24zm52 0h24v29h-24zm89-18h25v31h-25zm53 0h25v31h-25zm-53 57h25v31h-25zm53 0h25v31h-25z" />
+              <path class="art-accent" d="m90 86 75-45 74 45M230 65l76-36 76 36" />
+            </svg>
+          @endif
           <figcaption>
             <span class="mono-label">{{ $obra['codigo'] }}</span>
-            <span>Imagen referencial de la obra</span>
+            @if (! empty($obra['imagen']))
+              <a class="project-detail-credit" href="{{ $obra['imagen']['credito_url'] }}" target="_blank" rel="noopener noreferrer">
+                Imagen referencial · {{ $obra['imagen']['credito'] }}
+              </a>
+            @else
+              <span>Imagen referencial de la obra</span>
+            @endif
           </figcaption>
         </figure>
 

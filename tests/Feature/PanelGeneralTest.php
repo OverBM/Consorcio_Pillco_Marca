@@ -74,7 +74,9 @@ test('el panel calcula indicadores no nulos con los datos sembrados', function (
             ->where('indicadores.mermas', 2)
             ->has('sobrantes', 1)
             ->has('sobrantes.0.receptoras', 1)
+            ->has('sobrantes.0.receptoras.0.geometria')
             ->has('rutas', 1)
+            ->has('rutas.0.geometria')
         )
         ->etc()
     );

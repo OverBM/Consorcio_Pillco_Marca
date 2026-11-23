@@ -1216,3 +1216,74 @@ html.theme-changing body *::after {
         animation: none;
     }
 }
+
+/* ------------------------------------------------------------------ */
+/* Accesibilidad: preferencias del panel                              */
+/* ------------------------------------------------------------------ */
+@layer components {
+    html:root[data-a11y-contraste='alto'] {
+        color-scheme: light !important;
+        --color-canvas: #ffffff;
+        --color-surface: #ffffff;
+        --color-soft: #ffffff;
+        --color-line: #000000;
+        --color-ink: #000000;
+        --color-muted: #1f1f1f;
+        --color-mint: #bfffb0;
+        --color-mint-hover: #a6f596;
+        --color-brand-100: #dbe4ff;
+        --color-brand-500: #0033cc;
+        --color-brand-900: #001a66;
+    }
+
+    html:root[data-a11y-contraste='alto'] body {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+    }
+
+    html:root[data-a11y-contraste='alto'] :focus-visible {
+        outline: 3px solid #000000;
+        outline-offset: 2px;
+    }
+
+    html:root[data-a11y-contraste='alto'] .bg-ink {
+        background-color: #000000 !important;
+    }
+
+    html:root[data-a11y-contraste='alto'] .bg-brand-50,
+    html:root[data-a11y-contraste='alto'] .bg-brand-100 {
+        background-color: #e6ecff !important;
+        color: #001a66 !important;
+    }
+
+    html[data-a11y-enlaces='subrayados'] a {
+        text-decoration: underline !important;
+        text-underline-offset: 0.18em;
+    }
+
+    html[data-a11y-escala='112'] {
+        font-size: 112%;
+    }
+
+    html[data-a11y-escala='125'] {
+        font-size: 125%;
+    }
+
+    html[data-a11y-escala='140'] {
+        font-size: 140%;
+    }
+
+    html[data-a11y-movimiento='reducido'] *,
+    html[data-a11y-movimiento='reducido'] *::before,
+    html[data-a11y-movimiento='reducido'] *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+::highlight(cpm-lectura) {
+    background-color: #fff100;
+    color: #000000;
+}

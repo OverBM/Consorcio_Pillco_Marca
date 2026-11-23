@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Domain\Geo\TrackingDespachoService;
 use App\Domain\Inventario\StockService;
 use App\Http\Controllers\Controller;
 use App\Models\Transferencia;
@@ -13,7 +14,8 @@ use Illuminate\Support\Facades\DB;
 class DespachoController extends Controller
 {
     public function __construct(
-        protected StockService $stockService
+        protected StockService $stockService,
+        protected TrackingDespachoService $tracking,
     ) {}
 
     /**
@@ -105,6 +107,8 @@ class DespachoController extends Controller
 
             return $transferencia->fresh(['detalles']);
         });
+
+        $this->tracking->asegurar($transferencia);
 
         return response()->json([
             'success' => true,

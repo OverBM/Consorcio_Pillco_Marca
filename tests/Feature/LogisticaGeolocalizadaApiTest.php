@@ -189,6 +189,10 @@ class LogisticaGeolocalizadaApiTest extends TestCase
         ]);
         $despResp->assertStatus(201);
 
+        $this->assertDatabaseHas('transferencia_posiciones', [
+            'transferencia_id' => $transfId,
+        ]);
+
         $stockOrigen->refresh();
         $this->assertEquals(250, (float) $stockOrigen->cantidad);
         $this->assertEquals(0, (float) $stockOrigen->cantidad_reservada);

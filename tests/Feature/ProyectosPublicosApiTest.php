@@ -71,6 +71,36 @@ test('la portada consulta los proyectos sin sesión y recibe solo campos públic
         ->assertJsonMissingPath('data.0.residente_id');
 });
 
+test('el listado público incluye la imagen referencial y su crédito', function () {
+    $programa = Programa::create([
+        'nombre' => 'Programa de Infraestructura Educativa y Vial',
+        'estado' => 'activo',
+    ]);
+
+    Obra::create([
+        'programa_id' => $programa->id,
+        'codigo' => 'OBR-01',
+        'nombre' => 'IE Los Andes - Pabellón Secundario',
+        'estado' => 'ejecucion',
+        'distrito' => 'Huancayo',
+        'avance_fisico_pct' => 68.5,
+    ]);
+
+    $response = $this->getJson('/api/v1/proyectos');
+
+    $response->assertOk()
+        ->assertJsonPath('data.0.imagen', '/assets/proyectos/ie-los-andes.jpg')
+        ->assertJsonPath('data.0.imagen_credito', 'QM Keen / Wikimedia Commons · CC BY-SA 4.0')
+        ->assertJsonPath('data.0.imagen_credito_url', fn ($url) => str_contains($url, 'commons.wikimedia.org'))
+        ->assertJsonStructure([
+            'data' => [
+                ['imagen', 'imagen_alt', 'imagen_credito', 'imagen_credito_url'],
+            ],
+        ]);
+
+    $this->assertFileExists(public_path('assets/proyectos/ie-los-andes.jpg'));
+});
+
 test('el listado público filtra por estado', function () {
     crearProyectosPublicos();
 

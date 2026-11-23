@@ -67,6 +67,7 @@ interface ReceptoraDb {
     nombreObra: string;
     distrito: string;
     km: number;
+    geometria?: Array<{ lat: number; lng: number }>;
 }
 
 interface SobranteDb {
@@ -264,6 +265,9 @@ export default function PanelGeneral() {
     );
     const [prediccionDinamica, setPrediccionDinamica] =
         useState<PrediccionDinamica | null>(null);
+    const [geometriaPrediccion, setGeometriaPrediccion] = useState<
+        Array<{ lat: number; lng: number }>
+    >([]);
 
     const almCentral = useMemo(() => {
         if (props.almacenCentralId) {
@@ -381,21 +385,85 @@ export default function PanelGeneral() {
     const kpiIncidencias = indicadores.incidencias;
     const kpiMermasSobreUmbral = indicadores.mermas;
 
+    useEffect(() => {
+        if (!prediccionDinamica) {
+            setGeometriaPrediccion([]);
+
+            return;
+        }
+
+        const origen = almacenes.find(
+            (a) => a.id === prediccionDinamica.almacenOrigenId,
+        );
+        const destino = almacenes.find(
+            (a) => a.id === prediccionDinamica.almacenDestinoId,
+        );
+
+        if (!origen?.coords || !destino?.coords) {
+            setGeometriaPrediccion([]);
+
+            return;
+        }
+
+        const controller = new AbortController();
+
+        setGeometriaPrediccion([]);
+
+        void fetch('/api/v1/geo/ruta', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            signal: controller.signal,
+            body: JSON.stringify({
+                origen: origen.coords,
+                destino: destino.coords,
+                perfil: 'car',
+            }),
+        })
+            .then((respuesta) => (respuesta.ok ? respuesta.json() : null))
+            .then((datos: unknown) => {
+                const geometria = (
+                    datos as {
+                        data?: {
+                            geometria?: Array<{
+                                lat: number;
+                                lng: number;
+                            }>;
+                        };
+                    } | null
+                )?.data?.geometria;
+
+                if (Array.isArray(geometria) && geometria.length > 1) {
+                    setGeometriaPrediccion(geometria);
+                }
+            })
+            .catch(() => {
+                // Si el ruteo no responde, el mapa mantiene el trazo directo.
+            });
+
+        return () => controller.abort();
+    }, [prediccionDinamica, almacenes]);
+
     const sugerencias: SugerenciaMapa[] = useMemo(() => {
         const base = sobrantes.flatMap((s) =>
             (s.receptoras ?? []).map((r) => ({
                 origenId: s.almacenId ?? '',
                 destinoId: r.almacenId,
+                geometria: r.geometria,
             })),
         );
         if (prediccionDinamica) {
             base.push({
                 origenId: prediccionDinamica.almacenOrigenId,
                 destinoId: prediccionDinamica.almacenDestinoId,
+                geometria: geometriaPrediccion,
             });
         }
         return base;
-    }, [sobrantes, prediccionDinamica]);
+    }, [sobrantes, prediccionDinamica, geometriaPrediccion]);
 
     const alertaHover = useMemo(
         () => sobrantes.find((s) => s.id === alertaHoverId),

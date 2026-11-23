@@ -39,6 +39,7 @@ opencode.json
 openspec
 /.agent
 /.agents
+/skills-lock.json
 /.ai
 /.gemini
 /.claude

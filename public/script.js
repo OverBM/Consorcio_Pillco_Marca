@@ -24,6 +24,7 @@ if (menuToggle && primaryNavigation) {
 
 const portfolioGrid = document.querySelector('#portfolio-grid');
 const portfolioStatus = document.querySelector('#portfolio-status');
+const portfolioCredits = document.querySelector('#portfolio-credits');
 const estadoFilterGroup = document.querySelector('#filtro-estado');
 const distritoFilterGroup = document.querySelector('#filtro-distrito');
 
@@ -89,11 +90,25 @@ if (portfolioGrid && portfolioStatus) {
         const detalleUrl = `/proyectos/${proyecto.id}`;
 
         const arte = document.createElement('a');
-        arte.className = 'project-art project-art-building';
+        arte.className = 'project-art';
         arte.href = detalleUrl;
         arte.setAttribute('aria-label', `Ver detalle de ${proyecto.nombre}`);
-        arte.innerHTML =
-            '<svg viewBox="0 0 480 230"><path d="M54 193h372M95 193V93l70-42 70 42v100M235 193V72l71-34 70 34v121"/><path d="M117 112h24v29h-24zm52 0h24v29h-24zm89-18h25v31h-25zm53 0h25v31h-25zm-53 57h25v31h-25zm53 0h25v31h-25z"/><path class="art-accent" d="m90 86 75-45 74 45M230 65l76-36 76 36"/></svg>';
+
+        if (proyecto.imagen) {
+            const imagen = document.createElement('img');
+            imagen.src = proyecto.imagen;
+            imagen.alt = proyecto.imagen_alt || `Obra ${proyecto.nombre}`;
+            imagen.width = 1600;
+            imagen.height = 900;
+            imagen.loading = 'lazy';
+            imagen.decoding = 'async';
+            arte.append(imagen);
+        } else {
+            arte.classList.add('project-art-building');
+            arte.innerHTML =
+                '<svg viewBox="0 0 480 230"><path d="M54 193h372M95 193V93l70-42 70 42v100M235 193V72l71-34 70 34v121"/><path d="M117 112h24v29h-24zm52 0h24v29h-24zm89-18h25v31h-25zm53 0h25v31h-25zm-53 57h25v31h-25zm53 0h25v31h-25z"/><path class="art-accent" d="m90 86 75-45 74 45M230 65l76-36 76 36"/></svg>';
+        }
+
         const etiqueta = document.createElement('span');
         etiqueta.className = 'art-label';
         etiqueta.textContent = proyecto.codigo || 'OBRA';
@@ -146,6 +161,36 @@ if (portfolioGrid && portfolioStatus) {
         articulo.append(arte, contenido);
 
         return articulo;
+    };
+
+    const renderCreditos = () => {
+        if (!portfolioCredits) return;
+
+        const creditos = proyectos.filter(
+            (proyecto) => proyecto.imagen_credito,
+        );
+
+        portfolioCredits.replaceChildren();
+        portfolioCredits.hidden = creditos.length === 0;
+
+        if (creditos.length === 0) return;
+
+        const prefijo = document.createElement('span');
+        prefijo.textContent = 'Créditos fotográficos: ';
+        portfolioCredits.append(prefijo);
+
+        creditos.forEach((proyecto, indice) => {
+            const enlace = document.createElement('a');
+            enlace.href = proyecto.imagen_credito_url || '#';
+            enlace.target = '_blank';
+            enlace.rel = 'noopener noreferrer';
+            enlace.textContent = `${proyecto.codigo || 'Obra'}: ${proyecto.imagen_credito}`;
+            portfolioCredits.append(enlace);
+
+            if (indice < creditos.length - 1) {
+                portfolioCredits.append(document.createTextNode(' · '));
+            }
+        });
     };
 
     const renderProyectos = () => {
@@ -201,6 +246,8 @@ if (portfolioGrid && portfolioStatus) {
 
             const cuerpo = await respuesta.json();
             proyectos = Array.isArray(cuerpo.data) ? cuerpo.data : [];
+
+            renderCreditos();
 
             construirFiltros(
                 'estado',

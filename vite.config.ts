@@ -64,7 +64,13 @@ export default defineConfig({
     plugins: lazyPlugins(() => [
         leafletSsrStub,
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.tsx'],
+            input: [
+                'resources/css/app.css',
+                'resources/js/app.tsx',
+                'resources/js/accesibilidad.ts',
+                'resources/js/como-trabajamos.tsx',
+                'resources/js/landing-hero.tsx',
+            ],
             refresh: true,
         }),
         inertia(),

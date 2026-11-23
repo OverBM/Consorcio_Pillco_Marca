@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-label="Plano de la maqueta: programa, ciclo PMI, obra, materiales, geolocalización y cierre">
+  <rect width="1200" height="800" fill="#e5e5e5"/>
+
+  <text x="120" y="70" font-family="'IBM Plex Mono', monospace" font-size="18" letter-spacing="4" fill="#444">CÓMO TRABAJAMOS · MAQUETA 3D</text>
+  <text x="120" y="96" font-family="'IBM Plex Mono', monospace" font-size="12" letter-spacing="3" fill="#666">PLANO DE OBRA · CIFRAS EJEMPLO</text>
+
+  <g stroke="#444" stroke-width="2">
+    <rect x="120" y="120" width="960" height="620" fill="#f3f3f3"/>
+  </g>
+
+  <g fill="#c6c6c6">
+    <rect x="140" y="140" width="90" height="580"/>
+    <rect x="140" y="140" width="920" height="90"/>
+    <rect x="970" y="140" width="90" height="580"/>
+  </g>
+  <g stroke="#666" stroke-width="1" stroke-dasharray="10 10">
+    <line x1="230" y1="185" x2="970" y2="185"/>
+    <line x1="185" y1="230" x2="185" y2="720"/>
+    <line x1="1015" y1="230" x2="1015" y2="720"/>
+  </g>
+
+  <g stroke="#444" stroke-width="2">
+    <rect x="310" y="330" width="240" height="170" fill="#ffffff"/>
+    <rect x="650" y="280" width="200" height="200" fill="#ffffff" stroke="#c6c6c6"/>
+    <rect x="860" y="330" width="100" height="150" fill="#ffffff"/>
+    <rect x="200" y="500" width="110" height="80" fill="#444"/>
+    <rect x="330" y="540" width="90" height="60" fill="#ffffff"/>
+    <rect x="200" y="250" width="110" height="60" fill="#444"/>
+  </g>
+
+  <g fill="#d1ffca" stroke="#444" stroke-width="2">
+    <circle cx="930" cy="600" r="26"/>
+    <rect x="200" y="200" width="14" height="14"/>
+  </g>
+
+  <g font-family="'Barlow Condensed', 'Arial Narrow', sans-serif" font-size="30" font-weight="700" fill="#000">
+    <text x="310" y="320">OBRA</text>
+    <text x="650" y="270">PATIO DE GRÚA</text>
+    <text x="860" y="320">ALMACÉN</text>
+    <text x="200" y="490" fill="#ffffff">PMU</text>
+    <text x="330" y="530">PMI</text>
+    <text x="200" y="240" fill="#ffffff">CIERRE</text>
+    <text x="900" y="660">GEO</text>
+  </g>
+
+  <g font-family="'IBM Plex Mono', monospace" font-size="12" letter-spacing="2" fill="#666">
+    <text x="725" y="310">ENTRADA → FRENTE → ALMACÉN → SALIDA</text>
+    <text x="725" y="330">VÍA DE 8 M · UN SOLO SENTIDO</text>
+  </g>
+
+  <text x="120" y="776" font-family="'IBM Plex Mono', monospace" font-size="12" letter-spacing="3" fill="#666">CONSORCIO PILLCO MARCA · 88 × 64 M</text>
+</svg>

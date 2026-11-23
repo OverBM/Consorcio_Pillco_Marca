@@ -3,6 +3,7 @@ import { Link } from '@inertiajs/react';
 
 import { useThemeOpcional } from '../components/theme/ThemeProvider';
 import { IconoPorNombre } from '../components/icons/PorNombre';
+import { AccessibilityMenu } from './AccessibilityMenu';
 import {
     IconClipboard,
     IconInbox,
@@ -71,7 +72,6 @@ export function AppRail({
     adminItems = [],
 }: AppRailProps) {
     const [menuCrear, setMenuCrear] = useState(false);
-    const [menuAyuda, setMenuAyuda] = useState(false);
     const [menuAjustes, setMenuAjustes] = useState(false);
     const tema = useThemeOpcional();
     const modoOscuro = tema?.tema === 'oscuro';
@@ -86,14 +86,13 @@ export function AppRail({
         pathname.startsWith('/admin') || pathname === '/perfil';
 
     useEffect(() => {
-        if (!menuCrear && !menuAyuda && !menuAjustes) {
+        if (!menuCrear && !menuAjustes) {
             return;
         }
 
         const alPresionarTecla = (event: KeyboardEvent): void => {
             if (event.key === 'Escape') {
                 setMenuCrear(false);
-                setMenuAyuda(false);
                 setMenuAjustes(false);
             }
         };
@@ -101,24 +100,16 @@ export function AppRail({
         window.addEventListener('keydown', alPresionarTecla);
 
         return () => window.removeEventListener('keydown', alPresionarTecla);
-    }, [menuCrear, menuAyuda, menuAjustes]);
+    }, [menuCrear, menuAjustes]);
 
     const alternarCrear = (): void => {
         setMenuCrear((abierto) => !abierto);
-        setMenuAyuda(false);
-        setMenuAjustes(false);
-    };
-
-    const alternarAyuda = (): void => {
-        setMenuAyuda((abierto) => !abierto);
-        setMenuCrear(false);
         setMenuAjustes(false);
     };
 
     const alternarAjustes = (): void => {
         setMenuAjustes((abierto) => !abierto);
         setMenuCrear(false);
-        setMenuAyuda(false);
     };
 
     return (
@@ -243,66 +234,7 @@ export function AppRail({
                 )}
             </button>
 
-            <div className="relative">
-                <button
-                    type="button"
-                    onClick={alternarAyuda}
-                    aria-label="Ayuda"
-                    aria-haspopup="dialog"
-                    aria-expanded={menuAyuda}
-                    className={claseBoton}
-                >
-                    <svg
-                        width="19"
-                        height="19"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                    >
-                        <circle cx="12" cy="12" r="9" />
-                        <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2.2-3 4" />
-                        <path d="M12 17h.01" />
-                    </svg>
-                </button>
-
-                {menuAyuda && (
-                    <>
-                        <button
-                            type="button"
-                            aria-label="Cerrar ayuda"
-                            className="fixed inset-0 z-40 cursor-default bg-transparent"
-                            onClick={() => setMenuAyuda(false)}
-                        />
-                        <div
-                            role="dialog"
-                            aria-label="Ayuda y atajos"
-                            className={claseMenu}
-                        >
-                            <p className="text-muted text-micro px-2 py-1 font-mono tracking-wider uppercase">
-                                ObraFlow · Consorcio Pillco Marca
-                            </p>
-                            <dl className="text-ink text-label space-y-1 px-2 py-1.5">
-                                <div className="flex items-center justify-between gap-3">
-                                    <dt>Búsqueda global</dt>
-                                    <dd className="border-line text-muted text-micro rounded border px-1.5 py-0.5 font-mono">
-                                        Ctrl/Cmd + K
-                                    </dd>
-                                </div>
-                                <div className="flex items-center justify-between gap-3">
-                                    <dt>Cerrar diálogos</dt>
-                                    <dd className="border-line text-muted text-micro rounded border px-1.5 py-0.5 font-mono">
-                                        Esc
-                                    </dd>
-                                </div>
-                            </dl>
-                        </div>
-                    </>
-                )}
-            </div>
+            <AccessibilityMenu buttonClassName={claseBoton} />
 
             {adminItems.length > 0 ? (
                 <div className="relative">

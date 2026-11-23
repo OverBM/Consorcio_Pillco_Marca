@@ -16,6 +16,7 @@
       <a href="{{ $anchor }}#servicios">Servicios</a>
       <a href="{{ $anchor }}#proyectos">Proyectos</a>
       <a href="{{ $anchor }}#sistema">Sistema</a>
+      <a href="/como-trabajamos">Cómo trabajamos</a>
       <a class="login-nav-link" href="/login">Acceso interno <span aria-hidden="true">↗</span></a>
     </nav>
 

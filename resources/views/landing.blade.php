@@ -14,7 +14,23 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/styles.css" />
+    <script>
+      (function () {
+        try {
+          var guardado = JSON.parse(localStorage.getItem('cpm_accesibilidad') || 'null');
+          if (!guardado) return;
+          var raiz = document.documentElement;
+          if (guardado.contraste) raiz.setAttribute('data-a11y-contraste', 'alto');
+          if (guardado.subrayarEnlaces) raiz.setAttribute('data-a11y-enlaces', 'subrayados');
+          if (guardado.reducirMovimiento) raiz.setAttribute('data-a11y-movimiento', 'reducido');
+          if (guardado.escalaTexto) {
+            raiz.setAttribute('data-a11y-escala', String(guardado.escalaTexto));
+          }
+        } catch (e) {}
+      })();
+    </script>
     <script src="/script.js" defer></script>
+    @vite(['resources/js/accesibilidad.ts', 'resources/js/landing-hero.tsx'])
   </head>
   <body>
     <a class="skip-link" href="#contenido">Saltar al contenido</a>
@@ -35,10 +51,16 @@
           <p class="hero-note"><span class="mono-label">ENFOQUE</span> Gestión de proyectos + mejora de procesos</p>
         </div>
 
-        <figure class="hero-art" aria-label="Almacenes y materiales de construcción conectados por una ruta geolocalizada">
-          <video class="hero-video ambient-video" autoplay muted loop playsinline data-ambient-video tabindex="0" aria-describedby="ambient-video-hint" aria-label="Almacenes de obra, pallets de materiales y marcadores de ubicación conectados por una ruta">
-            <source src="/assets/hero.mp4" type="video/mp4" />
-          </video>
+        <figure class="hero-art hero-art--building" aria-label="Edificio editorial de tres niveles que se arma por capas: planificar, abastecer, construir y controlar">
+          <img
+            class="hero-poster"
+            src="/assets/hero-building-poster.png"
+            alt="Edificio de concreto en construcción con andamios, mallas de seguridad y grúa torre."
+            width="518"
+            height="600"
+            fetchpriority="high"
+          />
+          <div id="landing-hero"></div>
         </figure>
       </section>
 
@@ -124,6 +146,7 @@
 
           <div class="portfolio-grid" id="portfolio-grid" aria-live="polite" aria-busy="true"></div>
           <p class="portfolio-status" id="portfolio-status" role="status">Cargando proyectos…</p>
+          <p class="portfolio-credits" id="portfolio-credits" hidden></p>
         </div>
       </section>
 

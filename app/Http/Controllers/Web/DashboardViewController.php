@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Web;
 
 use App\Domain\Analitica\SerieAnaliticaService;
+use App\Domain\Geo\Dto\Coordenada;
+use App\Domain\Geo\Dto\RutaCalculada;
+use App\Domain\Geo\RuteoService;
 use App\Domain\Metricas\MetricasInventarioService;
 use App\Domain\Metricas\NivelServicioService;
 use App\Domain\Metricas\ProgramaPanelService;
@@ -39,6 +42,7 @@ class DashboardViewController extends Controller
         private readonly NivelServicioService $nivelServicio,
         private readonly ProgramaPanelService $programaPanel,
         private readonly SerieAnaliticaService $serieAnalitica,
+        private readonly RuteoService $ruteo,
     ) {}
 
     private const MANTARO_LAT = -12.068;
@@ -73,7 +77,7 @@ class DashboardViewController extends Controller
                 $baseData()['disponibleRed'],
                 $baseData()['minPorMaterialRed'],
             )), 'panel-datos'),
-            'rutas' => Inertia::defer(fn () => $this->cachePanel('rutas', 300, fn () => $this->construirRutas()), 'panel-rapido'),
+            'rutas' => Inertia::defer(fn () => $this->cachePanel('rutas', 300, fn () => $this->construirRutas($baseData()['almacenesRedModel'])), 'panel-rapido'),
             'movimientos7d' => Inertia::defer(fn () => $this->cachePanel('movimientos7d', 120, fn () => $this->construirMovimientos7d()), 'panel-rapido'),
             'metricasInventario' => Inertia::defer(fn () => $this->cachePanel('metricas_inventario', 120, fn () => $this->metricasInventario->resumen(
                 $this->obraActivaId(),
@@ -130,7 +134,7 @@ class DashboardViewController extends Controller
             $base['disponibleRed'],
             $base['minPorMaterialRed'],
         ));
-        $this->cachePanel('rutas', 300, fn () => $this->construirRutas());
+        $this->cachePanel('rutas', 300, fn () => $this->construirRutas($base['almacenesRedModel']));
         $this->cachePanel('movimientos7d', 120, fn () => $this->construirMovimientos7d());
         $this->cachePanel('metricas_inventario', 120, fn () => $this->metricasInventario->resumen(null, null));
         $this->cachePanel('nivel_servicio', 120, fn () => $this->nivelServicio->resumen(null, null));
@@ -443,16 +447,17 @@ class DashboardViewController extends Controller
     {
         $obras = $obrasModel->keyBy('id');
         $almacenes = $almacenesModel->keyBy('id');
+        $coordenadas = $this->coordenadasDeAlmacenes($almacenesModel);
 
         return ExcedenteDetectado::query()
             ->with(['material', 'obra', 'almacen'])
             ->whereIn('estado', ['detectado', 'sugerido'])
             ->get()
-            ->map(function ($exc) use ($obras, $almacenes, $disponiblePorAlmacen, $minPorMaterial) {
+            ->map(function ($exc) use ($obras, $almacenes, $coordenadas, $disponiblePorAlmacen, $minPorMaterial) {
                 $origen = $almacenes->get($exc->almacen_id);
                 $min = $minPorMaterial[$exc->material_id] ?? 50;
 
-                $receptoras = $almacenes
+                $candidatas = $almacenes
                     ->filter(function ($a) use ($exc, $origen, $obras, $disponiblePorAlmacen, $min) {
                         $obra = $obras->get($a->obra_id);
 
@@ -462,10 +467,7 @@ class DashboardViewController extends Controller
                             && ($disponiblePorAlmacen[$a->id][$exc->material_id] ?? 0) < $min;
                     })
                     ->map(fn ($a) => [
-                        'almacenId' => (string) $a->id,
-                        'obraId' => (string) $a->obra_id,
-                        'nombreObra' => $obras->get($a->obra_id)?->nombre ?? '',
-                        'distrito' => $obras->get($a->obra_id)?->distrito ?? '',
+                        'almacen' => $a,
                         'km' => $origen ? $this->haversineKm(
                             (float) ($origen->latitud ?? -12.0652),
                             (float) ($origen->longitud ?? -75.2102),
@@ -474,7 +476,28 @@ class DashboardViewController extends Controller
                         ) : 0.0,
                     ])
                     ->sortBy('km')
-                    ->take(3)
+                    ->take(3);
+
+                $receptoras = $candidatas
+                    ->map(function (array $candidata) use ($origen, $obras, $coordenadas): array {
+                        /** @var Almacen $destino */
+                        $destino = $candidata['almacen'];
+                        $ruta = $this->rutaEntre(
+                            $origen !== null ? ($coordenadas[(string) $origen->id] ?? null) : null,
+                            $coordenadas[(string) $destino->id] ?? null,
+                        );
+
+                        return [
+                            'almacenId' => (string) $destino->id,
+                            'obraId' => (string) $destino->obra_id,
+                            'nombreObra' => $obras->get($destino->obra_id)?->nombre ?? '',
+                            'distrito' => $obras->get($destino->obra_id)?->distrito ?? '',
+                            'km' => $ruta !== null
+                                ? round($ruta->distanciaM / 1000, 2)
+                                : (float) $candidata['km'],
+                            'geometria' => $ruta?->geometria ?? [],
+                        ];
+                    })
                     ->values()
                     ->all();
 
@@ -503,20 +526,73 @@ class DashboardViewController extends Controller
     }
 
     /**
-     * @return array<int, array{id: string, codigo: string, origenId: string, destinoId: string, estado: string}>
+     * Coordenadas que usa el mapa, incluyendo la dispersión determinista
+     * cuando el registro no tiene latitud/longitud.
+     *
+     * @return array<string, array{lat: float, lng: float}>
      */
-    private function construirRutas(): array
+    private function coordenadasDeAlmacenes(Collection $almacenes): array
     {
+        $coordenadas = [];
+
+        foreach ($almacenes->values() as $indice => $almacen) {
+            $coordenadas[(string) $almacen->id] = $this->coordsConDispersion(
+                $almacen->latitud,
+                $almacen->longitud,
+                $indice,
+            );
+        }
+
+        return $coordenadas;
+    }
+
+    /**
+     * Calcula la ruta real entre dos coordenadas del mapa.
+     *
+     * @param  array{lat: float, lng: float}|null  $origen
+     * @param  array{lat: float, lng: float}|null  $destino
+     */
+    private function rutaEntre(?array $origen, ?array $destino): ?RutaCalculada
+    {
+        if ($origen === null || $destino === null) {
+            return null;
+        }
+
+        return $this->ruteo->calcular(
+            new Coordenada((float) $origen['lat'], (float) $origen['lng']),
+            new Coordenada((float) $destino['lat'], (float) $destino['lng']),
+        );
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function construirRutas(Collection $almacenes): array
+    {
+        $coordenadas = $this->coordenadasDeAlmacenes($almacenes);
+
         return Transferencia::query()
             ->whereIn('estado', ['en_transito', 'aprobada'])
             ->get()
-            ->map(fn ($t) => [
-                'id' => (string) $t->id,
-                'codigo' => $t->codigo,
-                'origenId' => (string) $t->almacen_origen_id,
-                'destinoId' => (string) $t->almacen_destino_id,
-                'estado' => $t->estado === 'en_transito' ? 'en-transito' : 'pendiente',
-            ])
+            ->map(function (Transferencia $transferencia) use ($coordenadas): array {
+                $origenId = (string) $transferencia->almacen_origen_id;
+                $destinoId = (string) $transferencia->almacen_destino_id;
+                $ruta = $this->rutaEntre(
+                    $coordenadas[$origenId] ?? null,
+                    $coordenadas[$destinoId] ?? null,
+                );
+
+                return [
+                    'id' => (string) $transferencia->id,
+                    'codigo' => $transferencia->codigo,
+                    'origenId' => $origenId,
+                    'destinoId' => $destinoId,
+                    'estado' => $transferencia->estado === 'en_transito' ? 'en-transito' : 'pendiente',
+                    'geometria' => $ruta?->geometria ?? [],
+                    'etaMin' => $ruta !== null ? round($ruta->duracionS / 60, 1) : null,
+                    'distanciaKm' => $ruta !== null ? round($ruta->distanciaM / 1000, 2) : null,
+                ];
+            })
             ->all();
     }
 

@@ -14,6 +14,7 @@ use App\Models\LineaBaseCosto;
 use App\Models\Obra;
 use App\Models\ObraFase;
 use App\Models\Valorizacion;
+use App\Support\ImagenProyecto;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -40,15 +41,23 @@ class ProyectoController extends Controller
             ->when($request->filled('distrito'), fn ($q) => $q->where('distrito', $request->input('distrito')))
             ->orderBy('nombre')
             ->get()
-            ->map(fn (Obra $obra): array => [
-                'id' => $obra->id,
-                'codigo' => $obra->codigo,
-                'nombre' => $obra->nombre,
-                'programa' => $obra->programa?->nombre,
-                'distrito' => $obra->distrito,
-                'estado' => $obra->estado,
-                'avance' => (float) $obra->avance_fisico_pct,
-            ])
+            ->map(function (Obra $obra): array {
+                $imagen = ImagenProyecto::para($obra);
+
+                return [
+                    'id' => $obra->id,
+                    'codigo' => $obra->codigo,
+                    'nombre' => $obra->nombre,
+                    'programa' => $obra->programa?->nombre,
+                    'distrito' => $obra->distrito,
+                    'estado' => $obra->estado,
+                    'avance' => (float) $obra->avance_fisico_pct,
+                    'imagen' => $imagen['url'] ?? null,
+                    'imagen_alt' => $imagen['alt'] ?? null,
+                    'imagen_credito' => $imagen['credito'] ?? null,
+                    'imagen_credito_url' => $imagen['credito_url'] ?? null,
+                ];
+            })
             ->all();
 
         return response()->json([

@@ -24,6 +24,27 @@
             })();
         </script>
 
+        <script>
+            (function () {
+                try {
+                    var guardado = JSON.parse(
+                        localStorage.getItem('cpm_accesibilidad') || 'null',
+                    );
+                    if (!guardado) return;
+                    var raiz = document.documentElement;
+                    if (guardado.contraste) raiz.setAttribute('data-a11y-contraste', 'alto');
+                    if (guardado.subrayarEnlaces) raiz.setAttribute('data-a11y-enlaces', 'subrayados');
+                    if (guardado.reducirMovimiento) raiz.setAttribute('data-a11y-movimiento', 'reducido');
+                    if (guardado.escalaTexto) {
+                        raiz.setAttribute(
+                            'data-a11y-escala',
+                            String(guardado.escalaTexto),
+                        );
+                    }
+                } catch (e) {}
+            })();
+        </script>
+
         <!-- Google Fonts: Plus Jakarta Sans, Barlow Condensed, JetBrains Mono -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Hito;
 use App\Models\Obra;
 use App\Models\ObraFase;
+use App\Support\ImagenProyecto;
 use Illuminate\View\View;
 
 /**
@@ -97,6 +98,7 @@ class ProyectoPublicoViewController extends Controller
                 'avance' => (float) $obra->avance_fisico_pct,
                 'fecha_inicio' => $obra->fecha_inicio,
                 'fecha_fin_prevista' => $obra->fecha_fin_prevista,
+                'imagen' => ImagenProyecto::para($obra),
             ],
             'mapa' => $this->mapaAproximado($obra),
             'hitos' => $hitos,

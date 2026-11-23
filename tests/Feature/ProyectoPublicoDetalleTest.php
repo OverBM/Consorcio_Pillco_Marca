@@ -42,6 +42,30 @@ test('el detalle público es accesible sin sesión y no expone datos internos', 
         ->assertDontSee('999999');
 });
 
+test('el detalle público muestra la fotografía referencial y su crédito', function () {
+    $programa = Programa::create([
+        'nombre' => 'Programa de Infraestructura Vial',
+        'estado' => 'activo',
+    ]);
+
+    $obra = Obra::create([
+        'programa_id' => $programa->id,
+        'codigo' => 'OBR-02',
+        'nombre' => 'Mejoramiento Vial Av. Huancavelica',
+        'distrito' => 'El Tambo',
+        'estado' => 'ejecucion',
+        'avance_fisico_pct' => 42,
+    ]);
+
+    $this->get('/proyectos/'.$obra->id)
+        ->assertOk()
+        ->assertSee('/assets/proyectos/mejoramiento-vial.jpg', false)
+        ->assertSee('Thayne Tuason / Wikimedia Commons', false)
+        ->assertSee('og:image', false);
+
+    $this->assertFileExists(public_path('assets/proyectos/mejoramiento-vial.jpg'));
+});
+
 test('el detalle de un proyecto inexistente responde como no encontrado', function () {
     $this->get('/proyectos/99999')->assertStatus(404);
 });

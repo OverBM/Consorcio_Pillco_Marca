@@ -1,0 +1,1 @@
+function e(e,t,n,r,i){return{onSuccess:()=>{e.success(t),r(),i()},onError:t=>e.error(Object.values(t).flat().join(` `)||n)}}export{e as t};

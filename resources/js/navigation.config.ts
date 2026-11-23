@@ -69,6 +69,7 @@ export const APP_ROLES: AppRoleItem[] = ROLES_SPEC.split('\n')
 const NAV_SPEC = `# Panel Principal
 panel-general|Panel General|/panel|dashboard|panel.ver
 reportes|Reportes e Indicadores|/reportes|trending-up|panel.ver
+como-trabajamos|Cómo trabajamos|/como-trabajamos|building||NUEVO|mint
 mi-perfil|Mi Perfil|/perfil|shield
 # Programa (PMU)
 programa-tablero|Tablero Consolidado|/programa|building|programa.ver
