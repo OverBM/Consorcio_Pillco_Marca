@@ -12,6 +12,12 @@ RUN install-php-extensions \
         opcache \
     && mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
+# Render ejecuta el contenedor con restricciones que rechazan las file
+# capabilities del binario de FrankenPHP (setcap). Como escuchamos en $PORT
+# (>1024), no las necesitamos.
+RUN setcap -r /usr/local/bin/frankenphp 2>/dev/null || true \
+    && chmod 0755 /usr/local/bin/frankenphp
+
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
